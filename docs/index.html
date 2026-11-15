@@ -387,8 +387,14 @@ function renderLocal(d) {
 /* ------------------------------- veri ------------------------------- */
 /* ---------------------- bulut verisi (GitHub Pages) ---------------------- */
 const CLOUD_KEY = 'fc_remote';
+// APK/PWA için varsayılan bulut adresi: kurulumda hiçbir şey yazmak gerekmez.
+// Boş bırakmak isteyen, ayar alanını silip Kaydet'e basar (cihazda tarama).
+const DEFAULT_CLOUD = 'https://raw.githubusercontent.com/zoro34/funding-carry/main/data.json';
 function cloudUrl() {
-  try { return (localStorage.getItem(CLOUD_KEY) || '').trim(); } catch (e) { return ''; }
+  try {
+    const v = localStorage.getItem(CLOUD_KEY);
+    return v === null ? DEFAULT_CLOUD : v.trim();
+  } catch (e) { return DEFAULT_CLOUD; }
 }
 function saveCloud() {
   const el = document.getElementById('cloudurl');

@@ -1,0 +1,39 @@
+
+A) decision rules
+  PASS  3+ aligned -> AL
+  PASS  inverted -> SAT
+  PASS  chase guard +46% -> BEKLE
+  PASS  dump guard -18% -> BEKLE
+  PASS  no deep data -> no signal
+
+B) alert dedupe (temp file)
+  PASS  first write alerts
+  PASS  same symbol+signal suppressed
+  PASS  weak signal (2 cond) skipped
+  PASS  SAT counted separately
+
+C) funnel scan
+  PASS  rows returned   [3]
+  PASS  stages consistent   [21/3]
+  PASS  request budget respected   [33 req, 0 retry]
+  PASS  rows carry signal+reasons
+
+D) endpoints
+  PASS  /api/screener shape
+  PASS  /api/alerts ok
+  PASS  /api/all regression
+
+E) UI wiring
+  PASS  screen tab
+  PASS  screen view
+  PASS  signal badges
+  PASS  loader
+  PASS  alert list
+  PASS  filters
+  PASS  overflow scroll
+  PASS  no-push notice
+  PASS  reasons capped at 3
+
+========================================================
+SONUC: 25 gecti, 0 kaldi
+========================================================

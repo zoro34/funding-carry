@@ -1,0 +1,40 @@
+
+=== A) funding_monitor.py — tarama sekli + birim matematigi ===
+  PASS  scan() dolu DataFrame donduruyor   [25 satir]
+  PASS  gerekli kolonlar var   [eksik: yok]
+  PASS  kritik kolonlarda NaN yok
+  PASS  breakeven_days birim matematigi   [10.0 gun (beklenen 10.0)]
+  PASS  paralel tarama <15 sn   [3.5 sn]
+
+=== B) analytics.py — rejim cezasi + entegrasyon ===
+  PASS  anlik negatif funding skoru dusuruyor   [neg 0.0 < pos 100.0]
+  PASS  skor 0-100 araliginda   [{'POS': 100.0, 'NEG': 0.0}]
+  PASS  azalan sirali
+  PASS  realized_carry entegrasyonu   [0.0300%]
+  PASS  insights yapisi   [5 cikarim]
+
+=== C) dashboard.py — uclar, hiz, YAZMAMA kurali ===
+  PASS  /api/all 200   [200]
+  PASS  /api/all <1500 ms   [157 ms]
+  PASS  /api/all alanlari
+  PASS  okuma yolu snapshot YAZMIYOR   [121 -> 121 satir]
+  PASS  / HTML + canvas
+  PASS  CDN bagimliligi yok   [[]]
+  PASS  statik mod geri donusu var
+  PASS  canvas grafik fonksiyonlari var
+
+=== D) export_static.py — data.json sekli ===
+  PASS  anahtarlar tam   [['generated_at', 'mode', 'analysis', 'series', 'live']]
+  PASS  her satirda ok karari var   [40 satir]
+  PASS  semboller skor tasiyor
+  PASS  seri yapisi dogru
+
+=== E) GitHub Actions workflow — gercek YAML parse ===
+  PASS  YAML gecerli
+  PASS  cron zamanlamasi   [['schedule', 'workflow_dispatch']]
+  PASS  contents: write   [{'contents': 'write'}]
+  PASS  adimlar tanimli   [7 adim]
+
+==============================================================
+SONUC: 26 gecti, 0 kaldi
+==============================================================

@@ -1,0 +1,43 @@
+
+=== A) flow.order_book — emir defteri ===
+  PASS  anahtarlar tam   [['ob_ask_musd', 'ob_bid_musd', 'ob_imbalance_pct', 'ob_mid', 'wall_ask_musd', 'wall_ask_pct', 'wall_bid_musd', 'wall_bid_pct']]
+  PASS  bid/ask derinligi > 0   [bid 7.85M ask 6.59M]
+  PASS  dengesizlik -100..100 araliginda   [8.73%]
+  PASS  mid fiyat > 0   [64,577.9]
+  PASS  duvar <= kendi tarafindaki derinlik   [bid duvar 0.28 / 7.85]
+
+=== B) flow.symbol_detail — seriler ===
+  PASS  funding_hist dolu   [n=90]
+  PASS  oi_hist dolu   [n=48]
+  PASS  top_hist dolu   [n=48]
+  PASS  retail_hist dolu   [n=48]
+  PASS  funding_hist zaman alani 'fundingTime'dan geldi (regresyon)   [son t=1794758400000]
+  PASS  top/retail yuzde araliginda
+  PASS  OI degeri milyon $ olceginde   [ornek 4201.61M]
+  PASS  detay etiketi ve tooltipi var
+
+=== C) dashboard uclari ===
+  PASS  /api/symbol 200   [200]
+  PASS  sembol yaniti ob + seri iceriyor
+  PASS  gecersiz sembol 400   [400]
+  PASS  /api/smart 200   [200]
+  PASS  piyasa genisligi alani var   [{'inflow_count': 3, 'inflow_pct': 25.0, 'net_total_musd': -522.7, 'total': 12, 'whale_buy_count': 4}]
+  PASS  satirlarda emir defteri alani YOK (hafif kalsin)
+  PASS  her satirda spark + detail
+
+=== D) sinyal gecmisi (dogrulama icin kayit) ===
+  PASS  snapshot yazildi   [17 -> 21 satir]
+  PASS  snapshot basligi dogru   [ts,symbol,price_chg,net_1h_musd,net_4h_musd,net_24h_musd,oi_]
+  PASS  save=False gecmise YAZMIYOR   [panel yolu save=False kullaniyor]
+
+=== E) arayuz (dashboard.html) ===
+  PASS  modal fonksiyonlari var
+  PASS  coklu seri grafik var
+  PASS  emir defteri cubugu var
+  PASS  piyasa genisligi var
+  PASS  satir tiklamasi bagli
+  PASS  CDN bagimliligi yok
+
+============================================================
+SONUC: 29 gecti, 0 kaldi
+============================================================

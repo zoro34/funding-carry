@@ -1,0 +1,44 @@
+
+A) APK 1.1 (ürün)
+  PASS  versionName 1.1
+  PASS  versionCode 2
+  PASS  INTERNET izni
+  PASS  imza geçerli   [3.8 MB]
+
+B) kök hata kapandı
+  PASS  tek enjeksiyon (idempotent)   [1 adet]
+  PASS  refreshLocal pakette
+  PASS  API+data.json yok -> cihazda tara
+  PASS  sunucusuz modal pakette
+  PASS  local.js pakette
+  PASS  data.json yedek pakette
+  PASS  model ağırlıkları pakette
+
+C) kaynak + build tutarlılığı
+  PASS  guard enjeksiyonu arıyor
+  PASS  gradle sürüm 1.1 / code 2
+  PASS  güvensiz .json() yok
+  PASS  jget tanımlı
+
+D) sunucu uçları
+  PASS  /api/all
+  PASS  /api/live
+  PASS  /api/symbol
+  PASS  /api/screener
+  PASS  /api/model
+  PASS  /api/rulecheck
+
+E) yerel kararlar (ağ yok)
+  PASS  karar: al
+  PASS  karar: chase
+  PASS  karar: sat
+  PASS  karar: prob
+
+F) belge + zamanlanmış işler
+  PASS  APK.md 1.1'e işaret ediyor
+  PASS  eski 1.0 APK silinmiş
+  PASS  4 cron işi
+
+========================================================
+SONUC: 28 gecti, 0 kaldi
+========================================================

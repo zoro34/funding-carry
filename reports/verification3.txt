@@ -1,0 +1,37 @@
+
+=== A) flow.py CLI (argparse + --save) ===
+  PASS  CLI exit 0   [rc=0 ]
+  PASS  piyasa genisligi satiri basiliyor   [piyasa genisligi: 0/2 para girisi | toplam net -397.2M$ | balina alici 0]
+  PASS  --top 2 sinirina uyuyor   [satir=3]
+  PASS  --save gecmise yazdi   [33 -> 35]
+
+=== B) cron script uctan uca ===
+  PASS  cron script exit 0   [rc=0 ]
+  PASS  funding snapshot buyudu   [221 -> 241]
+  PASS  smart snapshot buyudu   [35 -> 47]
+  PASS  arac dosyalari yazildi
+  PASS  smart cikti tablo basligi iceriyor
+
+=== C) export_static — smart dahil ===
+  PASS  data.json anahtarlari smart iceriyor   [['analysis', 'generated_at', 'live', 'mode', 'series', 'smart']]
+  PASS  smart satirlari dolu   [12 satir]
+  PASS  smart breadth var   [{'inflow_count': 3, 'whale_buy_count': 4, 'total': 12, 'net_total_musd': -490.6, 'inflow_pct': 25.0}]
+
+=== D) dashboard uclari (regresyon) ===
+  PASS  /api/all 200   [200]
+  PASS  /api/all analiz+seri
+  PASS  /api/symbol gecersiz 400
+  PASS  /api/symbol ob + 4 seri
+  PASS  /api/smart breadth   [ok 12/12]
+
+=== E) arayuz — bu tur eklenen akis ===
+  PASS  statik akilli para degiskeni
+  PASS  setTab mevcut veriyi yeniden ciziyor
+  PASS  modal + coklu seri
+  PASS  piyasa genisligi seridi
+  PASS  satir tiklamasi
+  PASS  CDN yok
+
+==============================================================
+SONUC: 23 gecti, 0 kaldi
+==============================================================

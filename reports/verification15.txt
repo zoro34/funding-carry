@@ -1,0 +1,50 @@
+
+A) APK artefaktı
+  PASS  apk exists   [3.8 MB]
+  PASS  zip integrity
+  PASS  package id
+  PASS  app label
+  PASS  INTERNET permission
+  PASS  targetSdk 34
+  PASS  minSdk 22
+  PASS  signature verifies
+
+B) APK içindeki web katmanı
+  PASS  FORCE_LOCAL injected
+  PASS  overlay veil fix shipped
+  PASS  local mode code shipped
+  PASS  local.js shipped
+  PASS  model weights shipped
+  PASS  phone scanner has no server calls
+
+C) derleme zinciri yeniden üretilebilir
+  PASS  build_apk.sh parses
+  PASS  setup_sdk.sh parses
+  PASS  capacitor webDir=www + appId
+  PASS  capacitor deps pinned
+  PASS  SDK + JDK present
+
+D) local.js kararları (node, ağ yok)
+  PASS  al
+  PASS  chase
+  PASS  sat
+  PASS  prob
+  PASS  noProbWithoutModel
+
+E) sunucu tarafı regresyon
+  PASS  /local.js served
+  PASS  /learn.json served
+  PASS  /api/model
+  PASS  /api/rulecheck
+  PASS  /manifest.json + /sw.js
+  PASS  UI: local wiring
+  PASS  sw cache bumped to v2
+  PASS  sw shell ships local.js
+  PASS  workflow ships local.js + model
+
+F) zamanlanmış işler
+  PASS  4 cron job
+
+========================================================
+SONUC: 34 gecti, 0 kaldi
+========================================================

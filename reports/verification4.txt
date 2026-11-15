@@ -1,0 +1,36 @@
+
+A) flow.py CLI: --min-vol / --top / --save
+  PASS  exit 0
+  PASS  breadth satiri basildi
+  PASS  --save yazdi   [47 -> 49]
+
+B) cron scripti uctan uca
+  PASS  exit 0
+  PASS  funding CSV buyudu   [241 -> 261]
+  PASS  smart CSV buyudu   [49 -> 61]
+  PASS  iki arac dosyasi yazildi
+
+C) export_static: smart dahil, yan etkisiz
+  PASS  anahtarlar   [['analysis', 'generated_at', 'live', 'mode', 'series', 'smart']]
+  PASS  smart satirlari   [12 satir]
+  PASS  breadth var
+
+D) dashboard uclari
+  PASS  /api/all 200 + alanlar
+  PASS  /api/symbol gecersiz -> 400
+  PASS  /api/symbol ob + 4 seri dolu
+  PASS  /api/smart breadth + satirlar   [ok 12/12]
+  PASS  satirlarda ob alani yok (hafif)
+
+E) dashboard.html kablolamasi
+  PASS  staticSmart akisi
+  PASS  setTab yeniden cizim
+  PASS  modal
+  PASS  coklu seri
+  PASS  genislik seridi
+  PASS  satir tiklamasi
+  PASS  CDN yok
+
+==========================================================
+SONUC: 22 gecti, 0 kaldi
+==========================================================

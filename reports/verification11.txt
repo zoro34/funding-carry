@@ -1,0 +1,34 @@
+
+A) shared feature definition (learn vs rule_backtest)
+  PASS  vol_24h_musd present
+  PASS  equals 24-bar volume sum
+
+B) stored model consistency
+  PASS  weights == features+1
+  PASS  mu/sd aligned, sd>0
+  PASS  walk-forward AUC recorded   [AUC 0.6192]
+
+C) weights applied with trained sign
+  PASS  prob in (0,1)   [0.461]
+  PASS  OI direction matches weight   [0.461->0.600]
+  PASS  price direction matches weight   [0.461->0.313]
+  PASS  missing feature -> None
+  PASS  non-generalizing refuses
+
+D) screener live scoring
+  PASS  prob attached to every row
+  PASS  probs within 0..1
+  PASS  model summary in payload
+
+E) endpoints + UI
+  PASS  /api/model
+  PASS  /api/rulecheck
+  PASS  banner+column+wording
+
+F) cron jobs + retrain script syntax
+  PASS  4 jobs registered
+  PASS  learn_retrain.sh parses
+
+======================================================
+SONUC: 18 gecti, 0 kaldi
+======================================================

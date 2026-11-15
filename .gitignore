@@ -1,0 +1,21 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# APK derleme çıktıları (yerel kalır, repoya girmez)
+android-app/node_modules/
+android-app/www/
+android-app/android/
+android-app/local.properties
+*.apk
+
+# Büyük ham mum dosyaları repoya girmez (backtest için yerelde kalır)
+data/*_1h.csv
+# Küçük geçmiş dosyaları repoda TUTULUR: Actions her koşuda sıfırdan başlıyor,
+# bu dosyalar commit edilmezse zaman serisi ve alarm geçmişi birikmez.
+# (data/funding_snapshots.csv, data/smart_snapshots.csv, data/alerts.csv)
+/tmp/
+
+# OS
+.DS_Store

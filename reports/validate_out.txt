@@ -1,0 +1,82 @@
+==============================================================================
+TEST 1 — RASTGELE GIRIS KONTROLU (BTCUSDT)
+==============================================================================
+  pivot: 1110 tepe, 1094 dip (order=5)
+  double_bottom          91 sinyal
+  inverse_hs             25 sinyal
+  ascending_triangle      9 sinyal
+  bull_flag               3 sinyal
+  double_top             78 sinyal
+  head_shoulders         14 sinyal
+
+ascending_triangle: 11 islem, getiri +4.44%, kazanma 36%
+
+Rastgele 1000 strateji (11 islem, ayni SL/TP/tutma):
+  ortalama        : -6.72%
+  medyan          : -6.83%
+  en iyi %5       : +15.70%
+  en kotu %5      : -28.04%
+  EN IYI rastgele : +56.75%
+
+  Formasyon sonucu: +4.44%
+  Rastgelelerin %83'inden daha iyi
+  YARGI: GURULTU — rastgele girislerle ayirt edilemiyor
+
+==============================================================================
+TEST 2 — CAPRAZ SEMBOL (parametreler BTC'de secildi, dokunulmadi)
+==============================================================================
+
+Sembol    Formasyon                 Getiri    Al-Tut     Fark  Islem  Kazanma
+-----------------------------------------------------------------------------
+BTCUSDT   ascending_triangle       +4.44%   -27.86%  +32.29%      11      36%
+BTCUSDT   inverse_hs              -18.28%   -27.86%   +9.57%      28      29%
+BTCUSDT   bull_flag                -2.85%   -27.86%  +25.01%       5      40%
+  pivot: 1075 tepe, 1113 dip (order=5)
+  double_bottom         148 sinyal
+  inverse_hs             41 sinyal
+  ascending_triangle      4 sinyal
+  bull_flag              33 sinyal
+  double_top            140 sinyal
+  head_shoulders         53 sinyal
+ETHUSDT   ascending_triangle       -8.85%   -40.24%  +31.39%       5      20%
+ETHUSDT   inverse_hs              -27.44%   -40.24%  +12.81%      64      33%
+ETHUSDT   bull_flag                +1.90%   -40.24%  +42.14%      17      41%
+  pivot: 1093 tepe, 1111 dip (order=5)
+  double_bottom         180 sinyal
+  inverse_hs             62 sinyal
+  ascending_triangle      4 sinyal
+  bull_flag              50 sinyal
+  double_top            189 sinyal
+  head_shoulders         60 sinyal
+SOLUSDT   ascending_triangle      +57.42%   -66.09% +123.51%      11      73%
+SOLUSDT   inverse_hs               -9.03%   -66.09%  +57.06%      87      43%
+SOLUSDT   bull_flag               -21.27%   -66.09%  +44.82%      37      27%
+  pivot: 1093 tepe, 1101 dip (order=5)
+  double_bottom         109 sinyal
+  inverse_hs             23 sinyal
+  ascending_triangle      2 sinyal
+  bull_flag              11 sinyal
+  double_top            103 sinyal
+  head_shoulders         23 sinyal
+BNBUSDT   ascending_triangle       +7.30%    -3.36%  +10.65%       2     100%
+BNBUSDT   inverse_hs              -40.82%    -3.36%  -37.46%      33      24%
+BNBUSDT   bull_flag               -37.33%    -3.36%  -33.97%      11       9%
+
+--- ozet ---
+ascending_triangle     4/4 sembolde al-tut'u gecti | ort. fark +49.5% | en kotu +10.7%
+inverse_hs             3/4 sembolde al-tut'u gecti | ort. fark +10.5% | en kotu -37.5%
+bull_flag              3/4 sembolde al-tut'u gecti | ort. fark +19.5% | en kotu -34.0%
+
+==============================================================================
+TEST 3 — ISTATISTIK YETERLI MI?
+==============================================================================
+
+ascending_triangle: 11 islem
+  UYARI: 30 islemin altinda kazanma orani guvenilir degil.
+  %36 kazanma orani, 11 islemle: gercek oran %10-%70 arasinda olabilir (95% guven).
+  Bu veriyle 'edge var' demek mumkun degil.
+
+==============================================================================
+SONUC
+==============================================================================
+Bazi sonuclar rastgeleden ayriliyor — ama orneklem kucuk, guven yok.

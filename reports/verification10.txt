@@ -1,0 +1,41 @@
+
+A) feature definitions agree (regression: mixed 1h/24h volume)
+  PASS  rule_at exposes vol_24h_musd   [14227M]
+  PASS  it equals the 24-bar volume sum
+
+B) stored model is internally consistent
+  PASS  weights length = features + bias   [7 vs 7]
+  PASS  mu/sd lengths match features
+  PASS  sd has no zeros
+  PASS  walk-forward metrics present   [AUC 0.6192]
+
+C) deployed weights are actually applied with the right sign
+  PASS  probability in (0,1)   [0.461]
+  PASS  higher OI shifts prob up as trained   [0.461 -> 0.600 (w=+0.28)]
+  PASS  higher price move shifts prob down as trained   [0.461 -> 0.313 (w=-0.32)]
+  PASS  missing feature -> None (no silent zero fill)
+  PASS  non-generalizing model refuses to score
+
+D) screener attaches live probabilities
+  PASS  every row has a prob key
+  PASS  probs are 0..1   [[0.28, 0.35, 0.33, 0.18]]
+  PASS  model summary in payload   [AUC 0.6192]
+
+E) endpoints + UI
+  PASS  /api/model available   [AUC 0.6192]
+  PASS  /api/rulecheck still ok
+  PASS  model banner
+  PASS  renderer
+  PASS  probability column
+  PASS  prob colouring
+  PASS  regime caveat
+
+F) cron coverage
+  PASS  funding-carry-izleme
+  PASS  alts-screener-alarm
+  PASS  alarm-degerlendirme
+  PASS  model-yeniden-egitim
+
+========================================================
+SONUC: 25 gecti, 0 kaldi
+========================================================

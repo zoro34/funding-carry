@@ -1,0 +1,37 @@
+A) sürüm ve paket
+  PASS  1.1 apk var   [3.6M]
+  PASS  versionName 1.1
+  PASS  versionCode 2
+  PASS  imza geçerli
+  PASS  eski 1.0 apk kaldırıldı
+B) hatanın kökü kapandı
+  PASS  FORCE_LOCAL gerçekten enjekte
+  PASS  refreshLocal pakette
+  PASS  API+data.json yoksa cihazda tarar
+  PASS  data.json yedek pakette
+  PASS  model ağırlıkları pakette
+C) derleme betiği (tekrar üretilebilirlik)
+  PASS  guard enjeksiyonu arıyor
+  PASS  build_apk.sh sözdizimi
+D) korumasız JSON okuması
+  PASS  güvensiz .json() yok
+  PASS  jget var
+E) sunucu modu + yerel kararlar
+PASS  /api/all
+PASS  /api/live
+PASS  /api/symbol
+PASS  /api/screener
+PASS  /api/model
+  PASS  5 uç
+PASS  karar 1
+PASS  karar 2
+PASS  karar 3
+PASS  karar 4
+  PASS  4 karar
+F) belge + cron
+  PASS  APK.md 1.1'e işaret ediyor
+  PASS  4 cron işi
+
+=====================================================
+SONUC: 18 gecti, 0 kaldi
+=====================================================

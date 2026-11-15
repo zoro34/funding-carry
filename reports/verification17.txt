@@ -1,0 +1,35 @@
+A) kök neden: korumasız JSON okuması
+  PASS  güvensiz .json() kalmadı
+  PASS  jget tanımlı
+  PASS  boş gövde yakalanıyor
+  PASS  geçersiz JSON yakalanıyor
+B) sunucusuz modal
+  PASS  localDetailHtml var
+  PASS  openSymbol yerel dalı
+  PASS  API yolu jget kullanıyor
+C) APK düzeltmeyi içeriyor
+  PASS  apk var   [3.6M]
+  PASS  pakette jget
+  PASS  pakette sunucusuz modal
+  PASS  pakette perde düzeltmesi
+  PASS  imza geçerli
+D) sunucu modu bozulmadı
+PASS  /api/all analiz
+PASS  /api/symbol defter+seri
+PASS  /api/live
+PASS  /api/screener
+PASS  /api/model json
+  PASS  5 uç regresyonu
+E) yerel kararlar (ağ yok)
+PASS  karar 1
+PASS  karar 2
+PASS  karar 3
+PASS  karar 4
+  PASS  4 karar testi
+F) PWA / zamanlanmış işler
+  PASS  sw cache v2
+  PASS  4 cron işi
+
+=====================================================
+SONUC: 16 gecti, 0 kaldi
+=====================================================

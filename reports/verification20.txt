@@ -1,0 +1,42 @@
+A) sürüm bump (build.gradle -> paket)
+  PASS  gradle versionName 1.1
+  PASS  gradle versionCode 2
+  PASS  apk versionName 1.1
+  PASS  apk versionCode 2
+  PASS  imza geçerli   [3.6M]
+B) enjeksiyon guard'ı (kök hata)
+  PASS  guard enjeksiyonu arıyor
+  PASS  eksik etiket -> derleme patlar
+  PASS  pakette tam 1 enjeksiyon
+C) sunucusuz çalışma yolu
+  PASS  pakette refreshLocal
+  PASS  API+data.json yok -> cihazda tara
+  PASS  pakette sunucusuz modal
+  PASS  data.json yedek pakette
+  PASS  model pakette
+D) JSON okuma güvenliği
+  PASS  güvensiz .json() yok
+  PASS  jget tanımlı
+  PASS  boş gövde ayrı raporlanır
+E) sunucu tarafı regresyon
+PASS  all
+PASS  live
+PASS  symbol
+PASS  screener
+PASS  model
+PASS  rulecheck
+  PASS  6 uç
+F) yerel tarayıcı kararları (ağ yok)
+PASS  karar 1
+PASS  karar 2
+PASS  karar 3
+PASS  karar 4
+  PASS  4 karar
+G) belge + zamanlanmış işler
+  PASS  APK.md 1.1
+  PASS  eski 1.0 silinmiş
+  PASS  4 cron işi
+
+=====================================================
+SONUC: 21 gecti, 0 kaldi
+=====================================================

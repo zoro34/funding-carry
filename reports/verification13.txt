@@ -1,0 +1,42 @@
+
+A) APK dosyası ve manifest
+  PASS  APK var   [3.7M]
+  PASS  zip bütünlüğü
+  PASS  paket adı
+  PASS  uygulama adı
+  PASS  INTERNET izni
+  PASS  targetSdk 34
+  PASS  imza doğrulanıyor
+
+B) APK içindeki web katmanı
+  PASS  FORCE_LOCAL enjekte
+  PASS  perde hatası düzeltilmiş
+  PASS  local.js paket içinde
+  PASS  model ağırlıkları paket içinde
+
+C) local.js karar kuralları (node)
+PASS  AL: 3+ koşul hizalı
+PASS  kovalama koruması (+46% -> BEKLE)
+PASS  SAT: ters koşullar
+PASS  prob 0..1   [0.710]
+  PASS  karar kuralları   [4 test]
+
+D) Flask uçları + arayüz kablolaması
+PASS  /local.js servis
+PASS  /learn.json servis
+PASS  LOCAL_MODE bayrağı
+PASS  renderLocal
+PASS  model yükleme
+PASS  yerel alarmlar
+PASS  overlay.hidden kuralı
+  PASS  flask + ui   [7 test]
+
+E) PWA + workflow tutarlılığı
+  PASS  sw cache v2 (bayat kabuk düzeltmesi)
+  PASS  sw shell local.js içeriyor
+  PASS  workflow local.js kopyalıyor
+  PASS  cron: model eğitimi
+
+======================================================
+SONUC: 17 gecti, 0 kaldi
+======================================================

@@ -1,0 +1,29 @@
+
+A) look-ahead freedom
+  PASS  data loaded   [500 bars]
+  PASS  corrupting the future leaves the decision unchanged
+
+B) measured result surfaced
+  PASS  json shape
+  PASS  AL h24 stats   [mean -0.224% p58.9]
+  PASS  /api/rulecheck serves it
+
+C) alert eval honesty
+  PASS  exit 0
+  PASS  refuses to conclude under 20 matured
+  PASS  report written
+
+D) telegram guard
+  PASS  matches real assignment only
+  PASS  env tokens are comments -> send skipped   [1 commented]
+  PASS  old naive check would have fired
+
+E) cron jobs
+  PASS  funding + screener + eval
+
+F) UI
+  PASS  banner + wording + source
+
+======================================================
+SONUC: 13 gecti, 0 kaldi
+======================================================

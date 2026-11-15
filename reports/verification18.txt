@@ -1,0 +1,34 @@
+A) kök neden: enjeksiyon koruması (bu turun hatası)
+  PASS  guard enjeksiyonu arıyor (kelimeyi değil)
+  PASS  script etiketi yoksa derleme patlar
+  PASS  iki kez enjeksiyon -> tek satır   [1 adet]
+B) APK gerçekten yerel modda başlıyor
+  PASS  FORCE_LOCAL pakette
+  PASS  refreshLocal pakette
+  PASS  API+data.json yok -> yerel tarama dalı
+  PASS  data.json yedek olarak pakette
+  PASS  imza geçerli   [3.7M]
+C) sessiz bozulma yok: korumasız JSON okuması
+  PASS  güvensiz .json() yok
+  PASS  jget var
+D) sunucu modu bozulmadı
+PASS  /api/all
+PASS  /api/live
+PASS  /api/symbol
+PASS  /api/screener
+PASS  /api/model
+  PASS  5 uç
+E) yerel tarayıcı kararları (ağ yok)
+PASS  karar 1
+PASS  karar 2
+PASS  karar 3
+PASS  karar 4
+  PASS  4 karar
+F) build betiği tekrar üretilebilir
+  PASS  build_apk.sh sözdizimi
+  PASS  data.json kopyalama adımı
+  PASS  4 cron işi
+
+=====================================================
+SONUC: 15 gecti, 0 kaldi
+=====================================================

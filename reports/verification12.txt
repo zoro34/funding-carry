@@ -1,0 +1,43 @@
+
+A) manifest + ikonlar
+  PASS  valid JSON with required keys
+  PASS  standalone display
+  PASS  3 icons incl. maskable
+  PASS  icon-192 is 192x192
+  PASS  icon-512 is 512x512
+
+B) service worker
+  PASS  handles install
+  PASS  handles activate
+  PASS  handles fetch
+  PASS  cache-first shell / network-first data
+  PASS  cache name versioned
+
+C) flask routes
+  PASS  manifest route   [application/manifest+json]
+  PASS  sw route + no-cache
+  PASS  icon route
+
+D) UI wiring
+  PASS  manifest link
+  PASS  theme-color
+  PASS  apple meta
+  PASS  install button
+  PASS  install prompt handler
+  PASS  sw registration
+  PASS  offline badge
+  PASS  deep link
+  PASS  mobile css
+
+E) workflow ships PWA files
+  PASS  copies manifest+sw+icons
+  PASS  YAML still valid
+
+F) regression: model + rule endpoints, cron set
+  PASS  /api/model
+  PASS  /api/rulecheck
+  PASS  4 cron jobs
+
+======================================================
+SONUC: 27 gecti, 0 kaldi
+======================================================

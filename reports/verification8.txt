@@ -1,0 +1,37 @@
+/tmp/hermes-verify-lCEWXG.py:62: FutureWarning: Possible nested set at position 2
+  lines and not any(re.match(pat, l) for l in lines), f"{len(lines)} commented")
+
+A) look-ahead freedom (decisive)
+  PASS  symbol data loaded   [500 bars]
+  PASS  future tampering leaves the decision unchanged
+  PASS  rule reads only the trailing window
+
+B) measured result surfaced
+  PASS  json has forward/random/signals
+  PASS  AL h24 percentile recorded   [AL %58.9 mean -0.224%]
+  PASS  beats_random consistent with the 95% rule
+  PASS  /api/rulecheck serves it   [symbols=10]
+
+C) alert evaluation stays honest on tiny samples
+  PASS  exit 0
+  PASS  refuses to conclude below 20 matured signals   [**Yorum yok:** en az 20 olgun sinyal gerekiyor (şu an en fazla 0). 30 ]
+  PASS  report written
+
+D) telegram guard does not trip on comments
+  PASS  guard matches a real assignment only
+  PASS  env has only commented token lines (so send is skipped)   [1 commented]
+  PASS  old naive check would have fired
+
+E) scheduled jobs
+  PASS  funding-carry-izleme
+  PASS  alts-screener-alarm
+  PASS  alarm-degerlendirme
+
+F) UI wiring
+  PASS  measured-result banner
+  PASS  explicit do-not-trade wording
+  PASS  banner data source
+
+========================================================
+SONUC: 19 gecti, 0 kaldi
+========================================================

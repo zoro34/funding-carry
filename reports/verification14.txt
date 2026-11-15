@@ -1,0 +1,39 @@
+A) APK (ürünün kendisi)
+  PASS  APK var   [3.7M]
+  PASS  zip bütünlüğü
+  PASS  paket com.suat.fundingcarry
+  PASS  uygulama adı
+  PASS  INTERNET izni
+  PASS  targetSdk 34
+  PASS  imza doğrulanıyor (v1+v2)
+B) APK içeriği
+  PASS  FORCE_LOCAL enjekte
+  PASS  perde hatası düzeltmesi pakette
+  PASS  yerel mod kodu pakette
+  PASS  local.js pakette
+  PASS  model ağırlıkları pakette
+C) derleme zinciri tekrar üretilebilir mi
+  PASS  build_apk.sh sözdizimi
+  PASS  setup_sdk.sh sözdizimi
+  PASS  capacitor.config.json geçerli
+  PASS  package.json bağımlılıkları
+  PASS  SDK + JDK yerinde
+D) local.js kararları (node, ağ yok)
+PASS  AL 3+ koşul
+PASS  kovalama koruması
+PASS  SAT ters koşullar
+PASS  prob 0..1
+  PASS  4 karar testi
+E) sunucu tarafı regresyon
+PASS  /local.js
+PASS  /learn.json
+PASS  /api/model
+PASS  /api/rulecheck
+PASS  manifest+sw rotaları
+PASS  LOCAL_MODE+renderLocal
+PASS  sw cache v2
+  PASS  7 sunucu/arayüz testi
+
+======================================================
+SONUC: 19 gecti, 0 kaldi
+======================================================

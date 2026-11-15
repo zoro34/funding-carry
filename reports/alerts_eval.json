@@ -1,0 +1,42 @@
+{
+ "generated_at": "2026-11-15T18:05:20.569762+00:00",
+ "total_alerts": 12,
+ "horizons": {
+  "h1": {
+   "matured": 0,
+   "AL": {
+    "n": 0,
+    "mean": null
+   },
+   "SAT": {
+    "n": 0,
+    "mean": null
+   },
+   "control_mean": 0.432
+  },
+  "h4": {
+   "matured": 0,
+   "AL": {
+    "n": 0,
+    "mean": null
+   },
+   "SAT": {
+    "n": 0,
+    "mean": null
+   },
+   "control_mean": null
+  },
+  "h24": {
+   "matured": 0,
+   "AL": {
+    "n": 0,
+    "mean": null
+   },
+   "SAT": {
+    "n": 0,
+    "mean": null
+   },
+   "control_mean": null
+  }
+ }
+}

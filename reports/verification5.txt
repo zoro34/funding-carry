@@ -1,0 +1,42 @@
+
+A) karar kurallari
+  PASS  3+ kosul ayni yonde -> AL   [AL / 5 kosul]
+  PASS  ters kosullar -> SAT   [SAT]
+  PASS  asiri uzamis -> BEKLE (kovalama korumasi)   [BEKLE: ['asiri uzamis (+46%) — kovalama']]
+  PASS  asiri dusmus -> BEKLE (dip satisi korumasi)   [BEKLE: ['asiri uzamis (-18%) — kovalama']]
+  PASS  derin veri yokken sinyal uretilmez   [— / 3]
+
+B) alarm tekrar bastirma (gecici dosya)
+  PASS  ilk yazim alarm uretiyor   [1]
+  PASS  ayni sembol+sinyal 6 saat icinde tekrar yazilmiyor   [0]
+  PASS  dosyada 1 kayit
+  PASS  zayif sinyal (2 kosul) alarm uretmiyor
+  PASS  SAT ayri alarm sayiliyor
+
+C) huni taramasi (kucuk parametreler)
+  PASS  satirlar dondu   [3 derin satir]
+  PASS  asamalar tutarli   [21 akis / 3 derin]
+  PASS  istek sayisi huni ile sinirli   [33 istek, retry 0]
+  PASS  her satirda sinyal + kosul + gerekce
+  PASS  funding yilliga cevrildi
+
+D) uclar
+  PASS  /api/screener 200 + alanlar
+  PASS  satirlarda sinyal alani
+  PASS  /api/alerts 200 + liste
+  PASS  /api/all hala hizli/calisiyor
+
+E) arayuz kablolamasi
+  PASS  ucuncu sekme
+  PASS  tarayici gorunumu
+  PASS  sinyal rozetleri
+  PASS  taramayi yukle
+  PASS  alarm listesi
+  PASS  filtreler
+  PASS  tablo tasma kaydirma
+  PASS  bildirim yok uyarisi
+  PASS  gerekce 3 ile sinirli
+
+==========================================================
+SONUC: 28 gecti, 0 kaldi
+==========================================================

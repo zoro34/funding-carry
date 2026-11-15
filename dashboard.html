@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Funding Carry — İzleme Paneli</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a0e14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FundingCarry">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/icon-192.png">
+<style>
+  :root{
+    --bg:#0a0e14; --panel:#111721; --panel2:#18202c; --border:#232d3b;
+    --txt:#e6edf3; --dim:#8496ab; --accent:#4c9aff;
+    --good:#2ea043; --good2:#3fb950; --bad:#e5534b; --warn:#d29922; --purple:#a371f7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;line-height:1.5}
+  .wrap{max-width:1500px;margin:0 auto;padding:18px}
+  header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:14px}
+  h1{font-size:16px;font-weight:600;letter-spacing:.2px}
+  h1 span{display:block;color:var(--dim);font-weight:400;font-size:11px;margin-top:3px}
+  .actions{display:flex;gap:9px;align-items:center}
+  button{background:var(--panel2);color:var(--txt);border:1px solid var(--border);padding:7px 13px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:12px}
+  button:hover{border-color:var(--accent);color:var(--accent)}
+  button:disabled{opacity:.45;cursor:wait}
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:16px}
+  .tab{background:none;border:none;border-bottom:2px solid transparent;color:var(--dim);padding:9px 16px;border-radius:0;font-size:12.5px;letter-spacing:.3px}
+  .tab:hover{color:var(--txt);border-color:transparent}
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:11px;margin-bottom:16px}
+  .kpi{background:linear-gradient(160deg,var(--panel) 0%,#0e141d 100%);border:1px solid var(--border);border-radius:9px;padding:13px}
+  .kpi .lbl{color:var(--dim);font-size:10.5px;text-transform:uppercase;letter-spacing:.7px}
+  .kpi .val{font-size:23px;font-weight:600;margin-top:5px;font-variant-numeric:tabular-nums}
+  .kpi .sub{color:var(--dim);font-size:10.5px;margin-top:2px}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:9px;padding:15px;margin-bottom:14px}
+  .card h2{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:11px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+  table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+  th{text-align:right;color:var(--dim);font-weight:500;padding:6px 7px;border-bottom:1px solid var(--border);font-size:10.5px;text-transform:uppercase;letter-spacing:.35px;white-space:nowrap}
+  th:first-child,td:first-child{text-align:left}
+  td{text-align:right;padding:6px 7px;border-bottom:1px solid #1a222e;white-space:nowrap}
+  tbody tr:hover{background:var(--panel2)}
+  .pos{color:var(--good2)} .neg{color:var(--bad)} .muted{color:var(--dim)}
+  .tag{display:inline-block;padding:1.5px 7px;border-radius:9px;font-size:10px;letter-spacing:.2px;white-space:nowrap}
+  .tag.ok{background:rgba(63,185,80,.14);color:var(--good2);border:1px solid rgba(63,185,80,.32)}
+  .tag.no{background:rgba(229,83,75,.13);color:var(--bad);border:1px solid rgba(229,83,75,.3)}
+  .tag.good{background:rgba(63,185,80,.14);color:var(--good2);border:1px solid rgba(63,185,80,.32)}
+  .tag.bad{background:rgba(229,83,75,.13);color:var(--bad);border:1px solid rgba(229,83,75,.3)}
+  .tag.warn{background:rgba(210,153,34,.13);color:var(--warn);border:1px solid rgba(210,153,34,.3)}
+  .tag.info{background:rgba(76,154,255,.12);color:var(--accent);border:1px solid rgba(76,154,255,.28)}
+  .sig{display:inline-block;min-width:52px;text-align:center;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:700;letter-spacing:.6px}
+  .sig.AL{background:rgba(46,160,67,.18);color:#4ade80;border:1px solid rgba(74,222,128,.45)}
+  .sig.SAT{background:rgba(229,83,75,.18);color:#f87171;border:1px solid rgba(248,113,113,.45)}
+  .sig.BEKLE{background:rgba(132,150,171,.12);color:#9aa7b8;border:1px solid rgba(132,150,171,.28)}
+  .ins{list-style:none}
+  .ins li{padding:9px 12px;border-left:3px solid var(--border);background:var(--panel2);margin-bottom:7px;border-radius:0 5px 5px 0;font-size:12px;line-height:1.55}
+  .ins li.good{border-left-color:var(--good2)} .ins li.warn{border-left-color:var(--warn)}
+  .ins li.info{border-left-color:var(--accent)} .ins li.bad{border-left-color:var(--bad)}
+  canvas{display:block}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+  @media(max-width:1050px){.grid2{grid-template-columns:1fr}}
+  .note{color:var(--dim);font-size:11px;margin-top:9px;padding-top:9px;border-top:1px solid #1a222e;line-height:1.65}
+  .chips{display:flex;gap:7px;margin-bottom:11px;flex-wrap:wrap}
+  .chip{background:var(--panel2);border:1px solid var(--border);color:var(--dim);padding:5px 11px;border-radius:14px;font-size:11px;cursor:pointer;font-family:inherit}
+  .chip:hover{color:var(--txt)}
+  .chip.on{background:rgba(76,154,255,.15);border-color:rgba(76,154,255,.5);color:var(--accent)}
+  .empty{padding:26px;text-align:center;color:var(--dim)}
+  .spin{display:inline-block;width:11px;height:11px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .sbar{display:inline-block;height:6px;border-radius:3px;background:#243040;vertical-align:middle;width:52px;position:relative;overflow:hidden}
+  .sbar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
+  .hidden{display:none}
+  #screentable,#smarttable,#livetable,#alertlist{overflow-x:auto}
+  tr.rowclick{cursor:pointer}
+  .breadth{display:flex;gap:14px;flex-wrap:wrap;align-items:center;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:9px 13px;margin-bottom:11px;font-size:11.5px}
+  .breadth b{font-variant-numeric:tabular-nums}
+  .overlay{position:fixed;inset:0;background:rgba(4,7,11,.82);display:flex;align-items:flex-start;justify-content:center;padding:26px 16px;overflow-y:auto;z-index:50}
+  .overlay.hidden{display:none}
+  .modal{background:var(--panel);border:1px solid var(--border);border-radius:11px;width:min(1080px,100%);padding:18px}
+  .modal h3{font-size:15px;margin-bottom:3px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .modal .msub{color:var(--dim);font-size:11px;margin-bottom:14px}
+  .mstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;margin-bottom:14px}
+  .mstat{background:var(--panel2);border:1px solid var(--border);border-radius:7px;padding:9px 10px}
+  .mstat .k{color:var(--dim);font-size:9.5px;text-transform:uppercase;letter-spacing:.5px}
+  .mstat .v{font-size:15px;font-weight:600;margin-top:3px;font-variant-numeric:tabular-nums}
+  .obbar{height:22px;border-radius:5px;overflow:hidden;display:flex;background:#243040;margin:7px 0 5px}
+  .obbar .b{background:rgba(63,185,80,.55);display:flex;align-items:center;padding-left:7px;font-size:10px;color:#d6f5dd}
+  .obbar .a{background:rgba(229,83,75,.55);display:flex;align-items:center;justify-content:flex-end;padding-right:7px;font-size:10px;color:#fbdcd9}
+  .mchart{margin-top:12px}
+  .mchart .mt{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+  footer{margin-top:18px;padding-top:13px;border-top:1px solid var(--border);color:var(--dim);font-size:10.5px;line-height:1.7}
+  .cloudrow{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:10px;font-size:11px;color:var(--dim)}
+  .cloudrow input{flex:1 1 260px;min-width:180px;background:var(--panel2);border:1px solid var(--border);
+    color:var(--text);border-radius:6px;padding:6px 8px;font-size:11px;font-family:inherit}
+  .cloudrow input:focus{outline:none;border-color:var(--accent)}
+  .warnbox{background:rgba(210,153,34,.07);border:1px solid rgba(210,153,34,.28);border-radius:8px;padding:11px 13px;font-size:11.5px;line-height:1.6;color:#d8c9a8;margin-bottom:14px}
+  @media(max-width:640px){
+    body{font-size:12px}
+    .wrap{padding:10px}
+    h1{font-size:14px}
+    .kpis{grid-template-columns:1fr 1fr;gap:8px}
+    .kpi{padding:10px}
+    .kpi .val{font-size:19px}
+    .card{padding:11px;border-radius:7px}
+    .tab{padding:8px 10px;font-size:11px}
+    th,td{padding:5px 6px;font-size:11px}
+    .actions{gap:6px}
+    button{padding:6px 10px;font-size:11px}
+    .modal{padding:12px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>FUNDING CARRY — İzleme Paneli<span id="sub">yükleniyor…</span></h1>
+    <div class="actions">
+      <span id="netbadge" class="tag info hidden">çevrimdışı</span>
+      <span id="status" class="muted"></span>
+      <button id="installBtn" class="hidden" onclick="installApp()">Kur</button>
+      <button id="refresh" onclick="refresh(true)">Yenile</button>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-genel" onclick="setTab('genel')">GENEL</button>
+    <button class="tab" id="tab-smart" onclick="setTab('smart')">AKILLI PARA / BALİNA</button>
+    <button class="tab" id="tab-screen" onclick="setTab('screen')">TARAYICI — AL / SAT</button>
+  </div>
+
+  <!-- ============================ GENEL ============================ -->
+  <section id="view-genel">
+    <div class="kpis">
+      <div class="kpi"><div class="lbl">İzlenen Sembol</div><div class="val" id="k1">—</div><div class="sub">birikmiş veri</div></div>
+      <div class="kpi"><div class="lbl">Tarama Sayısı</div><div class="val" id="k2">—</div><div class="sub">6 saatte bir otomatik</div></div>
+      <div class="kpi"><div class="lbl">Girişe Uygun</div><div class="val" id="k3">—</div><div class="sub">anlık funding ≥ 0</div></div>
+      <div class="kpi"><div class="lbl">En Yüksek Temkinli</div><div class="val" id="k4">—</div><div class="sub">yıllık, 25. persentil</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Otomatik Çıkarımlar</h2>
+      <ul class="ins" id="insights"><li class="info">Analiz ediliyor…</li></ul>
+    </div>
+
+    <div class="card">
+      <h2>Canlı Fırsatlar <span class="muted" id="liveinfo" style="text-transform:none;letter-spacing:0"></span></h2>
+      <div id="livetable"><div class="empty"><span class="spin"></span> Binance taranıyor…</div></div>
+      <div class="note">
+        Giriş kuralı: <b>Temkinli% &gt; 0</b> ve <b>anlık funding ≥ 0</b> ve <b>basis &lt; %0.3</b>.
+        Anlık funding negatifse şu an ödeme yapıyorsun. <b>Gün</b> = tur maliyetini (%0.30) kapatmak için gereken gün.
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h2>Temkinli Getiri — Sembol Skoru</h2>
+        <canvas id="scoreChart" height="290"></canvas>
+      </div>
+      <div class="card">
+        <h2>30 Günlük Yıllık Funding — Zaman Serisi</h2>
+        <canvas id="lineChart" height="290"></canvas>
+        <div class="note">Veri biriktikçe çizgi anlam kazanır. Şu an <span id="scancount">0</span> tarama var.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================= AKILLI PARA ========================= -->
+  <section id="view-smart" class="hidden">
+    <div class="warnbox">
+      <b>Bunlar davranış vekilleridir, cüzdan takibi değil.</b> Gerçek balina cüzdanı izleme (Arkham/Nansen)
+      on-chain veri ister ve ücretlidir. Buradaki sinyaller Binance'in <b>vadeli</b> piyasa verisinden gelir:
+      agresif taker akışı, açık pozisyon değişimi, büyük oyuncu long oranı ve büyük işlem izleri.
+      "Kim aldı" demez — "büyük para hangi yönde baskı kurdu" der.
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="lbl">En Çok Para Giren</div><div class="val pos" id="s1">—</div><div class="sub" id="s1s">24s net taker</div></div>
+      <div class="kpi"><div class="lbl">En Çok Para Çıkan</div><div class="val neg" id="s2">—</div><div class="sub" id="s2s">24s net taker</div></div>
+      <div class="kpi"><div class="lbl">Balina Toplayan</div><div class="val" id="s3">—</div><div class="sub">büyük printler net alıcı</div></div>
+      <div class="kpi"><div class="lbl">En Yüksek Akış Skoru</div><div class="val" id="s4">—</div><div class="sub" id="s4s">0-100</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Akıllı Para Akışı
+        <span class="muted" id="smartinfo" style="text-transform:none;letter-spacing:0"></span>
+      </h2>
+      <div class="chips">
+        <button class="chip on" data-f="all" onclick="setFilter('all')">Tümü</button>
+        <button class="chip" data-f="in" onclick="setFilter('in')">Para giren</button>
+        <button class="chip" data-f="whale" onclick="setFilter('whale')">Balina alıcı</button>
+        <button class="chip" data-f="squeeze" onclick="setFilter('squeeze')">Sıkışma / tasfiye</button>
+      </div>
+      <div id="breadth" class="breadth"><span class="muted">piyasa genişliği hesaplanıyor…</span></div>
+      <div id="smarttable"><div class="empty">Sekmeye geçince taranır…</div></div>
+      <div class="note">
+        <b>Net 24s</b>: agresif alıcı − satıcı hacmi (milyon $). <b>OI 24s</b>: açık pozisyon değişimi.
+        <b>TopLong</b>: büyük oyuncuların long oranı. <b>Gap</b>: büyük oyuncu − küçük hesap long farkı
+        (pozitifse büyükler küçüklerden daha long). <b>Balina</b>: en büyük %2'lik işlem dilimlerinin net yönü.
+        <b>Skor</b>: 0-100 para akışı kalitesi.
+      </div>
+    </div>
+  </section>
+
+  <div id="overlay" class="overlay hidden" onclick="if(event.target===this)closeModal()">
+    <div class="modal" id="modalBody"></div>
+  </div>
+
+  <!-- ============================ TARAYICI ============================ -->
+  <section id="view-screen" class="hidden">
+    <div class="warnbox">
+      <b>AL / SAT bir tavsiye değil, mekanik bir kural çıktısıdır.</b>
+      Kural: yön + para akışı + balina izi + büyük oyuncu konumu aynı yönde
+      <b>en az 3 koşulu</b> sağlarsa AL/SAT yazar. Bu sinyallerin kazanma oranı
+      <b>ölçülmedi</b> — geçmişe kaydediliyor ki 1-2 ay sonra ölçülebilsin.
+      24 saatte ±%15'ten fazla uzamış coinler kural gereği BEKLE'ye düşer (kovalama tuzağı).
+    </div>
+    <div id="rulecheck" class="hidden"></div>
+    <div id="modelinfo" class="hidden"></div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="lbl">Taranan Sembol</div><div class="val" id="sc1">—</div><div class="sub" id="sc1s">≥ 20M$ hacim</div></div>
+      <div class="kpi"><div class="lbl">AL Sinyali</div><div class="val pos" id="sc2">—</div><div class="sub">≥3 koşul aynı yönde</div></div>
+      <div class="kpi"><div class="lbl">SAT Sinyali</div><div class="val neg" id="sc3">—</div><div class="sub">≥3 koşul aynı yönde</div></div>
+      <div class="kpi"><div class="lbl">Kayıtlı Alarm</div><div class="val" id="sc4">—</div><div class="sub" id="sc4s">data/alerts.csv</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Tarama Sonucu <span class="muted" id="screeninfo" style="text-transform:none;letter-spacing:0"></span></h2>
+      <div class="chips">
+        <button class="chip on" data-s="all" onclick="setScreenFilter('all')">Tümü</button>
+        <button class="chip" data-s="AL" onclick="setScreenFilter('AL')">Sadece AL</button>
+        <button class="chip" data-s="SAT" onclick="setScreenFilter('SAT')">Sadece SAT</button>
+        <button class="chip" data-s="BEKLE" onclick="setScreenFilter('BEKLE')">BEKLE</button>
+      </div>
+      <div id="screentable"><div class="empty">Sekmeye geçince taranır (565 sembol → huni)…</div></div>
+      <div class="note">
+        Huni: <b>565</b> perpetual sembol ucuz veriyle taranır (hacim, funding, basis),
+        likit ilk 60'ın 5m akışı çekilir, en iyi 15'in açık pozisyon + büyük oyuncu
+        verisi alınır. Hepsini derin taramak 2.500+ istek eder ve bloklanır.
+        <b>Koşul</b> = kaç bağımsız sinyal aynı yönde. <b>Skor</b> = akış kalitesi 0-100.
+        <b>Model P↑</b> = öğrenilmiş modelin +24s yukarı olasılığı (kuraldan bağımsız,
+        walk-forward eğitilmiş; AUC ve ayrım gücü üstteki mavi bantta).
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Alarm Geçmişi <span class="muted" id="alertinfo" style="text-transform:none;letter-spacing:0"></span></h2>
+      <div id="alertlist"><div class="empty">Henüz alarm yok.</div></div>
+      <div class="note">
+        Alarmlar <code>data/alerts.csv</code>'ye yazılır; aynı sembol+sinyal 6 saat
+        içinde tekrar yazılmaz. <b>Not:</b> bu terminalde mesajlaşma kanalı (Telegram vb.)
+        yapılandırılmadığı için telefonuna bildirim gitmez — alarmlar panelde ve dosyada.
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <b>Yatırım tavsiyesi değildir.</b> Ölçüm ve izleme aracıdır; getiri garantisi yoktur.
+    Delta-nötr pozisyon borsa karşı taraf riski taşır; kaldıraç kullanılırsa nötr olmaktan çıkar.
+    <br>Veri: Binance public API (anahtar gerekmez) — vadeli piyasa. Her gerçek tarama <code>data/funding_snapshots.csv</code>'ye yazılır.
+    <div class="cloudrow">
+      <b>Bulut verisi:</b>
+      <input id="cloudurl" placeholder="https://kullanici.github.io/repo/data.json" autocomplete="off">
+      <button onclick="saveCloud()">Kaydet</button>
+      <span id="cloudstate"></span>
+    </div>
+  </footer>
+</div>
+
+<script src="local.js"></script>
+<script>
+const REFRESH_MS = 5 * 60 * 1000;
+let timer = null, tab = 'genel', smartLoaded = false, smartPayload = null, filter = 'all', staticSmart = null;
+let screenLoaded = false, screenPayload = null, screenFilter = 'all', staticScreen = null;
+let LOCAL_MODE = new URLSearchParams(location.search).has('local') || window.FORCE_LOCAL === true;
+let localModelReady = false;
+
+const fmt = (v, d = 2) => (v === null || v === undefined || isNaN(v)) ? '—' : Number(v).toFixed(d);
+
+/* Güvenli JSON okuma: boş/HTML yanıtta "Unexpected end of JSON input" yerine
+ * anlaşılır hata verir. APK'da sunucu yok; 404 gövdesi boş dönebilir. */
+async function jget(url, opts) {
+  const res = await fetch(url, opts);
+  const text = await res.text();
+  if (!text || !text.trim()) throw new Error(`boş yanıt (HTTP ${res.status}) — ${url}`);
+  try { return JSON.parse(text); }
+  catch (e) { throw new Error(`JSON değil (HTTP ${res.status}) — ${url}`); }
+}
+const signed = (v, d = 2) => (v === null || v === undefined || isNaN(v)) ? '—' : (v >= 0 ? '+' : '') + Number(v).toFixed(d);
+const cls = v => (v === null || v === undefined || isNaN(v)) ? 'muted' : (v >= 0 ? 'pos' : 'neg');
+const money = v => (v === null || v === undefined || isNaN(v)) ? '—' : (v >= 0 ? '+' : '') + Number(v).toFixed(1) + 'M';
+const probCls = p => (p === null || p === undefined) ? 'muted' : (p >= 0.45 ? 'pos' : p <= 0.20 ? 'neg' : '');
+
+function setTab(t) {
+  tab = t;
+  document.getElementById('view-genel').classList.toggle('hidden', t !== 'genel');
+  document.getElementById('view-smart').classList.toggle('hidden', t !== 'smart');
+  document.getElementById('view-screen').classList.toggle('hidden', t !== 'screen');
+  document.getElementById('tab-genel').classList.toggle('active', t === 'genel');
+  document.getElementById('tab-smart').classList.toggle('active', t === 'smart');
+  document.getElementById('tab-screen').classList.toggle('active', t === 'screen');
+  if (t === 'smart') {
+    // Veri zaten elde varsa (statik mod / onceki tarama) dogrudan ciz;
+    // yoksa tara. Boylece sekme degisimi her zaman dolu bir tablo gosterir.
+    if (smartPayload) renderSmart(smartPayload);
+    else if (!smartLoaded) loadSmart(false);
+  }
+  if (t === 'screen') {
+    if (screenPayload) renderScreen(screenPayload);
+    else if (!screenLoaded) loadScreen(false);
+  }
+}
+
+function setFilter(f) {
+  filter = f;
+  document.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.dataset.f === f));
+  if (smartPayload) renderSmartTable(smartPayload);
+}
+
+/* --------------------------- yerel mod görünümü --------------------------- */
+function localAlerts(rows) {
+  const KEY = 'fc_alerts_v1', now = Date.now(), SIX_H = 6 * 3600 * 1000;
+  let list = [];
+  try { list = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (e) { list = []; }
+  const recent = new Set(list.filter(a => now - a.t < SIX_H).map(a => a.symbol + a.signal));
+  for (const r of rows) {
+    if (!['AL', 'SAT'].includes(r.signal) || r.conditions < 3) continue;
+    if (recent.has(r.symbol + r.signal)) continue;
+    list.push({ ts: new Date().toISOString(), t: now, symbol: r.symbol, signal: r.signal,
+                conditions: r.conditions, score: r.score, price_chg: r.price_chg,
+                net_24h_musd: r.net_24h_musd, gap: r.top_retail_gap,
+                reasons: (r.reasons || []).join('; ') });
+    recent.add(r.symbol + r.signal);
+  }
+  list = list.filter(a => now - a.t < 7 * 24 * 3600 * 1000).slice(-60);
+  try { localStorage.setItem(KEY, JSON.stringify(list)); } catch (e) { /* kota */ }
+  return list.slice().reverse();
+}
+
+function renderLocal(d) {
+  const live = d.live, smart = d.smart, screen = d.screen;
+
+  const best = live.rows.length ? Math.max(...live.rows.map(r => r.ann_p25_pct)) : null;
+  document.getElementById('k1').textContent = d.scanned;
+  document.getElementById('k2').textContent = 'cihazda';
+  document.getElementById('k3').textContent = live.rows.filter(r => r.ok).length;
+  const k4 = document.getElementById('k4');
+  k4.textContent = best === null ? '—' : signed(best) + '%';
+  k4.className = 'val ' + cls(best);
+  document.getElementById('sub').textContent =
+    `YEREL MOD · ${d.scanned} sembol tarandı · ${d.stage1} akış · ${d.stage2} derin · ${d.elapsed}s · cihazda hesaplandı`;
+
+  const al = screen.rows.filter(r => r.signal === 'AL').length;
+  const sat = screen.rows.filter(r => r.signal === 'SAT').length;
+  const neg = live.rows.filter(r => r.funding_now_pct < 0).length;
+  const ins = [];
+  ins.push({ level: 'info', text: `${d.scanned} sembol ucuz veriyle tarandı; ${d.stage2} sembol derinlemesine incelendi. Tüm hesaplama bu cihazda yapıldı — sunucu yok.` });
+  if (al || sat) ins.push({ level: al > sat ? 'good' : 'bad', text: `${al} AL, ${sat} SAT etiketi. Bunlar ölçülmüş edge göstermedi; durum göstergesi.` });
+  if (neg) ins.push({ level: 'warn', text: `${neg} sembolde anlık funding negatif — o sembollerde carry için ödeme yaparsın.` });
+  ins.push({ level: 'info', text: 'Geçmiş zaman serisi ve 30 günlük analiz sunucuda birikir; yerel modda yalnızca anlık tarama vardır.' });
+  document.getElementById('insights').innerHTML =
+    ins.map(i => `<li class="${i.level}">${i.text}</li>`).join('');
+
+  renderLive(live);
+
+  smartPayload = smart; smartLoaded = true; renderSmart(smart);
+  screenPayload = screen; screenLoaded = true;
+  screen.alerts = localAlerts(screen.rows);
+  renderScreen(screen);
+
+  drawScoreChart(screen.rows.map(r => ({ symbol: r.symbol, score: r.score, entry_ok: r.signal === 'AL' })));
+  document.getElementById('scancount').textContent = d.scanned;
+  drawLineChart({ labels: [], series: [] });
+
+  // model bandı: sunucu yok, gömülü modelin ölçümleri
+  const M = window.LocalScan && LocalScan.MODEL;
+  if (M && M.generalizes) {
+    renderModelInfo({ available: true, generalizes: true, auc: M.auc,
+                      samples: 0, high_conf_mean: null, low_conf_mean: null, local: true });
+  }
+}
+
+/* ------------------------------- veri ------------------------------- */
+/* ---------------------- bulut verisi (GitHub Pages) ---------------------- */
+const CLOUD_KEY = 'fc_remote';
+function cloudUrl() {
+  try { return (localStorage.getItem(CLOUD_KEY) || '').trim(); } catch (e) { return ''; }
+}
+function saveCloud() {
+  const el = document.getElementById('cloudurl');
+  const v = (el.value || '').trim();
+  try { v ? localStorage.setItem(CLOUD_KEY, v) : localStorage.removeItem(CLOUD_KEY); }
+  catch (e) { /* kota */ }
+  document.getElementById('cloudstate').textContent = v ? 'kaydedildi' : 'silindi';
+  refresh(true);
+}
+/* Bulut data.json'u, API yokmuş gibi statik yükle. */
+function renderCloudPayload(d) {
+  if (d.analysis) renderAnalysis(d.analysis);
+  if (d.series) renderLine(d.series);
+  if (d.live) renderLive(d.live);
+  if (d.smart && d.smart.rows && d.smart.rows.length) {
+    staticSmart = d.smart; smartLoaded = true; smartPayload = d.smart;
+    if (tab === 'smart') renderSmart(d.smart);
+  }
+  if (d.screen && d.screen.rows && d.screen.rows.length) {
+    staticScreen = d.screen; screenLoaded = true; screenPayload = d.screen;
+    if (tab === 'screen') renderScreen(d.screen);
+  }
+  const when = d.generated_at ? new Date(d.generated_at).toLocaleString('tr-TR') : '—';
+  document.getElementById('sub').textContent = 'BULUT VERİSİ · ' + when + ' · tarama sunucuda';
+}
+
+/* Yerel tarama: sunucu yok, hesap bu cihazda. */
+async function refreshLocal(btn, st) {
+  try {
+    if (!localModelReady && window.LocalScan) {
+      localModelReady = await LocalScan.loadModel('learn.json')
+        || await LocalScan.loadModel('reports/learn.json');
+    }
+    st.innerHTML = '<span class="spin"></span> yerel tarama';
+    const d = await LocalScan.run({
+      minVol: 20, stage1N: 40, stage2N: 12,
+      onProgress: m => { st.innerHTML = '<span class="spin"></span> ' + m; },
+    });
+    renderLocal(d);
+    st.textContent = `yerel tarama · ${d.scanned} sembol · ${d.elapsed}s · ` +
+                     new Date().toLocaleTimeString('tr-TR');
+  } catch (e) {
+    st.innerHTML = '<span class="neg">yerel tarama hatası: ' + e.message + '</span>';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Yenile';
+    clearTimeout(timer);
+    timer = setTimeout(() => refresh(false), REFRESH_MS);
+  }
+}
+
+async function refresh(force) {
+  const btn = document.getElementById('refresh');
+  btn.disabled = true; btn.textContent = 'Yükleniyor…';
+  const st = document.getElementById('status');
+
+  // YEREL MOD: sunucu yok. Önce bulut adresi varsa onu dene, yoksa cihazda tara.
+  if (LOCAL_MODE) {
+    const cu = cloudUrl();
+    if (cu) {
+      try {
+        const d = await jget(cu, { cache: 'no-store' });
+        renderCloudPayload(d);
+        st.textContent = 'bulut · ' + new Date().toLocaleTimeString('tr-TR');
+        btn.disabled = false; btn.textContent = 'Yenile';
+        clearTimeout(timer);
+        timer = setTimeout(() => refresh(false), REFRESH_MS);
+        return;
+      } catch (e) {
+        st.textContent = 'bulut alınamadı — cihazda taranıyor…';
+      }
+    }
+    return refreshLocal(btn, st);
+  }
+
+  st.innerHTML = '<span class="spin"></span> analiz';
+  let staticMode = false, payload = null;
+
+  try {
+    // 1) Veri: API varsa oradan, yoksa statik dosyadan.
+    //    Render hatalari buraya DUSMEZ — aksi halde bir JS hatasi sayfayi
+    //    yanlislikla "statik mod"a gecirip asil hatayi gizliyordu.
+    try {
+      const all = await jget('/api/all', { cache: 'no-store' });
+      if (!all || !all.analysis) throw new Error('analiz yok');
+      payload = { analysis: all.analysis, series: all.series };
+    } catch (apiErr) {
+      // API yok. Sirada statik dosya var; o da yoksa cihazda tara.
+      try {
+        const d = await jget('data.json', { cache: 'no-store' });
+        payload = d; staticMode = true;
+      } catch (dataErr) {
+        if (window.LocalScan) {
+          LOCAL_MODE = true;
+          st.textContent = 'sunucu yok · cihazda taranıyor…';
+          return refreshLocal(btn, st);
+        }
+        throw new Error('veri kaynağı yok: ' + dataErr.message);
+      }
+    }
+
+    // 2) Render — gercek hata varsa gorunur olsun
+    renderAnalysis(payload.analysis);
+    renderLine(payload.series);
+
+    // 3) Canli bolum
+    if (staticMode) {
+      renderLive(payload.live);
+      // statik modda akilli para verisi data.json icinden gelir
+      if (payload.smart && payload.smart.rows && payload.smart.rows.length) {
+        staticSmart = payload.smart; smartLoaded = true; smartPayload = payload.smart;
+        if (tab === 'smart') renderSmart(payload.smart);
+      }
+      // statik modda AL/SAT taramasi da data.json icinden gelir
+      if (payload.screen && payload.screen.rows && payload.screen.rows.length) {
+        staticScreen = payload.screen; screenLoaded = true; screenPayload = payload.screen;
+        if (tab === 'screen') renderScreen(payload.screen);
+      }
+    } else {
+      st.textContent = 'canlı tarama bekleniyor…';
+      document.getElementById('livetable').innerHTML =
+        '<div class="empty"><span class="spin"></span> Binance taranıyor…</div>';
+      try {
+        const live = await jget(force ? '/api/refresh' : '/api/live');
+        renderLive(live);
+        if (force) {
+          const a2 = await jget('/api/all', { cache: 'no-store' });
+          renderAnalysis(a2.analysis); renderLine(a2.series);
+        }
+      } catch (liveErr) {
+        document.getElementById('livetable').innerHTML =
+          '<div class="empty neg">Canlı tarama alınamadı: ' + liveErr.message + '</div>';
+      }
+    }
+
+    st.textContent = (staticMode ? 'statik veri · ' : 'güncellendi · ') + new Date().toLocaleTimeString('tr-TR');
+    if (smartLoaded && tab === 'smart') loadSmart(force);
+  } catch (e) {
+    st.innerHTML = '<span class="neg">hata: ' + e.message + '</span>';
+  } finally {
+    btn.disabled = false;
+    if (btn.textContent === 'Yükleniyor…') btn.textContent = 'Yenile';
+    clearTimeout(timer);
+    timer = setTimeout(() => refresh(false), REFRESH_MS);
+  }
+}
+
+async function loadSmart(force) {
+  if (staticSmart) { smartLoaded = true; smartPayload = staticSmart; renderSmart(staticSmart); return; }
+  const host = document.getElementById('smarttable');
+  host.innerHTML = '<div class="empty"><span class="spin"></span> 12 sembol taranıyor (vadeli akış + OI + pozisyon)…</div>';
+  try {
+    const r = await jget(force ? '/api/smart/refresh' : '/api/smart');
+    if (!r.rows || !r.rows.length) {
+      host.innerHTML = '<div class="empty">Veri alınamadı' +
+        (r.failed ? ` (${r.failed}/${r.requested} sembol başarısız)` : '') + '.</div>';
+      return;
+    }
+    smartLoaded = true; smartPayload = r;
+    renderSmart(r);
+  } catch (e) {
+    host.innerHTML = '<div class="empty neg">Hata: ' + e.message + '</div>';
+  }
+}
+
+/* ----------------------------- genel görünüm ----------------------------- */
+function renderAnalysis(a) {
+  document.getElementById('k1').textContent = a.symbols.length;
+  document.getElementById('k2').textContent = a.scans;
+  document.getElementById('k3').textContent = a.symbols.filter(s => s.entry_ok).length;
+  const best = a.symbols.length ? Math.max(...a.symbols.map(s => s.p25_mean)) : null;
+  const bk = document.getElementById('k4');
+  bk.textContent = best === null ? '—' : signed(best) + '%';
+  bk.className = 'val ' + cls(best);
+  document.getElementById('scancount').textContent = a.scans;
+  document.getElementById('insights').innerHTML = (a.insights || [])
+    .map(i => `<li class="${i.level}">${i.text}</li>`).join('') || '<li class="info">Çıkarım yok.</li>';
+
+  const f = a.first_scan ? new Date(a.first_scan).toLocaleString('tr-TR') : '—';
+  const l = a.last_scan ? new Date(a.last_scan).toLocaleString('tr-TR') : '—';
+  document.getElementById('sub').textContent =
+    `ilk tarama ${f} · son tarama ${l} · tur maliyeti %${fmt(a.round_trip_cost_pct)}`;
+  drawScoreChart(a.symbols);
+}
+
+function renderLive(live) {
+  document.getElementById('liveinfo').textContent =
+    live ? ` · ${live.count} sembol · ${new Date(live.fetched_at).toLocaleTimeString('tr-TR')}` : '';
+  const host = document.getElementById('livetable');
+  if (!live || !live.rows.length) {
+    host.innerHTML = '<div class="empty">Uygun veri yok (hacim filtresi: 50M$).</div>'; return;
+  }
+  host.innerHTML = `<table><thead><tr>
+      <th>Sembol</th><th>Per</th><th>Şu an %</th><th>Ort. yıl %</th><th>Temkinli %</th>
+      <th>Pozitif %</th><th>Basis %</th><th>Hacim M$</th><th>Gün</th><th>Durum</th>
+    </tr></thead><tbody>
+    ${live.rows.slice(0, 18).map(r => `<tr>
+      <td><b>${r.symbol}</b></td>
+      <td class="muted">${r.interval_h}h</td>
+      <td class="${cls(r.funding_now_pct)}">${signed(r.funding_now_pct, 4)}</td>
+      <td class="${cls(r.ann_30d_pct)}">${signed(r.ann_30d_pct)}</td>
+      <td class="${cls(r.ann_p25_pct)}">${signed(r.ann_p25_pct)}</td>
+      <td class="muted">${fmt(r.pos_share_pct, 0)}</td>
+      <td class="${r.basis_pct > 0.3 ? 'neg' : 'muted'}">${signed(r.basis_pct, 3)}</td>
+      <td class="muted">${fmt(r.vol_musd, 0)}</td>
+      <td class="muted">${r.breakeven_days === null ? '∞' : fmt(r.breakeven_days, 1)}</td>
+      <td>${r.ok ? '<span class="tag ok">UYGUN</span>' : '<span class="tag no">GİRME</span>'}</td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+/* --------------------------- akıllı para görünüm --------------------------- */
+function renderSmart(r) {
+  const rows = r.rows;
+  const inBest = rows.reduce((a, b) => (b.net_24h_musd > a.net_24h_musd ? b : a), rows[0]);
+  const outWorst = rows.reduce((a, b) => (b.net_24h_musd < a.net_24h_musd ? b : a), rows[0]);
+  const whaleBuyers = rows.filter(x => x.whale_net_musd > 0).length;
+  const topScore = rows.reduce((a, b) => (b.score > a.score ? b : a), rows[0]);
+
+  document.getElementById('s1').textContent = money(inBest.net_24h_musd);
+  document.getElementById('s1s').textContent = inBest.symbol + ' · 24s net taker';
+  document.getElementById('s2').textContent = money(outWorst.net_24h_musd);
+  document.getElementById('s2s').textContent = outWorst.symbol + ' · 24s net taker';
+  document.getElementById('s3').textContent = whaleBuyers + ' / ' + rows.length;
+  document.getElementById('s4').textContent = fmt(topScore.score, 0);
+  document.getElementById('s4s').textContent = topScore.symbol + ' · 0-100';
+
+  document.getElementById('smartinfo').textContent =
+    ` · ${r.ok}/${r.requested} sembol` + (r.failed ? ` (${r.failed} başarısız)` : '') +
+    ` · ${new Date(r.fetched_at).toLocaleTimeString('tr-TR')}` + (r.cached ? ' · önbellek' : '');
+
+  const b = r.breadth || {};
+  const nIn = b.inflow_count || 0, nTot = b.total || rows.length, netT = b.net_total_musd || 0;
+  const tone = nIn >= nTot * 0.6 ? 'pos' : nIn <= nTot * 0.4 ? 'neg' : 'muted';
+  document.getElementById('breadth').innerHTML =
+    `<span>Piyasa genişliği:</span>
+     <b class="${tone}">${nIn}/${nTot} sembolde para girişi (%${fmt(b.inflow_pct || 0, 0)})</b>
+     <span class="muted">|</span>
+     <span>Toplam net akış: <b class="${cls(netT)}">${money(netT)}</b></span>
+     <span class="muted">|</span>
+     <span>Balina alıcı: <b>${b.whale_buy_count || 0}/${nTot}</b></span>`;
+
+  renderSmartTable(r);
+}
+
+function filterRows(rows) {
+  if (filter === 'in') return rows.filter(x => x.net_24h_musd > 0);
+  if (filter === 'whale') return rows.filter(x => x.whale_net_musd > 0);
+  if (filter === 'squeeze') return rows.filter(x =>
+    /Short kapat|Short birikimi|Long tasfiye/i.test(x.label));
+  return rows;
+}
+
+function renderSmartTable(r) {
+  const host = document.getElementById('smarttable');
+  const rows = filterRows(r.rows);
+  if (!rows.length) { host.innerHTML = '<div class="empty">Bu filtreye uyan sembol yok.</div>'; return; }
+
+  host.innerHTML = `<table><thead><tr>
+      <th>Sembol</th><th>24s</th><th>Fiyat 24s %</th><th>Net 24s $M</th><th>OI 24s %</th>
+      <th>TopLong %</th><th>Gap</th><th>Balina $M</th><th>Skor</th><th>Yorum</th>
+    </tr></thead><tbody>
+    ${rows.map((x, i) => `<tr class="rowclick" onclick="openSymbol('${x.symbol}')">
+      <td><b>${x.symbol}</b></td>
+      <td><canvas class="spark" data-i="${i}" width="86" height="22" style="width:86px;height:22px"></canvas></td>
+      <td class="${cls(x.price_chg)}">${signed(x.price_chg)}</td>
+      <td class="${cls(x.net_24h_musd)}">${money(x.net_24h_musd)}</td>
+      <td class="${cls(x.oi_chg_24h)}">${signed(x.oi_chg_24h)}</td>
+      <td class="${x.top_long_pct >= 50 ? 'pos' : 'neg'}">${fmt(x.top_long_pct, 1)}</td>
+      <td class="${cls(x.top_retail_gap)}">${signed(x.top_retail_gap, 1)}</td>
+      <td class="${cls(x.whale_net_musd)}">${money(x.whale_net_musd)}</td>
+      <td><span class="sbar"><i style="width:${x.score}%;background:${x.score >= 60 ? 'var(--good2)' : x.score >= 40 ? 'var(--warn)' : 'var(--bad)'}"></i></span>
+          <span class="muted" style="margin-left:5px">${fmt(x.score, 0)}</span></td>
+      <td style="text-align:left"><span class="tag ${x.tone}" title="${x.detail || ''}">${x.label}</span></td>
+    </tr>`).join('')}</tbody></table>`;
+
+  host.querySelectorAll('canvas.spark').forEach(cv => {
+    const row = rows[Number(cv.dataset.i)];
+    drawSpark(cv, row.spark, row.price_chg >= 0);
+  });
+}
+
+/* ------------------------------- canvas ------------------------------- */
+function renderLine(series) { drawLineChart(series); }
+
+function setupCanvas(cv) {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = cv.getBoundingClientRect();
+  const h = Number(cv.getAttribute('height')) || 290;
+  const w = rect.width || cv.width;
+  cv.width = w * dpr; cv.height = h * dpr;
+  cv.style.height = h + 'px';
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx, w, h };
+}
+
+function drawSpark(cv, data, up) {
+  if (!data || data.length < 2) return;
+  const ctx = cv.getContext('2d');
+  const w = 86, h = 22;
+  ctx.clearRect(0, 0, w, h);
+  const min = Math.min(...data), max = Math.max(...data);
+  const rng = (max - min) || 1;
+  ctx.beginPath();
+  data.forEach((v, i) => {
+    const x = (i / (data.length - 1)) * (w - 2) + 1;
+    const y = h - 2 - ((v - min) / rng) * (h - 4);
+    i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+  });
+  ctx.strokeStyle = up ? '#3fb950' : '#e5534b';
+  ctx.lineWidth = 1.3;
+  ctx.stroke();
+}
+
+function drawScoreChart(symbols) {
+  const cv = document.getElementById('scoreChart');
+  const { ctx, w, h } = setupCanvas(cv);
+  ctx.clearRect(0, 0, w, h);
+  if (!symbols || !symbols.length) {
+    ctx.fillStyle = '#8496ab'; ctx.font = '12px monospace'; ctx.fillText('Veri yok', 12, 24); return;
+  }
+  const items = symbols.slice(0, 10);
+  const padL = 104, padR = 44, padT = 8, padB = 8;
+  const rowH = Math.min(26, (h - padT - padB) / items.length);
+  items.forEach((s, i) => {
+    const y = padT + i * rowH;
+    const barW = ((w - padL - padR) * s.score) / 100;
+    ctx.fillStyle = '#e6edf3'; ctx.font = '11px monospace'; ctx.textAlign = 'right';
+    ctx.fillText(s.symbol.length > 11 ? s.symbol.slice(0, 10) + '…' : s.symbol,
+                 padL - 8, y + rowH * 0.62);
+    ctx.fillStyle = s.entry_ok ? 'rgba(63,185,80,.55)' : 'rgba(132,150,171,.32)';
+    ctx.fillRect(padL, y + rowH * 0.18, Math.max(barW, 1), rowH * 0.55);
+    ctx.fillStyle = s.entry_ok ? '#3fb950' : '#8496ab';
+    ctx.textAlign = 'left';
+    ctx.fillText(s.score.toFixed(0), padL + barW + 6, y + rowH * 0.62);
+  });
+}
+
+function drawLineChart(series) {
+  const cv = document.getElementById('lineChart');
+  const { ctx, w, h } = setupCanvas(cv);
+  ctx.clearRect(0, 0, w, h);
+  const labels = series.labels || [];
+  const ss = (series.series || []).filter(s => s.data.some(v => v !== null));
+  if (!labels.length || !ss.length) {
+    ctx.fillStyle = '#8496ab'; ctx.font = '12px monospace';
+    ctx.fillText('Zaman serisi için en az 2 tarama gerekir', 12, 24); return;
+  }
+  const padL = 50, padR = 14, padT = 48, padB = 28;
+  const all = ss.flatMap(s => s.data).filter(v => v !== null && !isNaN(v));
+  let min = Math.min(...all), max = Math.max(...all);
+  if (min === max) { min -= 1; max += 1; }
+  const span = max - min; min -= span * 0.1; max += span * 0.1;
+
+  const X = i => padL + (w - padL - padR) * (labels.length === 1 ? 0.5 : i / (labels.length - 1));
+  const Y = v => padT + (h - padT - padB) * (1 - (v - min) / (max - min));
+
+  ctx.strokeStyle = '#1a222e'; ctx.fillStyle = '#8496ab'; ctx.font = '10px monospace';
+  ctx.textAlign = 'right';
+  for (let k = 0; k <= 4; k++) {
+    const v = min + (max - min) * k / 4, y = Y(v);
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w - padR, y); ctx.stroke();
+    ctx.fillText(v.toFixed(1) + '%', padL - 6, y + 3);
+  }
+  if (min < 0 && max > 0) {
+    ctx.strokeStyle = '#38424f'; ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(padL, Y(0)); ctx.lineTo(w - padR, Y(0)); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  const colors = ['#4c9aff', '#3fb950', '#d29922', '#e5534b', '#a371f7', '#39c5cf'];
+  ss.forEach((s, si) => {
+    ctx.strokeStyle = colors[si % colors.length]; ctx.lineWidth = 1.8; ctx.beginPath();
+    let started = false;
+    s.data.forEach((v, i) => {
+      if (v === null || isNaN(v)) { started = false; return; }
+      if (!started) { ctx.moveTo(X(i), Y(v)); started = true; } else ctx.lineTo(X(i), Y(v));
+    });
+    ctx.stroke();
+    ctx.fillStyle = colors[si % colors.length];
+    s.data.forEach((v, i) => { if (v === null || isNaN(v)) return;
+      ctx.beginPath(); ctx.arc(X(i), Y(v), 2.2, 0, 7); ctx.fill(); });
+  });
+  ctx.textAlign = 'left'; ctx.font = '10px monospace';
+  ss.forEach((s, si) => {
+    const lx = 6 + (si % 4) * 104, ly = 12 + Math.floor(si / 4) * 15;
+    ctx.fillStyle = colors[si % colors.length]; ctx.fillRect(lx, ly - 5, 8, 3);
+    ctx.fillStyle = '#8496ab';
+    ctx.fillText(s.name.replace('USDT', '').replace('USDC', '').slice(0, 10), lx + 12, ly);
+  });
+  ctx.fillStyle = '#8496ab'; ctx.textAlign = 'center';
+  const step = Math.max(1, Math.ceil(labels.length / 5));
+  labels.forEach((l, i) => { if (i % step === 0) ctx.fillText(l, X(i), h - 8); });
+}
+
+function renderRuleCheck(rc) {
+  const host = document.getElementById('rulecheck');
+  if (!rc || !rc.available) {
+    host.className = 'warnbox';
+    host.innerHTML = 'Ölçülmüş performans yok. <code>python rule_backtest.py</code> çalıştırılınca buraya yazılır.';
+    return;
+  }
+  const parts = [];
+  let anyEdge = false;
+  for (const sig of ['AL', 'SAT']) {
+    const f = rc.forward && rc.forward[sig] && rc.forward[sig]['h24'];
+    if (!f) continue;
+    if (f.beats_random) anyEdge = true;
+    parts.push(`${sig} +24s <b class="${f.mean >= 0 ? 'pos' : 'neg'}">${signed(f.mean)}%</b> ` +
+               `<span class="muted">(rastgele %${fmt(f.percentile, 0)})</span>`);
+  }
+  if (!parts.length) { host.className = 'hidden'; return; }
+
+  const rm = rc.random && rc.random.h24 ? rc.random.h24.mean : null;
+  host.className = 'warnbox';
+  host.style.borderColor = anyEdge ? 'rgba(63,185,80,.45)' : 'rgba(229,83,75,.45)';
+  host.style.background = anyEdge ? 'rgba(63,185,80,.07)' : 'rgba(229,83,75,.07)';
+  host.innerHTML =
+    `<b>ÖLÇÜLMÜŞ SONUÇ (geçmiş ~20 gün, ${rc.symbols} sembol, ${(rc.signals.AL || 0) + (rc.signals.SAT || 0)} sinyal):</b> ` +
+    parts.join(' · ') +
+    (rm !== null ? ` · piyasa ortalaması ${signed(rm)}%` : '') +
+    ` — <b>${anyEdge ? 'rastgeleden ayrışıyor' : 'rastgele girişten ayırt edilemiyor'}</b>. ` +
+    (anyEdge ? '' : 'Bu etiketleri <u>alım/satım talimatı olarak kullanma</u>; durum göstergesi say.');
+}
+
+async function loadRuleCheck() {
+  try {
+    renderRuleCheck(await jget('/api/rulecheck'));
+  } catch (e) { /* sessiz: opsiyonel bilgi */ }
+}
+
+function renderModelInfo(m) {
+  const host = document.getElementById('modelinfo');
+  if (!m || !m.available) { host.className = 'hidden'; return; }
+  if (!m.generalizes) {
+    host.className = 'warnbox';
+    host.innerHTML = `<b>Öğrenilmiş model:</b> AUC ${fmt(m.auc, 3)} — görülmemiş veride genellemiyor, ` +
+                     `bu yüzden tahminler panele <b>konmadı</b>.`;
+    return;
+  }
+  const spread = (m.high_conf_mean === null || m.high_conf_mean === undefined) ? '' :
+    `yüksek güven %20 ort. <b class="pos">${signed(m.high_conf_mean)}%</b> · ` +
+    `düşük güven %20 ort. <b class="neg">${signed(m.low_conf_mean)}%</b>. `;
+  const trained = m.samples ? `${m.samples} görülmemiş tahmin · ` : '';
+  host.className = 'warnbox';
+  host.style.borderColor = 'rgba(76,154,255,.4)';
+  host.style.background = 'rgba(76,154,255,.06)';
+  host.innerHTML =
+    `<b>ÖĞRENİLMİŞ MODEL (walk-forward):</b> AUC <b>${fmt(m.auc, 3)}</b> · ${trained}${spread}` +
+    `<span class="muted">Tek rejim (düşen piyasa) testi — başka rejimde doğrulanmadı. ` +
+    `Değer 0-100: modelin +24s yukarı olasılığı; kuraldan bağımsız ikinci görüş.` +
+    `${m.local ? ' Ağırlıklar uygulamaya gömülü; sunucudaki haftalık eğitimle güncellenir.' : ''}</span>`;
+}
+
+async function loadModelInfo() {
+  try {
+    renderModelInfo(await jget('/api/model'));
+  } catch (e) { /* sessiz */ }
+}
+
+/* ------------------------- tarayıcı (AL / SAT) ------------------------- */
+async function loadScreen(force) {
+  if (staticScreen) {
+    screenLoaded = true; screenPayload = staticScreen;
+    renderScreen(staticScreen);
+    return;
+  }
+  loadRuleCheck();
+  loadModelInfo();
+  const host = document.getElementById('screentable');
+  host.innerHTML = '<div class="empty"><span class="spin"></span> 565 sembol ucuz veriyle taranıyor, adaylar derinleştiriliyor… (~15-30 sn)</div>';
+  try {
+    const r = await jget(force ? '/api/screener/refresh' : '/api/screener');
+    if (!r.rows || !r.rows.length) {
+      host.innerHTML = '<div class="empty">Tarama sonucu boş' +
+        (r.stats && r.stats.failed ? ` (${r.stats.failed} istek başarısız)` : '') + '.</div>';
+      return;
+    }
+    screenLoaded = true; screenPayload = r;
+    renderScreen(r);
+  } catch (e) {
+    host.innerHTML = '<div class="empty neg">Hata: ' + e.message + '</div>';
+  }
+}
+
+function setScreenFilter(f) {
+  screenFilter = f;
+  document.querySelectorAll('.chip[data-s]').forEach(c => c.classList.toggle('on', c.dataset.s === f));
+  if (screenPayload) renderScreen(screenPayload);
+}
+
+function renderScreen(r) {
+  const rows = r.rows || [];
+  const al = rows.filter(x => x.signal === 'AL').length;
+  const sat = rows.filter(x => x.signal === 'SAT').length;
+  document.getElementById('sc1').textContent = r.scanned_total;
+  document.getElementById('sc1s').textContent = `≥ ${r.min_vol}M$ hacim · ${r.elapsed_s}s`;
+  document.getElementById('sc2').textContent = al;
+  document.getElementById('sc3').textContent = sat;
+  document.getElementById('sc4').textContent = (r.alerts || []).length;
+  document.getElementById('sc4s').textContent = 'data/alerts.csv';
+  document.getElementById('screeninfo').textContent =
+    ` · akış ${r.stage1} → derin ${r.stage2} · ${(r.stats || {}).requests || 0} istek` +
+    (r.stats && r.stats.retries ? ` · ${r.stats.retries} retry` : '') +
+    (r.cached ? ' · önbellek' : '') +
+    (r.new_alerts ? ` · ${r.new_alerts} yeni alarm` : '');
+
+  // statik/bulut modunda AUC sunucudan gelmiyor; data.json'daki modele düş
+  const mhost = document.getElementById('modelinfo');
+  if (r.model && r.model.auc && mhost.classList.contains('hidden')) {
+    renderModelInfo({ available: true, generalizes: !!r.model.generalizes,
+                      auc: r.model.auc, samples: 0,
+                      high_conf_mean: null, low_conf_mean: null, local: false });
+  }
+
+  const shown = screenFilter === 'all' ? rows : rows.filter(x => x.signal === screenFilter);
+  const host = document.getElementById('screentable');
+  if (!shown.length) { host.innerHTML = '<div class="empty">Bu filtrede sembol yok.</div>'; }
+  else {
+    host.innerHTML = `<table><thead><tr>
+        <th>Sembol</th><th>24s</th><th>Sinyal</th><th>Koşul</th><th>Skor</th>
+        <th>Model P↑</th>
+        <th>Fiyat 24s %</th><th>Net 24s $M</th><th>OI 24s %</th><th>Gap</th>
+        <th>Balina $M</th><th>Funding %/yıl</th><th>Gerekçe</th>
+      </tr></thead><tbody>
+      ${shown.map(x => `<tr class="rowclick" onclick="openSymbol('${x.symbol}')">
+        <td><b>${x.symbol}</b></td>
+        <td><canvas class="spark" data-sym="${x.symbol}" width="76" height="20" style="width:76px;height:20px"></canvas></td>
+        <td><span class="sig ${x.signal}">${x.signal}</span></td>
+        <td>${x.conditions}</td>
+        <td><span class="sbar"><i style="width:${x.score}%;background:${x.score >= 60 ? 'var(--good2)' : x.score >= 40 ? 'var(--warn)' : 'var(--bad)'}"></i></span>
+            <span class="muted" style="margin-left:4px">${fmt(x.score, 0)}</span></td>
+        <td class="${probCls(x.prob)}">${x.prob === null || x.prob === undefined ? '—' : fmt(x.prob * 100, 0) + '%'}</td>
+        <td class="${cls(x.price_chg)}">${signed(x.price_chg)}</td>
+        <td class="${cls(x.net_24h_musd)}">${money(x.net_24h_musd)}</td>
+        <td class="${cls(x.oi_chg_24h)}">${signed(x.oi_chg_24h)}</td>
+        <td class="${cls(x.top_retail_gap)}">${signed(x.top_retail_gap, 1)}</td>
+        <td class="${cls(x.whale_net_musd)}">${money(x.whale_net_musd)}</td>
+        <td class="${cls(x.ann_funding_pct)}">${signed(x.ann_funding_pct, 0)}</td>
+        <td style="text-align:left" class="muted">${(x.reasons || []).slice(0, 3).join(', ')}</td>
+      </tr>`).join('')}</tbody></table>`;
+
+    host.querySelectorAll('canvas.spark').forEach(cv => {
+      const row = rows.find(y => y.symbol === cv.dataset.sym);
+      if (row) drawSpark(cv, row.spark, row.price_chg >= 0);
+    });
+  }
+  renderAlerts(r.alerts || []);
+}
+
+function renderAlerts(alerts) {
+  const host = document.getElementById('alertlist');
+  document.getElementById('alertinfo').textContent = alerts.length ? ` · son ${alerts.length} kayıt` : '';
+  if (!alerts.length) {
+    host.innerHTML = '<div class="empty">Henüz alarm yok. "Yenile" ile taze tarama yapıp alarm üret.</div>';
+    return;
+  }
+  host.innerHTML = `<table><thead><tr>
+      <th>Zaman</th><th>Sembol</th><th>Sinyal</th><th>Koşul</th><th>Fiyat %</th>
+      <th>Net 24s $M</th><th>Gap</th><th>Gerekçe</th>
+    </tr></thead><tbody>
+    ${alerts.map(a => `<tr>
+      <td class="muted">${new Date(a.ts).toLocaleString('tr-TR')}</td>
+      <td><b>${a.symbol}</b></td>
+      <td><span class="sig ${a.signal}">${a.signal}</span></td>
+      <td>${a.conditions}</td>
+      <td class="${cls(Number(a.price_chg))}">${signed(Number(a.price_chg))}</td>
+      <td class="${cls(Number(a.net_24h_musd))}">${money(Number(a.net_24h_musd))}</td>
+      <td class="${cls(Number(a.gap))}">${signed(Number(a.gap), 1)}</td>
+      <td style="text-align:left" class="muted">${a.reasons || ''}</td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+/* --------------------------- sembol detay modalı --------------------------- */
+function closeModal() { document.getElementById('overlay').classList.add('hidden'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+/* Yerel modda detay: sunucu yok, veriyi eldeki taramadan üretir. */
+function localDetailHtml(sym) {
+  const s = ((screenPayload && screenPayload.rows) || []).find(r => r.symbol === sym) || {};
+  const m = ((smartPayload && smartPayload.rows) || []).find(r => r.symbol === sym) || {};
+  if (!s.symbol && !m.symbol) return null;
+  const x = { ...m, ...s };
+  const tone = x.signal === 'AL' ? 'good' : x.signal === 'SAT' ? 'bad' : 'info';
+  const rows = [
+    ['Fiyat 24s', signed(x.price_chg) + '%', cls(x.price_chg)],
+    ['Net 1s', money(m.net_1h_musd), cls(m.net_1h_musd)],
+    ['Net 4s', money(m.net_4h_musd), cls(m.net_4h_musd)],
+    ['Net 24s', money(x.net_24h_musd), cls(x.net_24h_musd)],
+    ['Alım oranı', fmt(m.buy_ratio_24h, 1) + '%', ''],
+    ['OI 1s', signed(m.oi_chg_1h) + '%', cls(m.oi_chg_1h)],
+    ['OI 24s', signed(x.oi_chg_24h) + '%', cls(x.oi_chg_24h)],
+    ['OI büyüklüğü', fmt(m.oi_now_musd, 1) + 'M$', ''],
+    ['Büyük oyuncu long', fmt(m.top_long_pct, 1) + '%', ''],
+    ['Küçük hesap long', fmt(m.retail_long_pct, 1) + '%', ''],
+    ['Fark (gap)', signed(x.top_retail_gap, 1), cls(x.top_retail_gap)],
+    ['Balina net', money(x.whale_net_musd), cls(x.whale_net_musd)],
+    ['Balina payı', fmt(m.whale_share, 1) + '%', ''],
+    ['Funding yıllık', signed(x.ann_funding_pct, 1) + '%', cls(x.ann_funding_pct)],
+    ['Koşul', String(x.conditions ?? '—'), ''],
+    ['Skor', fmt(x.score, 0), ''],
+    ['Model P↑', (x.prob === null || x.prob === undefined) ? '—' : fmt(x.prob * 100, 0) + '%', ''],
+  ];
+  return `
+    <h3>${sym} <span class="tag ${tone}">${x.signal || '—'}</span>
+      <button onclick="closeModal()">Kapat</button></h3>
+    <div class="msub">Yerel tarama verisi — emir defteri ve geçmiş seriler sunucu gerektirir.</div>
+    <div class="mstats">${rows.map(([k, v, c]) => st(k, v, c)).join('')}</div>
+    <div class="mchart"><div class="mt">24 SAAT FİYAT (5m)</div>
+      <canvas id="chLocal" height="110"></canvas></div>
+    <div class="warnbox" style="margin-top:12px"><b>Gerekçe:</b>
+      ${(x.reasons || []).join(', ') || '—'}</div>`;
+}
+
+async function openSymbol(sym) {
+  const ov = document.getElementById('overlay'), mb = document.getElementById('modalBody');
+  ov.classList.remove('hidden');
+
+  // YEREL MOD: sunucu yok -> detay eldeki taramadan
+  if (LOCAL_MODE) {
+    const html = localDetailHtml(sym);
+    if (html) {
+      mb.innerHTML = html;
+      const m = ((smartPayload && smartPayload.rows) || []).find(r => r.symbol === sym);
+      if (m && m.spark && m.spark.length > 1) {
+        drawMulti(mb.querySelector('#chLocal'),
+                  [{ pts: m.spark.map((v, i) => ({ t: i, v })), color: '#4c9aff' }],
+                  { dec: 4, zero: false });
+      }
+      return;
+    }
+  }
+
+  mb.innerHTML = `<h3>${sym} <span class="spin"></span></h3><div class="msub">detay yükleniyor (emir defteri + geçmiş seriler)…</div>`;
+  try {
+    const d = await jget('/api/symbol/' + encodeURIComponent(sym));
+    if (d.error) throw new Error(d.error);
+    mb.innerHTML = detailHtml(d);
+
+    drawMulti(mb.querySelector('#chOI'), [{ pts: d.oi_hist, color: '#a371f7' }],
+              { unit: 'M$', dec: 1 });
+    drawMulti(mb.querySelector('#chRatio'),
+              [{ pts: d.top_hist, color: '#4c9aff' }, { pts: d.retail_hist, color: '#d29922' }],
+              { unit: '%', dec: 1, zero: false });
+    drawMulti(mb.querySelector('#chFund'), [{ pts: d.funding_hist, color: '#3fb950' }],
+              { unit: '%', dec: 4, zero: true });
+  } catch (e) {
+    mb.innerHTML = `<h3>${sym}</h3><div class="msub neg">Hata: ${e.message}</div>`;
+  }
+}
+
+function st(k, v, klass) {
+  return `<div class="mstat"><div class="k">${k}</div><div class="v ${klass || ''}">${v}</div></div>`;
+}
+
+function detailHtml(d) {
+  const bidPct = d.ob_bid_musd / ((d.ob_bid_musd + d.ob_ask_musd) || 1) * 100;
+  const wallTone = (a, b) => a > b * 1.8 ? 'pos' : b > a * 1.8 ? 'neg' : 'muted';
+  return `
+    <h3>${d.symbol} <span class="tag ${d.tone}">${d.label}</span></h3>
+    <div class="msub">${d.detail || ''}</div>
+
+    <div class="mstats">
+      ${st('Fiyat 24s', signed(d.price_chg) + '%', cls(d.price_chg))}
+      ${st('Net 1s', money(d.net_1h_musd), cls(d.net_1h_musd))}
+      ${st('Net 4s', money(d.net_4h_musd), cls(d.net_4h_musd))}
+      ${st('Net 24s', money(d.net_24h_musd), cls(d.net_24h_musd))}
+      ${st('OI 1s', signed(d.oi_chg_1h) + '%', cls(d.oi_chg_1h))}
+      ${st('OI 24s', signed(d.oi_chg_24h) + '%', cls(d.oi_chg_24h))}
+      ${st('Büyük oyuncu long', fmt(d.top_long_pct, 1) + '%', d.top_long_pct >= 50 ? 'pos' : 'neg')}
+      ${st('Küçük hesap long', fmt(d.retail_long_pct, 1) + '%', 'muted')}
+      ${st('Top−Retail fark', signed(d.top_retail_gap, 1), cls(d.top_retail_gap))}
+      ${st('Balina net', money(d.whale_net_musd), cls(d.whale_net_musd))}
+      ${st('Balina payı', fmt(d.whale_share, 1) + '%', 'muted')}
+      ${st('Akış skoru', fmt(d.score, 0), d.score >= 60 ? 'pos' : d.score >= 40 ? 'muted' : 'neg')}
+    </div>
+
+    <div class="mchart">
+      <div class="mt">Emir defteri dengesi (±%1, ${fmt(d.ob_bid_musd + d.ob_ask_musd, 1)}M$ derinlik)</div>
+      <div class="obbar">
+        <div class="b" style="width:${bidPct.toFixed(1)}%">bid ${fmt(d.ob_bid_musd, 1)}M</div>
+        <div class="a" style="width:${(100 - bidPct).toFixed(1)}%">ask ${fmt(d.ob_ask_musd, 1)}M</div>
+      </div>
+      <div class="muted" style="font-size:11px">
+        Dengesizlik <b class="${cls(d.ob_imbalance_pct)}">${signed(d.ob_imbalance_pct)}%</b>
+        · en büyük bid duvarı <b class="${wallTone(d.wall_bid_musd, d.wall_ask_musd)}">${fmt(d.wall_bid_musd, 2)}M$</b> (${signed(d.wall_bid_pct)}%)
+        · en büyük ask duvarı <b class="${wallTone(d.wall_ask_musd, d.wall_bid_musd)}">${fmt(d.wall_ask_musd, 2)}M$</b> (${signed(d.wall_ask_pct)}%)
+      </div>
+    </div>
+
+    <div class="mchart"><div class="mt">Açık pozisyon — son 48 saat (milyon $)</div>
+      <canvas id="chOI" height="86" style="width:100%"></canvas></div>
+
+    <div class="mchart"><div class="mt">Büyük oyuncu (mavi) vs küçük hesap (turuncu) long oranı — 48 saat</div>
+      <canvas id="chRatio" height="86" style="width:100%"></canvas></div>
+
+    <div class="mchart"><div class="mt">Funding geçmişi — 30 gün (her 8 saat)</div>
+      <canvas id="chFund" height="86" style="width:100%"></canvas></div>
+
+    <div class="note">
+      Emir defteri anlık bir fotoğraftır; büyük emirler iptal edilebilir (spoofing).
+      Geçmiş seriler Binance public API'den gelir. Bu panel yatırım tavsiyesi değildir.
+    </div>`;
+}
+
+function drawMulti(cv, series, opt) {
+  const o = opt || {};
+  const { ctx, w, h } = setupCanvas(cv);
+  ctx.clearRect(0, 0, w, h);
+  const list = (series || []).filter(s => s.pts && s.pts.length > 1);
+  if (!list.length) {
+    ctx.fillStyle = '#8496ab'; ctx.font = '11px monospace';
+    ctx.fillText('veri yok', 8, 16); return;
+  }
+  const all = list.flatMap(s => s.pts.map(p => p.v));
+  let min = Math.min(...all), max = Math.max(...all);
+  if (o.zero) { min = Math.min(min, 0); max = Math.max(max, 0); }
+  if (min === max) { min -= 1; max += 1; }
+  const pad = (max - min) * 0.1; min -= pad; max += pad;
+
+  const X = (i, n) => 44 + (w - 56) * (n <= 1 ? 0.5 : i / (n - 1));
+  const Y = v => 8 + (h - 24) * (1 - (v - min) / (max - min));
+
+  ctx.strokeStyle = '#1a222e'; ctx.lineWidth = 1;
+  for (let k = 0; k <= 2; k++) {
+    const y = 8 + (h - 24) * k / 2;
+    ctx.beginPath(); ctx.moveTo(44, y); ctx.lineTo(w - 12, y); ctx.stroke();
+  }
+  if (o.zero && min < 0 && max > 0) {
+    ctx.strokeStyle = '#38424f'; ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(44, Y(0)); ctx.lineTo(w - 12, Y(0)); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  list.forEach(s => {
+    ctx.strokeStyle = s.color; ctx.lineWidth = 1.6; ctx.beginPath();
+    s.pts.forEach((p, i) => {
+      const x = X(i, s.pts.length), y = Y(p.v);
+      i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+    });
+    ctx.stroke();
+  });
+
+  const f = v => (o.unit === '%' ? v.toFixed(o.dec || 2) + '%' : v.toFixed(o.dec || 1));
+  ctx.fillStyle = '#8496ab'; ctx.font = '9px monospace'; ctx.textAlign = 'right';
+  ctx.fillText(f(max), 40, 12);
+  ctx.fillText(f(min), 40, h - 6);
+  ctx.textAlign = 'left';
+  const last = list[0].pts[list[0].pts.length - 1].v;
+  ctx.fillStyle = list[0].color;
+  ctx.fillText(f(last), w - 52, 12);
+}
+
+window.addEventListener('resize', () => {
+  clearTimeout(window._rz);
+  window._rz = setTimeout(() => {
+    if (smartPayload) renderSmartTable(smartPayload);
+    refresh(false);
+  }, 250);
+});
+
+/* ---------------------- PWA: kurulum / çevrimdışı ---------------------- */
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBtn').classList.remove('hidden');
+});
+
+async function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') document.getElementById('installBtn').classList.add('hidden');
+  deferredPrompt = null;
+}
+
+function netState() {
+  const off = !navigator.onLine;
+  document.getElementById('netbadge').classList.toggle('hidden', !off);
+  if (off) document.getElementById('status').textContent = 'çevrimdışı · son bilinen veri';
+}
+window.addEventListener('online', () => netState());
+window.addEventListener('offline', netState);
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => { /* http/LAN: kurulum yok */ });
+  });
+}
+
+// kısayol derin bağlantısı: ?tab=screen | smart | genel
+const _tabParam = new URLSearchParams(location.search).get('tab');
+if (['genel', 'smart', 'screen'].includes(_tabParam)) setTab(_tabParam);
+const _cu = document.getElementById('cloudurl');
+if (_cu) _cu.value = cloudUrl();
+netState();
+
+refresh(false);
+</script>
+</body>
+</html>

@@ -1,0 +1,269 @@
+#!/usr/bin/env python3
+"""Funding carry dashboard — Flask API + tek sayfa arayuz.
+
+Calistir:
+    .venv/bin/python dashboard.py            # http://127.0.0.1:8080
+    .venv/bin/python dashboard.py --host 0.0.0.0 --port 8080
+
+Uclar:
+    GET /                arayuz
+    GET /api/analysis    birikmis veriden analiz + cikarimlar
+    GET /api/live        canli tarama (60 sn onbellek)
+    GET /api/series      grafik icin zaman serisi
+    GET /api/all         hepsi tek istekte (arayuz bunu kullaniyor)
+"""
+from __future__ import annotations
+
+import argparse
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+
+from flask import Flask, jsonify, send_from_directory
+
+import analytics
+import flow
+import funding_monitor as fm
+import screener
+
+ROOT = Path(__file__).parent
+app = Flask(__name__, static_folder=None)
+
+_live_cache: dict = {"ts": 0.0, "data": None}
+_smart_cache: dict = {"ts": 0.0, "data": None}
+_screen_cache: dict = {"ts": 0.0, "data": None}
+LIVE_TTL = 60      # saniye
+SMART_TTL = 120    # saniye — akilli para taramasi ~10-25 sn surer
+SCREEN_TTL = 180   # saniye — huni taramasi ~12-30 sn surer
+
+
+def live_data(save: bool = False) -> dict:
+    now = time.time()
+    if _live_cache["data"] is not None and now - _live_cache["ts"] < LIVE_TTL:
+        return _live_cache["data"]
+
+    df = fm.scan(min_ann=0.0, min_vol=50.0, top=40)
+    rows = []
+    if not df.empty:
+        for _, r in df.iterrows():
+            rows.append({
+                "symbol": r["symbol"],
+                "interval_h": int(r["interval_h"]),
+                "funding_now_pct": round(float(r["funding_now_pct"]), 5),
+                "ann_now_pct": round(float(r["ann_now_pct"]), 2),
+                "ann_30d_pct": round(float(r["ann_30d_pct"]), 2),
+                "ann_p25_pct": round(float(r["ann_p25_pct"]), 2),
+                "pos_share_pct": round(float(r["pos_share_pct"]), 1),
+                "basis_pct": round(float(r["basis_pct"]), 4),
+                "vol_musd": round(float(r["vol_musd"]), 0),
+                "breakeven_days": round(float(r["breakeven_days"]), 1)
+                                  if r["breakeven_days"] != float("inf") else None,
+                "ok": bool(r["funding_now_pct"] >= 0 and r["basis_pct"] < 0.3
+                           and r["ann_p25_pct"] > 0),
+            })
+        # ONEMLI: goruntuleme snapshot YAZMAZ. Aksi halde sayfayi her yenilemek
+        # "tarama sayisini" sisirir ve zaman serisi anlamsizlasir.
+        # Snapshot sadece gercek taramalarda (cron / 'scan' komutu) yazilir.
+        if save:
+            fm.save_snapshot(df)
+
+    out = {
+        "fetched_at": datetime.now(timezone.utc).isoformat(),
+        "cached": False,
+        "count": len(rows),
+        "rows": rows,
+    }
+    _live_cache.update({"ts": now, "data": out})
+    return out
+
+
+def smart_data(force: bool = False, top: int = 12) -> dict:
+    """Akilli para taramasi (vadeli akis + OI + buyuk oyuncu + balina izi)."""
+    now = time.time()
+    c = _smart_cache
+    if not force and c["data"] is not None and now - c["ts"] < SMART_TTL:
+        out = dict(c["data"])
+        out["cached"] = True
+        return out
+
+    res = flow.scan_smart_money(min_vol_musd=100.0, top=top, workers=2)
+    res["cached"] = False
+    res["ttl"] = SMART_TTL
+    if res.get("rows"):
+        c.update({"ts": now, "data": res})
+    return res
+
+
+@app.get("/")
+def index():
+    return send_from_directory(ROOT, "dashboard.html")
+
+
+@app.get("/manifest.json")
+def manifest():
+    return send_from_directory(ROOT, "manifest.json", mimetype="application/manifest+json")
+
+
+@app.get("/sw.js")
+def service_worker():
+    # SW kapsamı kök olmalı; ayrıca önbelleğe alınmamalı
+    r = send_from_directory(ROOT, "sw.js", mimetype="application/javascript")
+    r.headers["Cache-Control"] = "no-cache"
+    return r
+
+
+@app.get("/icons/<path:name>")
+def icons(name):
+    return send_from_directory(ROOT / "icons", name)
+
+
+@app.get("/local.js")
+def local_js():
+    return send_from_directory(ROOT, "local.js", mimetype="application/javascript")
+
+
+@app.get("/learn.json")
+def learn_json():
+    return send_from_directory(ROOT / "reports", "learn.json", mimetype="application/json")
+
+
+@app.get("/api/analysis")
+def api_analysis():
+    return jsonify(analytics.analyze())
+
+
+@app.get("/api/live")
+def api_live():
+    return jsonify(live_data())
+
+
+@app.get("/api/series")
+def api_series():
+    return jsonify(analytics.series_by_symbol(analytics.load()))
+
+
+@app.get("/api/symbol/<sym>")
+def api_symbol(sym: str):
+    """Tek sembol detayi (tiklama ile cagrilir, onbelleksiz)."""
+    sym = sym.upper()
+    if not sym.endswith(("USDT", "USDC", "BUSD")):
+        return jsonify({"error": "gecersiz sembol"}), 400
+    try:
+        return jsonify(flow.symbol_detail(sym))
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.get("/api/smart")
+def api_smart():
+    return jsonify(smart_data())
+
+
+@app.get("/api/smart/refresh")
+def api_smart_refresh():
+    return jsonify(smart_data(force=True))
+
+
+def screen_data(force: bool = False) -> dict:
+    """Tum sembol huni taramasi: AL / SAT / BEKLE + alarm listesi."""
+    now = time.time()
+    c = _screen_cache
+    if not force and c["data"] is not None and now - c["ts"] < SCREEN_TTL:
+        out = dict(c["data"])
+        out["cached"] = True
+        return out
+
+    res = screener.scan(min_vol=20.0, stage2_n=60, stage3_n=15, workers=2)
+    res["cached"] = False
+    res["alerts"] = screener.recent_alerts(30)
+    res["min_conditions"] = screener.MIN_CONDITIONS
+    if res.get("rows"):
+        c.update({"ts": now, "data": res})
+    return res
+
+
+@app.get("/api/screener")
+def api_screener():
+    return jsonify(screen_data())
+
+
+@app.get("/api/screener/refresh")
+def api_screener_refresh():
+    """Taze tarama + yeni alarmlari yaz."""
+    res = screen_data(force=True)
+    n = screener.write_alerts(res.get("rows", []))
+    res["new_alerts"] = n
+    res["alerts"] = screener.recent_alerts(30)
+    return jsonify(res)
+
+
+@app.get("/api/model")
+def api_model():
+    """Ogrenilmis modelin ozeti + walk-forward olcumleri (learn.json)."""
+    p = ROOT / "reports" / "learn.json"
+    if not p.exists():
+        return jsonify({"available": False, "hint": "python learn.py calistirilmadi"})
+    try:
+        import json
+        d = json.loads(p.read_text(encoding="utf-8"))
+        d["available"] = True
+        return jsonify(d)
+    except Exception as e:
+        return jsonify({"available": False, "error": str(e)})
+
+
+@app.get("/api/rulecheck")
+def api_rulecheck():
+    """Kuralin gecmis veride olculen performansi (rule_backtest.json)."""
+    import json
+    p = ROOT / "reports" / "rule_backtest.json"
+    if not p.exists():
+        return jsonify({"available": False,
+                        "hint": "python rule_backtest.py calistirilmadi"})
+    try:
+        d = json.loads(p.read_text(encoding="utf-8"))
+        d["available"] = True
+        return jsonify(d)
+    except Exception as e:
+        return jsonify({"available": False, "error": str(e)})
+
+
+@app.get("/api/alerts")
+def api_alerts():
+    return jsonify({"alerts": screener.recent_alerts(60)})
+
+
+@app.get("/api/all")
+def api_all():
+    """HIZLI uc: sadece yerel veriden analiz. Canli tarama YAPMAZ.
+
+    Sayfa once bunu cizer (aninda), canli tablo /api/live ile sonra dolar.
+    """
+    a = analytics.analyze()
+    return jsonify({
+        "analysis": a,
+        "series": analytics.series_by_symbol(analytics.load()),
+        "server_time": datetime.now(timezone.utc).isoformat(),
+    })
+
+
+@app.get("/api/refresh")
+def api_refresh():
+    """Onbellegi atlayip taze tarama yapar ve snapshot'a YAZAR (gercek tarama)."""
+    _live_cache["ts"] = 0.0
+    return jsonify(live_data(save=True))
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--host", default="127.0.0.1")
+    ap.add_argument("--port", type=int, default=8080)
+    ap.add_argument("--debug", action="store_true")
+    args = ap.parse_args()
+
+    print(f"Dashboard: http://{args.host}:{args.port}")
+    app.run(host=args.host, port=args.port, debug=args.debug, threaded=True)
+
+
+if __name__ == "__main__":
+    main()

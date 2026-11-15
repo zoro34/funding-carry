@@ -1,0 +1,86 @@
+name: Funding Scan
+
+# Bilgisayar KAPALIYKEN calisir: Binance public API'den funding tarar,
+# sonucu repoya commit eder ve GitHub Pages panelini gunceller.
+# Maliyet: 0 TL. Public repo'da dakika siniri yok, private repo'da ayda
+# 2000 ucretsiz dakika (bu is ~1 dk/calisma surer).
+
+on:
+  schedule:
+    # Saatlik (UTC). GitHub cron'u yogunlukta 5-30 dk gecikebilir.
+    # Public repo: Actions dakikasi sinirsiz -> saatlik ucretsiz.
+    # Private repo: ~1.5 dk/run x 24 = ~1080 dk/ay (2000 dk kotasina sigar).
+    # Daha seyrek istersen: "17 */6 * * *" (6 saatte bir).
+    - cron: "17 * * * *"
+  workflow_dispatch: {}   # elle tetikleme butonu
+
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Bagimliliklar
+        run: pip install pandas numpy requests
+
+      - name: Funding taramasi
+        run: python export_static.py
+
+      - name: Sayfa ciktisini hazirla (GitHub Pages -> /docs)
+        run: |
+          mkdir -p docs/icons
+          cp dashboard.html docs/index.html
+          cp data.json docs/data.json
+          cp manifest.json docs/manifest.json
+          cp sw.js docs/sw.js
+          cp local.js docs/local.js
+          cp reports/learn.json docs/learn.json
+          cp icons/*.png docs/icons/
+
+          # SW önbellek adını her deploy'da damgala: aksi halde tarayıcı eski
+          # kabuğu cache-first servis eder ve yeni arayüz hiç görünmez.
+          STAMP=$(date -u +%Y%m%d%H%M)
+          sed -i "s/funding-carry-[0-9A-Za-z]*/funding-carry-$STAMP/" docs/sw.js
+          grep -m1 "const CACHE" docs/sw.js
+
+      - name: Commit ve push
+        run: |
+          git config user.name  "funding-scan-bot"
+          git config user.email "funding-scan-bot@users.noreply.github.com"
+          git add -A data/funding_snapshots.csv data/smart_snapshots.csv data/alerts.csv data.json docs/
+          if git diff --cached --quiet; then
+            echo "Degisiklik yok, commit atlandi."
+          else
+            git commit -m "funding scan: $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git push
+          fi
+
+      - name: Ozet
+        run: |
+          echo "### Funding taramasi tamam" >> $GITHUB_STEP_SUMMARY
+          python - <<'PY' >> $GITHUB_STEP_SUMMARY
+          import json, pathlib
+          d = json.loads(pathlib.Path("data.json").read_text(encoding="utf-8"))
+          rows = d["live"]["rows"]
+          ok = [r for r in rows if r["ok"]]
+          print(f"\n- Izlenen sembol: **{len(rows)}**")
+          print(f"- Girise uygun: **{len(ok)}**")
+          print(f"- Birikmis tarama: **{d['analysis']['scans']}**\n")
+          if ok:
+              print("| Sembol | Temkinli %/yil | Anlik % | Basis % | Gun |")
+              print("|---|---|---|---|---|")
+              for r in sorted(ok, key=lambda x: -x["ann_p25_pct"])[:10]:
+                  print(f"| {r['symbol']} | {r['ann_p25_pct']:+.2f} | "
+                        f"{r['funding_now_pct']:+.4f} | {r['basis_pct']:+.3f} | "
+                        f"{r['breakeven_days']} |")
+          PY

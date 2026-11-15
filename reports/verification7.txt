@@ -1,0 +1,39 @@
+/tmp/hermes-verify-vKvYor.py:82: FutureWarning: Possible nested set at position 2
+  not any(re.match(pat, l) for l in commented.splitlines()),
+
+A) look-ahead test (en kritik)
+  PASS  veri yuklendi   [500 bar]
+  PASS  gelecek veriyi degistirmek kurali ETKILEMIYOR (no look-ahead)   [{'price_chg': np.float64(2.635708762985245), 'net_24h_musd': np.float64(485.5084884633007), 'whale_net_musd': 286.48878683840036, 'oi_chg_24h': np.float64(0.050826174974849536), 'top_retail_gap': np.float64(7.540000000000006), 'deep': True} vs {'price_chg': np.float64(2.635708762985245), 'net_24h_musd': np.float64(485.5084884633007), 'whale_net_musd': 286.48878683840036, 'oi_chg_24h': np.float64(0.050826174974849536), 'top_retail_gap': np.float64(7.540000000000006), 'deep': True}]
+
+B) olculmus sonuc dosyasi + ucu
+  PASS  rule_backtest.json var
+  PASS  forward/random/signals alanlari   [['forward', 'generated_at', 'random', 'signals', 'symbols']]
+  PASS  AL ve SAT ileri getirisi hesaplanmis
+  PASS  rastgele percentile kaydedilmis   [AL %58.9]
+  PASS  beats_random bayragi tutarli
+  PASS  /api/rulecheck available + veri   [available=True sembol=10]
+
+C) alarm degerlendirme (durust kucuk-orneklem davranisi)
+  PASS  exit 0
+  PASS  rapor yazildi
+  PASS  olgun sinyal yoksa 'Yorum yok' der   [istek: 12 · retry: 0]
+  PASS  olgunlasmamis sinyali saymaz
+
+D) telegram kontrolu (yorum satirina aldanmiyor)
+  PASS  token kontrolu gercek atama ariyor   [grep -qE "^[[:space:]]*TELEGRAM_BOT_TOKEN=[^[:space:]]"]
+  PASS  yorumlu satir token sayilmiyor   [1 yorumlu satir]
+  PASS  eski hatali desen yorumlu satiri YAKALARDI
+
+E) cron isleri
+  PASS  job: funding-carry-izleme
+  PASS  job: alts-screener-alarm
+  PASS  job: alarm-degerlendirme
+
+F) arayuz
+  PASS  olculmus sonuc bandi
+  PASS  uyari metni
+  PASS  rulecheck ucu cagriliyor
+
+==========================================================
+SONUC: 21 gecti, 0 kaldi
+==========================================================

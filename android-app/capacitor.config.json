@@ -1,0 +1,12 @@
+{
+  "appId": "com.suat.fundingcarry",
+  "appName": "Funding Carry",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": true
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}

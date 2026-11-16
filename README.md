@@ -122,7 +122,13 @@ Durdurmak için: `hermes cron list` → job id → kaldır.
 ```bash
 .venv/bin/python dashboard.py            # http://127.0.0.1:8080
 .venv/bin/python dashboard.py --host 0.0.0.0 --port 8080   # ağdan erişim
+bash launch_panel.sh                     # oturumdan bağımsız başlat
 ```
+
+**Test / doğrulama:** `.venv/bin/python smoke_carry.py` — carry depolama, funding
+matematiği (bağımsız toplamla karşılaştırma), API uçları + yazma koruması, statik
+gizlilik dönüşümü, panel JS sözdizimi. Geçen çıktı `reports/verification*.txt`'e yazılır.
+İzole geçici store kullanır, gerçek pozisyonlarına dokunmaz.
 
 Dört sekme (panel **KİRA GELİRİ** ile açılır):
 

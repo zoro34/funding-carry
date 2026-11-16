@@ -1,0 +1,10 @@
+smoke — 2026-11-16T07:03:19.695243+00:00
+
+[OK  ] carry: bos store — bos store -> count=0
+[OK  ] carry: ekleme + validasyon — ekleme + 4 gecersiz girdi reddedildi
+[OK  ] carry: funding matematigi + delta-notr — kira +1.22$ = bagimsiz +1.22$ | periyot 21 | bacak neti 0.06$
+[OK  ] api: /api/carry uclari + yazma korumasi — GET + 400/404/403 + ekle/sil dongusu
+[OK  ] export_static: gizlilik donusumu — tutarlar gizli + yuzdeler acik; CARRY_PUBLIC_AMOUNTS=1 ile aciliyor
+[OK  ] ui: dashboard.html JS sozdizimi — 1 script blogu sozdizimi gecerli
+
+6/6 gecti

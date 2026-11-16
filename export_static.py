@@ -14,10 +14,16 @@ from pathlib import Path
 
 import analytics
 import carry
+import carry_health
 import flow
 import funding_monitor as fm
+import health as health_mod
+import journal
 import paper
+import risk
 import screener
+import vol
+import xfund
 
 ROOT = Path(__file__).parent
 OUT = ROOT / "data.json"
@@ -134,6 +140,51 @@ def build() -> dict:
         paper_rep["prices"] = {}
         paper_rep["prices_error"] = str(e)
 
+
+    # 7) risk & sağlık (public: USD tutarlar gizli, oranlar açık)
+    try:
+        rp = risk.panel()
+        base = (rp.get("carry_notional") or 0) + (rp.get("paper_notional") or 0) or 1.0
+        risk_rep = {"available": True, "risk_level": rp["risk_level"], "verdict": rp["verdict"],
+                    "carry_positions": rp["carry_positions"],
+                    "paper_positions": rp["paper_positions"],
+                    "top_position_share_pct": rp["top_position_share_pct"],
+                    "btc_eth_share_pct": rp["btc_eth_share_pct"],
+                    "stress_pct": {k: round(v / base * 100, 2) for k, v in rp["stress"].items()},
+                    "worst_case_pct": round(rp["worst_case_usd"] / base * 100, 2),
+                    "amounts_hidden": True, "note": rp["net_delta_note"]}
+    except Exception as e:
+        risk_rep = {"available": False, "reason": str(e)}
+
+    try:
+        vol_rep = vol.all_regimes()
+    except Exception as e:
+        vol_rep = {"rows": [], "reason": str(e)}
+
+    try:
+        ch_rep = carry_health.all_health(20)
+    except Exception as e:
+        ch_rep = {"available": False, "rows": [], "reason": str(e)}
+
+    try:
+        xf_rep = xfund.compare()
+    except Exception as e:
+        xf_rep = {"rows": [], "reason": str(e)}
+
+    try:
+        jr_rep = journal.stats()
+    except Exception as e:
+        jr_rep = {"available": False, "note": str(e)}
+
+    try:
+        hs = health_mod.status()
+        health_rep = {"ok": hs["ok"], "summary": hs["summary"],
+                      "problems": hs["problems"],
+                      "checks": [{"name": c["name"], "ok": c["ok"], "detail": c.get("detail", "")}
+                                 for c in hs["checks"]]}
+    except Exception as e:
+        health_rep = {"ok": False, "summary": str(e), "problems": [str(e)], "checks": []}
+
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "mode": "static",
@@ -150,6 +201,12 @@ def build() -> dict:
         "carry": carry_rep,
         "dip": dip_rep,
         "paper": paper_rep,
+        "risk": risk_rep,
+        "vol": vol_rep,
+        "carry_health": ch_rep,
+        "xfund": xf_rep,
+        "journal": jr_rep,
+        "health": health_rep,
     }
 
 

@@ -673,6 +673,11 @@ function renderCloudPayload(d) {
     if (tab === 'carry') renderCarry(d.carry);
   }
   if (d.dip) { dipPayload = d.dip; if (tab === 'dip') renderDip(d.dip); }
+  if (d.risk || d.vol) {
+    cloudRisk = { risk: d.risk, vol: d.vol, carry_health: d.carry_health,
+                  xfund: d.xfund, journal: d.journal, health: d.health };
+    if (tab === 'risk') loadRiskHealth(false);
+  }
   if (d.paper) {
     d.paper.static = true; paperPayload = d.paper;
     if (tab === 'dip') renderPaper(d.paper);
@@ -868,11 +873,23 @@ async function jgetSafe(url) {
   try { return await jget(url); } catch (e) { return { error: e.message }; }
 }
 
+let cloudRisk = null;
+
 async function loadRiskHealth(force) {
+  /* Telefon/bulut modu: veriler data.json içinden gelir (sunucu yok) */
+  if (LOCAL_MODE) {
+    const b = cloudRisk || {};
+    return applyRiskHealth(b.risk || { error: 'bulut verisi yok' }, b.vol || { rows: [] },
+      b.carry_health || { rows: [] }, b.xfund || { rows: [] },
+      b.health || { error: 'bulut verisi yok' }, b.journal || { available: false });
+  }
   const [r, v, ch, xf, h, jr] = await Promise.all([
     jgetSafe('/api/risk'), jgetSafe('/api/vol'), jgetSafe('/api/carry-health'),
     jgetSafe('/api/xfund'), jgetSafe('/api/health'), jgetSafe('/api/journal')]);
+  applyRiskHealth(r, v, ch, xf, h, jr);
+}
 
+function applyRiskHealth(r, v, ch, xf, h, jr) {
   /* --- KPI --- */
   const setKpi = (id, txt, cls, sub) => {
     const el = document.getElementById(id);
@@ -883,9 +900,11 @@ async function loadRiskHealth(force) {
   };
   if (!r.error) {
     riskPayload = r;
-    setKpi('r1', fmt(r.gross_exposure, 0) + '$', 'muted', `${r.carry_positions} carry · ${r.paper_positions} yön`);
-    const worst = r.worst_case_usd || 0;
-    setKpi('r2', signed(worst, 2) + '$', cls(worst), 'basis ±%1 · funding dönüşü');
+    setKpi('r1', r.amounts_hidden ? '—$' : fmt(r.gross_exposure, 0) + '$', 'muted',
+      `${r.carry_positions} carry · ${r.paper_positions} yön`);
+    const worst = r.amounts_hidden ? (r.worst_case_pct || 0) : (r.worst_case_usd || 0);
+    setKpi('r2', r.amounts_hidden ? signed(worst, 2) + '%' : signed(worst, 2) + '$',
+      cls(worst), r.amounts_hidden ? 'notional yüzdesi' : 'basis ±%1 · funding dönüşü');
     setKpi('r3', String(r.risk_level || '—').toUpperCase(), r.risk_level === 'yuksek' ? 'neg' : r.risk_level === 'orta' ? 'muted' : 'pos', r.verdict);
   }
   if (!h.error) {
@@ -900,8 +919,8 @@ async function loadRiskHealth(force) {
     const label = { basis_plus_1pct: 'basis +%1 açılır', basis_minus_1pct: 'basis −%1 açılır',
                     funding_flip_3d: 'funding 3 gün tersine', single_symbol_minus_10pct: 'yön pozisyonu −%10' };
     rt.innerHTML = `<table><thead><tr><th>Senaryo</th><th>Etki (USD)</th></tr></thead><tbody>
-      ${Object.entries(r.stress || {}).map(([k, v]) => `<tr>
-        <td>${label[k] || k}</td><td class="${cls(v)}"><b>${signed(v, 2)}</b></td></tr>`).join('')}
+      ${Object.entries(r.amounts_hidden ? (r.stress_pct || {}) : (r.stress || {})).map(([k, v]) => `<tr>
+        <td>${label[k] || k}</td><td class="${cls(v)}"><b>${signed(v, 2)}${r.amounts_hidden ? '%' : ''}</b></td></tr>`).join('')}
       </tbody></table>
       <div class="note">Yoğunlaşma: en büyük pozisyon %${r.top_position_share_pct} · BTC/ETH payı %${r.btc_eth_share_pct}
       · ${r.net_delta_note}</div>`;

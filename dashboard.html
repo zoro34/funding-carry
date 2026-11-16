@@ -79,10 +79,10 @@
      Boylece bilgi "yana kaymaz", ekrana sigar. Kaydirma yalnizca yedek yol. */
   @media(max-width:640px){
     /* Mobil tablo sıkılaştırma: 390px'e sığsın, kaydırma gerekmesin */
-    #carrytable table,#smarttable table,#screentable table,#livetable table,#carrycand table{font-size:10px}
+    #carrytable table,#smarttable table,#screentable table,#livetable table,#carrycand table,#alertlist table{font-size:10px}
     #carrytable th,#carrytable td,#smarttable th,#smarttable td,
     #screentable th,#screentable td,#livetable th,#livetable td,
-    #carrycand th,#carrycand td{padding:4px 3px}
+    #carrycand th,#carrycand td,#alertlist th,#alertlist td{padding:4px 3px}
     #carrytable th,#smarttable th,#screentable th,#livetable th{white-space:nowrap}
     /* sembol altindaki uzun not ve skor cubugu mobilde yeri yiyor */
     #carrytable td > div{display:none}
@@ -118,6 +118,10 @@
     #screentable th:nth-child(10),#screentable td:nth-child(10),
     #screentable th:nth-child(11),#screentable td:nth-child(11),
     #screentable th:nth-child(12),#screentable td:nth-child(12){display:none}
+    #alertlist th:nth-child(1),#alertlist td:nth-child(1),
+    #alertlist th:nth-child(4),#alertlist td:nth-child(4),
+    #alertlist th:nth-child(5),#alertlist td:nth-child(5),
+    #alertlist th:nth-child(7),#alertlist td:nth-child(7){display:none}
   }
   tr.rowclick{cursor:pointer}
   .breadth{display:flex;gap:14px;flex-wrap:wrap;align-items:center;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:9px 13px;margin-bottom:11px;font-size:11.5px}
@@ -1225,7 +1229,7 @@ function renderAlerts(alerts) {
       <td class="${cls(Number(a.price_chg))}">${signed(Number(a.price_chg))}</td>
       <td class="${cls(Number(a.net_24h_musd))}">${money(Number(a.net_24h_musd))}</td>
       <td class="${cls(Number(a.gap))}">${signed(Number(a.gap), 1)}</td>
-      <td style="text-align:left" class="muted">${a.reasons || ''}</td>
+      <td class="wrapcell muted">${a.reasons || ''}</td>
     </tr>`).join('')}</tbody></table>`;
 }
 

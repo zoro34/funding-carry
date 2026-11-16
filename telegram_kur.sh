@@ -9,21 +9,24 @@ ENVF="$HOME/.hermes/.env"
 API="https://api.telegram.org"
 
 echo "== Telegram kurulumu =="
-echo "1) Telegram > @BotFather > /newbot > isim + kullanici adi (…bot ile bitsin)"
-echo "2) BotFather'in verdigi token'i asagiya yapistir (ekranda gorunmez)"
-echo "3) Bota Telegram'dan bir mesaj at (chat id icin), sonra Enter"
-echo
-
-read -rsp "Bot token: " TOKEN; echo
-if [ -z "${TOKEN:-}" ]; then echo "HATA: token bos"; exit 1; fi
-case "$TOKEN" in *:*) ;; *) echo "HATA: token '123456:ABC…' biciminde olmali"; exit 1;; esac
-
-# gercek atama var mi, yoksa ekle (yorum satirlarini degistirme)
 touch "$ENVF"; chmod 600 "$ENVF"
-grep -qE "^\s*TELEGRAM_BOT_TOKEN=\S" "$ENVF" && \
-  sed -i "s|^\s*TELEGRAM_BOT_TOKEN=.*|TELEGRAM_BOT_TOKEN=$TOKEN|" "$ENVF" || \
+
+# Token zaten kayitli mi? Varsa sormadan devam (chat id + test).
+HAVE=$(grep -oE "^\s*TELEGRAM_BOT_TOKEN=\S+" "$ENVF" | head -1 | cut -d= -f2-)
+if [ -n "${HAVE:-}" ]; then
+  TOKEN="$HAVE"
+  echo "token .env'de bulundu (…${TOKEN: -6}) — sormadan devam"
+else
+  echo "1) Telegram > @BotFather > /newbot > isim + kullanici adi (…bot ile bitsin)"
+  echo "2) BotFather'in verdigi token'i asagiya yapistir (ekranda gorunmez)"
+  echo "3) Bota Telegram'dan bir mesaj at (chat id icin), sonra Enter"
+  echo
+  read -rsp "Bot token: " TOKEN; echo
+  if [ -z "${TOKEN:-}" ]; then echo "HATA: token bos"; exit 1; fi
+  case "$TOKEN" in *:*) ;; *) echo "HATA: token '123456:ABC…' biciminde olmali"; exit 1;; esac
   printf 'TELEGRAM_BOT_TOKEN=%s\n' "$TOKEN" >> "$ENVF"
-echo "token kaydedildi: $ENVF (izin 600)"
+  echo "token kaydedildi: $ENVF (izin 600)"
+fi
 
 echo
 read -rp "Bota Telegram'dan bir mesaj attin mi? (Enter)" _

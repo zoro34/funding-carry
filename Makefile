@@ -13,5 +13,5 @@ test: lint
 
 lint:
 	$(PY) -m py_compile $(SRC)
-	@node --check /dev/stdin < /dev/null 2>/dev/null || true
-	@echo "py_compile: $(words $(SRC)) dosya OK"
+	@for f in *.sh .hermes/scripts/*.sh; do [ -f "$$f" ] && bash -n "$$f" || true; done
+	@echo "py_compile: $(words $(SRC)) dosya · bash -n: $(words $(wildcard *.sh)) betik OK"

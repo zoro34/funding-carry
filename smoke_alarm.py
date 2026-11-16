@@ -104,10 +104,28 @@ def t_cron():
     return f"exit 0 · log +{after - before} bayt"
 
 
+def t_tg_kur():
+    """telegram_kur.sh: token varsa sormadan gecer, gecersizse temiz uyarir, .env'i bozmaz."""
+    home = Path(tempfile.mkdtemp(prefix="smoke-tg-"))
+    (home / ".hermes").mkdir()
+    envf = home / ".hermes" / ".env"
+    envf.write_text("TELEGRAM_BOT_TOKEN=123456:FAKE-TEST\n", encoding="utf-8")
+    p = subprocess.run(["bash", str(ROOT / "telegram_kur.sh")], input="\n",
+                       capture_output=True, text=True, timeout=150,
+                       env={**os.environ, "HOME": str(home)})
+    assert p.returncode == 0, (p.returncode, (p.stdout + p.stderr)[-300:])
+    assert "sormadan devam" in p.stdout, "token varken prompt sordu"
+    assert "chat id bulunamadi" in p.stdout, "gecersiz token icin uyari yok"
+    assert envf.read_text(encoding="utf-8").strip() == "TELEGRAM_BOT_TOKEN=123456:FAKE-TEST", \
+        ".env degistirildi"
+    return "token varken prompt yok · gecersiz token temiz uyari · .env korundu"
+
+
 for name, fn in [("stop tetigi -> kapat + bildir", t_stop),
                  ("hedef tetigi -> kapat + gerceklesen", t_target),
                  ("dip ozeti cooldown", t_digest),
-                 ("cron sarmalayici paper_alarm.sh", t_cron)]:
+                 ("cron sarmalayici paper_alarm.sh", t_cron),
+                 ("telegram_kur.sh (kurulum akisi)", t_tg_kur)]:
     check(name, fn)
 
 print(f"alarm smoke — {datetime.now(timezone.utc).isoformat()}\n")

@@ -209,7 +209,8 @@ def t_local_paper():
     a = html.index("async function addPaper")
     b = html.index("async function closePaper", a)
     add = html[a:b]
-    assert "staticPaperMode()" in add and "prices[body.symbol]" in add,         "addPaper yerel dalı yok (telefonda pozisyon açılamaz)"
+    assert "staticPaperMode()" in add and "priceOf(body.symbol" in add, \
+        "addPaper yerel dalı yok (telefonda pozisyon açılamaz)"
     c = html.index("async function closePaper")
     close = html[c:c + 2000]
     assert "isLocal" in close and "lp.open.splice" in close, "closePaper yerel kapatma yok"
@@ -219,7 +220,25 @@ def t_local_paper():
     rep = json.loads((ROOT / "data.json").read_text(encoding="utf-8"))
     prices = (rep.get("paper") or {}).get("prices") or {}
     assert len(prices) >= 10, f"fiyat haritası boş ({len(prices)})"
-    return f"yerel depo + fiyat haritası ({len(prices)} sembol) + kapatma dalı"
+    # canli fiyat + stop/hedef uyarisi + kapananlar tablosu
+    for need, why in [("fapi.binance.com/fapi/v1/ticker/price", "canlı fiyat çağrısı"),
+                      ("refreshPrices", "fiyat tazeleme"),
+                      ("startLivePrices", "20 sn döngü"),
+                      ("stop/hedefe değdi", "stop/hedef uyarısı"),
+                      ("Kapananlar", "kapananlar tablosu"),
+                      ("priceOf", "fiyat seçimi (canlı → bulut)")]:
+        assert need in html, f"eksik: {why}"
+    assert "20000" in html, "canlı fiyat döngüsü 20 sn değil"
+    # tek dokunuş AL/KAPAT + sade arayüz
+    for need, why in [("quickOpen", "tek dokunuş AL"),
+                      ("OPENMAP", "açık pozisyon haritası (KAPAT)"),
+                      ('class="mini green"', "AL düğmesi"),
+                      ('class="mini red"', "KAPAT düğmesi"),
+                      ('id="qnot"', "tutar alanı")]:
+        assert need in html, f"eksik: {why}"
+    assert 'id="cloudurl"' not in html, "bulut adresi alanı hâlâ görünüyor (sadeleştirme geri alınmış)"
+    return (f"yerel depo + fiyat haritası ({len(prices)} sembol) + kapatma + "
+            f"canlı fiyat/uyarı/kapananlar + tek dokunuş AL/KAPAT")
 
 
 for name, fn in [("dip: kosul hesabi", t_flags),

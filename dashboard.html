@@ -152,6 +152,15 @@
   .verdict.bad{background:rgba(229,83,75,.07);border-color:rgba(229,83,75,.45)}
   .verdict.good{background:rgba(63,185,80,.07);border-color:rgba(63,185,80,.45)}
   .verdict.warn{background:rgba(210,153,34,.08);border-color:rgba(210,153,34,.42)}
+  .quickbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 10px;
+    padding:8px 10px;background:#111821;border:1px solid #1f2732;border-radius:9px;font-size:12px}
+  .quickbar input{width:90px;background:#0b0f14;border:1px solid #26303d;color:#dbe4ee;
+    padding:5px 7px;border-radius:6px}
+  .quickbar label{display:flex;gap:6px;align-items:center;margin:0}
+  .mini{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;
+    border:1px solid transparent;cursor:pointer}
+  .mini.green{background:#15351f;color:#6ee7a0;border-color:#1f6f3f}
+  .mini.red{background:#3a1417;color:#ff9aa2;border-color:#7a2a31}
   .verdict b{display:block;margin-bottom:4px;letter-spacing:.2px}
   .band{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:9px;margin-top:9px}
   .band .cell{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:9px 11px}
@@ -274,6 +283,11 @@
 
     <div class="card">
       <h2>Dipte Olanlar <span class="muted" style="text-transform:none;letter-spacing:0">7 günlük aralığın alt %10'u</span></h2>
+      <div class="quickbar">
+        <label>Tutar (USD) <input id="qnot" type="number" min="10" step="10" value="100"
+          onchange="localStorage.setItem('fc_quick_notional', this.value)"></label>
+        <span class="muted">Satırdaki <b>AL</b> bu tutarla açar · <b>KAPAT</b> açık olanı kapatır</span>
+      </div>
       <div id="diptable"><div class="empty"><span class="spin"></span> taranıyor…</div></div>
       <div class="note">Konum %: 0 = 7 günün dibi, 100 = tepesi. Liste dipte olanları üstte gösterir.
         <b>Bu bir alım listesi değil</b> — aşağıdaki ölçüm bandı neden olduğunu söylüyor.</div>
@@ -441,12 +455,6 @@
     <b>Yatırım tavsiyesi değildir.</b> Ölçüm ve izleme aracıdır; getiri garantisi yoktur.
     Delta-nötr pozisyon borsa karşı taraf riski taşır; kaldıraç kullanılırsa nötr olmaktan çıkar.
     <br>Veri: Binance public API (anahtar gerekmez) — vadeli piyasa. Her gerçek tarama <code>data/funding_snapshots.csv</code>'ye yazılır.
-    <div class="cloudrow">
-      <b>Bulut verisi:</b>
-      <input id="cloudurl" placeholder="https://kullanici.github.io/repo/data.json" autocomplete="off">
-      <button onclick="saveCloud()">Kaydet</button>
-      <span id="cloudstate"></span>
-    </div>
   </footer>
 </div>
 
@@ -488,13 +496,15 @@ function setTab(t) {
   document.getElementById('view-genel').classList.toggle('hidden', t !== 'genel');
   document.getElementById('view-smart').classList.toggle('hidden', t !== 'smart');
   document.getElementById('view-screen').classList.toggle('hidden', t !== 'screen');
+  const qn = document.getElementById('qnot');
+  if (qn && !qn.dataset.init) { qn.value = quickNotional(); qn.dataset.init = '1'; }
   document.getElementById('tab-carry').classList.toggle('active', t === 'carry');
   document.getElementById('tab-dip').classList.toggle('active', t === 'dip');
   document.getElementById('tab-genel').classList.toggle('active', t === 'genel');
   document.getElementById('tab-smart').classList.toggle('active', t === 'smart');
   document.getElementById('tab-screen').classList.toggle('active', t === 'screen');
   if (t === 'carry') loadCarry(false);
-  if (t === 'dip') { loadDip(false); loadPaper(false); }
+  if (t === 'dip') { loadDip(false); loadPaper(false); startLivePrices(); refreshPrices(); }
   if (t === 'smart') {
     // Veri zaten elde varsa (statik mod / onceki tarama) dogrudan ciz;
     // yoksa tara. Boylece sekme degisimi her zaman dolu bir tablo gosterir.
@@ -817,7 +827,7 @@ function renderDip(d) {
   if (!rows.length) { host.innerHTML = '<div class="empty">dip verisi yok</div>'; }
   else {
     host.innerHTML = `<table><thead><tr>
-        <th>Sembol</th><th>Konum %</th><th>24s %</th><th>Durum</th><th class="h-sm">41g olay</th>
+        <th>Sembol</th><th>Konum %</th><th>24s %</th><th>Durum</th><th class="h-sm">41g olay</th><th></th>
       </tr></thead><tbody>
       ${rows.slice(0, 20).map(r => `<tr>
         <td><b>${r.symbol}</b></td>
@@ -825,6 +835,10 @@ function renderDip(d) {
         <td class="${cls(r.chg_24h)}">${r.chg_24h === null ? '—' : signed(r.chg_24h)}</td>
         <td>${r.is_dip ? '<span class="tag no">DİP</span>' : r.pos_pct !== null && r.pos_pct <= 25 ? '<span class="tag warn">dipte yakın</span>' : '<span class="tag ok">normal</span>'}</td>
         <td class="muted h-sm">${r.dip_events_41d ?? '—'}</td>
+        <td>${(() => { const pos = OPENMAP()[r.symbol];
+          return pos
+            ? `<button class="mini red" onclick="closePaper('${pos.id}','${r.symbol}',${pos.local})">KAPAT</button>`
+            : `<button class="mini green" onclick="quickOpen('${r.symbol}')">AL</button>`; })()}</td>
       </tr>`).join('')}</tbody></table>`;
   }
 
@@ -863,8 +877,34 @@ const localPapers = () => {
 const saveLocalPapers = o => { try { localStorage.setItem(LP_KEY, JSON.stringify(o)); } catch (e) {} };
 const staticPaperMode = () => LOCAL_MODE || !!(paperPayload && paperPayload.static);
 
+let LIVE = {}, LIVE_AT = 0, LIVE_ERR = null, LIVE_TIMER = null;
+
+/* Telefonda/statik modda Binance'ten canli fiyat (CORS acik, tek istek tum semboller) */
+async function refreshPrices() {
+  if (!(LOCAL_MODE || staticPaperMode())) return;
+  try {
+    const r = await fetch('https://fapi.binance.com/fapi/v1/ticker/price');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const arr = await r.json();
+    const m = {};
+    for (const t of arr) m[t.symbol] = Number(t.price);
+    LIVE = m; LIVE_AT = Date.now(); LIVE_ERR = null;
+  } catch (e) { LIVE_ERR = e.message; }
+  if (paperPayload && (tab === 'dip')) renderPaper(paperPayload);
+}
+
+function startLivePrices() {
+  if (LIVE_TIMER) return;
+  LIVE_TIMER = setInterval(() => {
+    if (document.hidden) return;
+    if (tab === 'dip') refreshPrices();
+  }, 20000);
+}
+
+const priceOf = (sym, fallback) => LIVE[sym] || (fallback || {})[sym] || null;
+
 function localRow(x, prices) {
-  const now = prices[x.symbol];
+  const now = priceOf(x.symbol, prices);
   const p = now ? (now / x.entry_price - 1) * 100 : null;
   return { ...x, local: true, price_now: now || null, pnl_pct: p,
     pnl_usd: p === null ? null : p / 100 * x.notional_usd,
@@ -872,6 +912,50 @@ function localRow(x, prices) {
     to_stop_pct: p === null ? null : -x.stop_pct - p,
     to_target_pct: p === null ? null : x.target_pct - p,
     hours_open: (Date.now() - new Date(x.opened_at).getTime()) / 3.6e6 };
+}
+
+function OPENMAP() {
+  const m = {};
+  ((paperPayload && paperPayload.positions) || []).filter(x => x.status === 'open')
+    .forEach(x => { m[x.symbol] = { id: x.id, local: false }; });
+  if (staticPaperMode()) localPapers().open.forEach(x => { m[x.symbol] = { id: x.id, local: true }; });
+  return m;
+}
+
+const quickNotional = () => Number(localStorage.getItem('fc_quick_notional') || 100) || 100;
+
+function paperMsg(html) {
+  const el = document.getElementById('papermsg');
+  if (el) el.innerHTML = html;
+}
+
+async function quickOpen(sym) {
+  const notional = quickNotional();
+  if (staticPaperMode()) {
+    const p0 = priceOf(sym, (paperPayload && paperPayload.prices) || {});
+    if (!p0) { paperMsg(`<span class="neg">${sym} için fiyat yok — Binance USDT-M sembolü olmalı.</span>`); return; }
+    const def = (paperPayload && paperPayload.defaults) || { stop_pct: 4.75, target_pct: 2.38 };
+    const lp = localPapers();
+    lp.open.push({ id: 'L' + Date.now().toString(36), symbol: sym, side: 'LONG',
+      notional_usd: notional, entry_price: p0, stop_pct: def.stop_pct, target_pct: def.target_pct,
+      stop_price: p0 * (1 - def.stop_pct / 100), target_price: p0 * (1 + def.target_pct / 100),
+      opened_at: new Date().toISOString(), note: '', status: 'open' });
+    saveLocalPapers(lp);
+    paperMsg(`<span class="pos">${sym} ALIŞ — ${notional}$ · giriş ${px(p0)}</span>`);
+    if (paperPayload) renderPaper(paperPayload);
+    if (dipPayload) renderDip(dipPayload);
+    return;
+  }
+  try {
+    const r = await fetch('/api/paper/add', { method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ symbol: sym, notional_usd: notional }) });
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
+    paperMsg(`<span class="pos">${sym} açıldı</span>`);
+    renderPaper(d.paper);
+    if (dipPayload) renderDip(dipPayload);
+  } catch (e) { paperMsg(`<span class="neg">${e.message}</span>`); }
 }
 
 function renderPaper(p) {
@@ -925,6 +1009,49 @@ function renderPaper(p) {
       <td class="muted h-sm">${x.hours_open === null ? '—' : fmt(x.hours_open, 1) + ' sa'}</td>
       <td><button onclick="closePaper('${x.id}','${x.symbol}',${x.local ? 'true' : 'false'})" title="kapat">×</button></td>
     </tr>`).join('')}</tbody></table>`;
+
+  // --- stop / hedef uyarilari (canli fiyatla) ---
+  const hits = locals.filter(x => x.price_now && (
+    (x.stop_price && x.price_now <= x.stop_price) || (x.target_price && x.price_now >= x.target_price)));
+  if (hits.length) {
+    host.innerHTML = `<div class="verdict neg"><b>DİKKAT · stop/hedefe değdi</b>` +
+      hits.map(x => {
+        const stop = x.stop_price && x.price_now <= x.stop_price;
+        return `<br>${x.symbol}: ${px(x.price_now)} — ${stop ? 'STOP' : 'HEDEF'} seviyesinde ` +
+          `(${signed(x.pnl_pct)}%) <button onclick="closePaper('${x.id}','${x.symbol}',true)">kapat</button>`;
+      }).join('') + `</div>` + host.innerHTML;
+  }
+
+  // --- kapananlar ---
+  const closedAll = [
+    ...(p.positions || []).filter(x => x.status !== 'open').map(x => ({ ...x,
+      closed_price: x.closed_price || null,
+      closed_pnl_pct: x.closed_pnl_pct === undefined ? (x.pnl_pct || null) : x.closed_pnl_pct,
+      closed_pnl_usd: x.closed_pnl_usd === undefined ? null : x.closed_pnl_usd })),
+    ...(sm ? lp.closed.slice(-20) : [])];
+  if (closedAll.length) {
+    const sum = closedAll.reduce((a, x) => a + (Number(x.closed_pnl_pct) || 0), 0);
+    host.innerHTML += `<hr class="sep"><h2 style="margin:0 0 8px">Kapananlar
+      <span class="muted" style="text-transform:none;letter-spacing:0">${closedAll.length} işlem ·
+      ortalama ${signed(sum / closedAll.length)}%</span></h2>
+      <table><thead><tr><th>Sembol</th><th>Giriş</th><th>Çıkış</th><th>PnL %</th>
+      <th class="h-sm">PnL $</th><th class="h-sm">Kapanış</th></tr></thead><tbody>
+      ${closedAll.slice(-10).reverse().map(x => `<tr>
+        <td><b>${x.symbol}</b>${x.local ? '<div class="muted" style="font-size:10px">telefonda</div>' : ''}</td>
+        <td class="muted">${px(x.entry_price)}</td>
+        <td class="muted">${x.closed_price ? px(x.closed_price) : '—'}</td>
+        <td class="${cls(x.closed_pnl_pct)}"><b>${x.closed_pnl_pct === null || x.closed_pnl_pct === undefined ? '—' : signed(x.closed_pnl_pct)}</b></td>
+        <td class="muted h-sm">${x.closed_pnl_usd === null || x.closed_pnl_usd === undefined ? '—' : signed(x.closed_pnl_usd, 2)}</td>
+        <td class="muted h-sm">${x.closed_at ? String(x.closed_at).slice(5, 16).replace('T', ' ') : '—'}</td>
+      </tr>`).join('')}</tbody></table>`;
+  }
+
+  // --- fiyat kaynagi bilgisi ---
+  const src = LIVE_AT ? `canlı fiyat · ${new Date(LIVE_AT).toLocaleTimeString('tr-TR')}`
+    : (p.prices_at ? `bulut fiyatı · ${new Date(p.prices_at).toLocaleTimeString('tr-TR')}` : 'fiyat bekleniyor');
+  host.innerHTML += `<div class="note">${src}` +
+    (LIVE_ERR ? ` · canlı fiyat hatası: ${LIVE_ERR}` : '') +
+    (sm ? ' · telefonda açılan pozisyonlar bu cihazda saklanır, Telegram alarmı göndermez' : '') + '</div>';
 }
 
 async function loadPaper(force) {
@@ -945,7 +1072,7 @@ async function addPaper() {
   if (!body.symbol || !body.notional_usd) { msg.innerHTML = '<span class="neg">Sembol ve notional gerekli.</span>'; return; }
   if (staticPaperMode()) {
     const prices = (paperPayload && paperPayload.prices) || {};
-    const p0 = prices[body.symbol];
+    const p0 = priceOf(body.symbol, prices);
     if (!p0) {
       msg.innerHTML = `<span class="neg">${body.symbol} için fiyat yok. Binance USDT-M vadeli sembolü olmalı (ör. BTCUSDT) — listede değilse açılamaz.</span>`;
       return;
@@ -983,7 +1110,7 @@ async function closePaper(id, sym, isLocal) {
     const i = lp.open.findIndex(x => x.id === id);
     if (i < 0) { msg.innerHTML = '<span class="neg">pozisyon bulunamadı</span>'; return; }
     const x = lp.open.splice(i, 1)[0];
-    const now = ((paperPayload && paperPayload.prices) || {})[x.symbol];
+    const now = priceOf(x.symbol, (paperPayload && paperPayload.prices) || {});
     const pnl = now ? (now / x.entry_price - 1) * 100 : null;
     lp.closed.push({ ...x, status: 'closed', closed_at: new Date().toISOString(),
       closed_price: now || null, closed_pnl_pct: pnl,
@@ -991,6 +1118,7 @@ async function closePaper(id, sym, isLocal) {
     saveLocalPapers(lp);
     msg.innerHTML = `<span class="pos">${sym} kapatıldı — ${pnl === null ? 'fiyat yok' : signed(pnl) + '%'}</span>`;
     renderPaper(paperPayload);
+    if (dipPayload) renderDip(dipPayload);
     return;
   }
   try {

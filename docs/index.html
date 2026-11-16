@@ -86,8 +86,8 @@
     #carrytable th,#smarttable th,#screentable th,#livetable th{white-space:nowrap}
     /* yeni sekmelerde kolon gizleme sinifi */
     .h-sm{display:none}
-    #diptable table,#papertable table,#familytable table{font-size:10px}
-    #diptable th,#diptable td,#papertable th,#papertable td,#familytable th,#familytable td{padding:4px 3px}
+    #diptable table,#papertable table{font-size:10px}
+    #diptable th,#diptable td,#papertable th,#papertable td{padding:4px 3px}
     /* sembol altindaki uzun not ve skor cubugu mobilde yeri yiyor */
     #carrytable td > div{display:none}
     .sbar{width:34px}
@@ -148,10 +148,20 @@
   .tag{border-radius:999px;font-weight:600;letter-spacing:.2px}
   .btn-primary{background:linear-gradient(180deg,#3f8dff,#2f6fd0);border-color:transparent;color:#fff;font-weight:600}
   .btn-primary:hover{filter:brightness(1.08)}
+  #scoreChart,#lineChart{width:100%;display:block}
   .verdict{border-radius:9px;padding:11px 13px;margin-bottom:11px;font-size:12px;line-height:1.55;border:1px solid}
   .verdict.bad{background:rgba(229,83,75,.07);border-color:rgba(229,83,75,.45)}
   .verdict.good{background:rgba(63,185,80,.07);border-color:rgba(63,185,80,.45)}
   .verdict.warn{background:rgba(210,153,34,.08);border-color:rgba(210,153,34,.42)}
+  .quickbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 10px;
+    padding:8px 10px;background:#111821;border:1px solid #1f2732;border-radius:9px;font-size:12px}
+  .quickbar input{width:90px;background:#0b0f14;border:1px solid #26303d;color:#dbe4ee;
+    padding:5px 7px;border-radius:6px}
+  .quickbar label{display:flex;gap:6px;align-items:center;margin:0}
+  .mini{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;
+    border:1px solid transparent;cursor:pointer}
+  .mini.green{background:#15351f;color:#6ee7a0;border-color:#1f6f3f}
+  .mini.red{background:#3a1417;color:#ff9aa2;border-color:#7a2a31}
   .verdict b{display:block;margin-bottom:4px;letter-spacing:.2px}
   .band{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:9px;margin-top:9px}
   .band .cell{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:9px 11px}
@@ -211,7 +221,6 @@
   <div class="tabs">
     <button class="tab active" id="tab-carry" onclick="setTab('carry')">KİRA GELİRİ (CARRY)</button>
     <button class="tab" id="tab-dip" onclick="setTab('dip')">DİP &amp; POZİSYON</button>
-    <button class="tab" id="tab-aile" onclick="setTab('aile')">AİLE</button>
     <button class="tab" id="tab-genel" onclick="setTab('genel')">GENEL</button>
     <button class="tab" id="tab-smart" onclick="setTab('smart')">AKILLI PARA / BALİNA</button>
     <button class="tab" id="tab-screen" onclick="setTab('screen')">TARAYICI — AL / SAT</button>
@@ -275,6 +284,11 @@
 
     <div class="card">
       <h2>Dipte Olanlar <span class="muted" style="text-transform:none;letter-spacing:0">7 günlük aralığın alt %10'u</span></h2>
+      <div class="quickbar">
+        <label>Tutar (USD) <input id="qnot" type="number" min="10" step="10" value="100"
+          onchange="localStorage.setItem('fc_quick_notional', this.value)"></label>
+        <span class="muted">Satırdaki <b>AL</b> bu tutarla açar · <b>KAPAT</b> açık olanı kapatır</span>
+      </div>
       <div id="diptable"><div class="empty"><span class="spin"></span> taranıyor…</div></div>
       <div class="note">Konum %: 0 = 7 günün dibi, 100 = tepesi. Liste dipte olanları üstte gösterir.
         <b>Bu bir alım listesi değil</b> — aşağıdaki ölçüm bandı neden olduğunu söylüyor.</div>
@@ -309,43 +323,6 @@
       <div class="note">Stop/hedef boş bırakılırsa <b>ölçülen +24s çeyreklerinden</b> gelir
         (p25 → stop, p75 → hedef). Pozisyon açılınca, stop veya hedefe değince Telegram'a
         bildirim gider. Token yoksa mesajlar kuyruğa yazılır, panelde görünür.</div>
-    </div>
-  </section>
-
-  <!-- ============================== AİLE ============================== -->
-  <section id="view-aile" class="hidden">
-    <div class="verdict warn" id="ailenotice">
-      <b>Açık rızalı aile paneli</b>
-      Çocuğun cihazına kurulan <b>görünür</b> aile ajanı, ekran süresi ve uygulama kullanımını
-      paylaşır. <b>WhatsApp/mesaj içeriği okunmaz</b> — uçtan uca şifreli, hiçbir meşru uygulama
-      okuyamaz. Kamera, mikrofon, galeri erişimi yok.
-    </div>
-
-    <div class="kpis">
-      <div class="kpi"><div class="lbl">Çocuk</div><div class="val" id="f1">—</div><div class="sub" id="f1s">kayıtlı</div></div>
-      <div class="kpi"><div class="lbl">Eşleşen Cihaz</div><div class="val" id="f2">—</div><div class="sub">ajan kurulu</div></div>
-      <div class="kpi"><div class="lbl">Limiti Aşan</div><div class="val" id="f3">—</div><div class="sub">bugün</div></div>
-      <div class="kpi"><div class="lbl">Telegram</div><div class="val" id="f4">—</div><div class="sub">ihlal bildirimi</div></div>
-    </div>
-
-    <div class="card">
-      <h2>Çocuk Ekle <span class="muted" style="text-transform:none;letter-spacing:0">davet linki ile eşleşir</span></h2>
-      <div id="familyaddbox" class="hidden">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
-          <label style="font-size:11px">İsim<br><input id="fname" placeholder="Elif" style="width:150px"></label>
-          <label style="font-size:11px">Günlük limit (dk)<br><input id="flimit" type="number" min="0" step="15" placeholder="180" style="width:120px"></label>
-          <button class="btn-primary" onclick="addChild()">Çocuk ekle</button>
-        </div>
-        <div class="note" id="familymsg"></div>
-        <div class="note" id="invitelink" style="display:none"></div>
-      </div>
-      <div class="note">Ekledikten sonra çıkan <b>davet linki</b> çocuğun telefonunda açılır;
-        ajan uygulaması o linkle eşleşir. Link = eşleme anahtarı, kimseyle paylaşma.</div>
-    </div>
-
-    <div class="card">
-      <h2>Çocuklar <span class="muted" id="familyinfo" style="text-transform:none;letter-spacing:0"></span></h2>
-      <div id="familytable"><div class="empty"><span class="spin"></span> yükleniyor…</div></div>
     </div>
   </section>
 
@@ -479,12 +456,6 @@
     <b>Yatırım tavsiyesi değildir.</b> Ölçüm ve izleme aracıdır; getiri garantisi yoktur.
     Delta-nötr pozisyon borsa karşı taraf riski taşır; kaldıraç kullanılırsa nötr olmaktan çıkar.
     <br>Veri: Binance public API (anahtar gerekmez) — vadeli piyasa. Her gerçek tarama <code>data/funding_snapshots.csv</code>'ye yazılır.
-    <div class="cloudrow">
-      <b>Bulut verisi:</b>
-      <input id="cloudurl" placeholder="https://kullanici.github.io/repo/data.json" autocomplete="off">
-      <button onclick="saveCloud()">Kaydet</button>
-      <span id="cloudstate"></span>
-    </div>
   </footer>
 </div>
 
@@ -523,19 +494,18 @@ function setTab(t) {
   tab = t;
   document.getElementById('view-carry').classList.toggle('hidden', t !== 'carry');
   document.getElementById('view-dip').classList.toggle('hidden', t !== 'dip');
-  document.getElementById('view-aile').classList.toggle('hidden', t !== 'aile');
   document.getElementById('view-genel').classList.toggle('hidden', t !== 'genel');
   document.getElementById('view-smart').classList.toggle('hidden', t !== 'smart');
   document.getElementById('view-screen').classList.toggle('hidden', t !== 'screen');
+  const qn = document.getElementById('qnot');
+  if (qn && !qn.dataset.init) { qn.value = quickNotional(); qn.dataset.init = '1'; }
   document.getElementById('tab-carry').classList.toggle('active', t === 'carry');
   document.getElementById('tab-dip').classList.toggle('active', t === 'dip');
-  document.getElementById('tab-aile').classList.toggle('active', t === 'aile');
   document.getElementById('tab-genel').classList.toggle('active', t === 'genel');
   document.getElementById('tab-smart').classList.toggle('active', t === 'smart');
   document.getElementById('tab-screen').classList.toggle('active', t === 'screen');
   if (t === 'carry') loadCarry(false);
-  if (t === 'dip') { loadDip(false); loadPaper(false); }
-  if (t === 'aile') loadFamily(false);
+  if (t === 'dip') { loadDip(false); loadPaper(false); startLivePrices(); refreshPrices(); }
   if (t === 'smart') {
     // Veri zaten elde varsa (statik mod / onceki tarama) dogrudan ciz;
     // yoksa tara. Boylece sekme degisimi her zaman dolu bir tablo gosterir.
@@ -646,6 +616,11 @@ function renderCloudPayload(d) {
     d.carry.static = true; carryPayload = d.carry;
     if (tab === 'carry') renderCarry(d.carry);
   }
+  if (d.dip) { dipPayload = d.dip; if (tab === 'dip') renderDip(d.dip); }
+  if (d.paper) {
+    d.paper.static = true; paperPayload = d.paper;
+    if (tab === 'dip') renderPaper(d.paper);
+  }
   if (d.smart && d.smart.rows && d.smart.rows.length) {
     staticSmart = d.smart; smartLoaded = true; smartPayload = d.smart;
     if (tab === 'smart') renderSmart(d.smart);
@@ -733,6 +708,7 @@ async function refresh(force) {
     }
 
     // 2) Render — gercek hata varsa gorunur olsun
+    window.__payload = payload;
     renderAnalysis(payload.analysis);
     renderLine(payload.series);
 
@@ -829,130 +805,11 @@ function renderAnalysis(a) {
   drawScoreChart(a.symbols);
 }
 
-/* ----------------------------- AİLE PANELİ ----------------------------- */
-let familyPayload = null;
-
-const appName = pkg => String(pkg || '').replace(/^com\./, '').replace(/\./g, ' ')
-  .replace(/\b\w/g, c => c.toUpperCase()).slice(0, 22);
-
-function agoMin(m) {
-  if (m === null || m === undefined) return '—';
-  if (m < 1) return 'şimdi';
-  if (m < 60) return fmt(m, 0) + ' dk önce';
-  if (m < 1440) return fmt(m / 60, 1) + ' sa önce';
-  return fmt(m / 1440, 1) + ' gün önce';
-}
-
-function renderFamily(f) {
-  familyPayload = f;
-  const canWrite = !LOCAL_MODE && !f.static;
-  document.getElementById('familyaddbox').classList.toggle('hidden', !canWrite);
-  const t = f.totals || {};
-  document.getElementById('f1').textContent = t.children || 0;
-  document.getElementById('f2').textContent = (t.paired || 0) + ' / ' + (t.children || 0);
-  const f3 = document.getElementById('f3');
-  f3.textContent = t.over_limit || 0;
-  f3.className = 'val ' + (t.over_limit ? 'neg' : 'pos');
-  const tg = f.telegram || {};
-  const f4 = document.getElementById('f4');
-  f4.textContent = tg.configured ? 'BAĞLI' : 'YOK';
-  f4.className = 'val ' + (tg.configured ? 'pos' : 'neg');
-  document.getElementById('familyinfo').textContent = f.generated_at
-    ? ` · ${new Date(f.generated_at).toLocaleTimeString('tr-TR')} · ${t.reports || 0} rapor` : '';
-
-  const host = document.getElementById('familytable');
-  const rows = f.children || [];
-  if (!rows.length) {
-    host.innerHTML = '<div class="empty">Henüz çocuk eklenmedi. Yukarıdaki formdan ekle — ' +
-      'davet linkini çocuğun telefonunda açınca cihaz eşleşir.</div>';
-    return;
-  }
-  host.innerHTML = `<table><thead><tr>
-      <th>İsim</th><th>Cihaz</th><th>Son görülme</th><th>Bugün</th><th>Limit</th>
-      <th>En çok kullanılan</th><th class="h-sm">Konum</th><th class="h-sm">Pil</th><th></th>
-    </tr></thead><tbody>
-    ${rows.map(c => `<tr>
-      <td><b>${c.name}</b>${c.paired ? '' : '<div class="muted" style="font-size:10px">eşleşmedi</div>'}</td>
-      <td class="muted">${c.device || '—'}</td>
-      <td class="${c.minutes_since_seen === null ? 'muted' : (c.minutes_since_seen > 180 ? 'neg' : '')}">${agoMin(c.minutes_since_seen)}</td>
-      <td class="${c.over_limit ? 'neg' : ''}"><b>${c.screen_today_h || '—'}</b></td>
-      <td class="muted">${c.limit_min ? c.limit_min + ' dk' : '—'}</td>
-      <td class="wrapcell muted">${(c.top_apps || []).slice(0, 3).map(a => `${appName(a.pkg)} ${a.minutes}dk`).join(' · ') || '—'}</td>
-      <td class="muted h-sm">${c.location ? fmt(c.location.lat, 4) + ', ' + fmt(c.location.lon, 4) : '—'}</td>
-      <td class="muted h-sm">${c.battery === null || c.battery === undefined ? '—' : fmt(c.battery, 0) + '%'}</td>
-      <td>${canWrite ? `<button onclick="editRules('${c.id}','${c.name}',${c.limit_min || 0})" title="kural">⚙</button>
-        <button onclick="removeChild('${c.id}','${c.name}')" title="sil">×</button>` : ''}</td>
-    </tr>`).join('')}</tbody></table>
-    <div class="note">${f.notice || ''}</div>`;
-}
-
-async function loadFamily(force) {
-  const host = document.getElementById('familytable');
-  if (LOCAL_MODE) {
-    host.innerHTML = '<div class="empty">Aile paneli sunucu gerektirir (telefonda salt okuma yok).</div>';
-    return;
-  }
-  try { renderFamily(await jget('/api/family')); }
-  catch (e) {
-    host.innerHTML = `<div class="empty neg">Aile verisi alınamadı: ${e.message}` +
-      (String(e.message).includes('403') ? ' — bu panel sadece yerel makineden açılır.' : '') + '</div>';
-  }
-}
-
-async function addChild() {
-  const msg = document.getElementById('familymsg');
-  const body = { name: (document.getElementById('fname').value || '').trim(),
-                 daily_limit_min: Number(document.getElementById('flimit').value) || null };
-  if (!body.name) { msg.innerHTML = '<span class="neg">İsim gerekli.</span>'; return; }
-  msg.innerHTML = '<span class="spin"></span> ekleniyor…';
-  try {
-    const r = await fetch('/api/family/add', { method: 'POST',
-      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    const d = await r.json();
-    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
-    document.getElementById('fname').value = '';
-    document.getElementById('flimit').value = '';
-    msg.innerHTML = `<span class="pos">${d.child.name} eklendi.</span>`;
-    const box = document.getElementById('invitelink');
-    box.style.display = 'block';
-    box.innerHTML = `Davet linki: <code>${d.invite_url}</code><br>` +
-      `Eşleme anahtarı: <code>${d.child.invite}</code>`;
-    renderFamily(d.family);
-  } catch (e) { msg.innerHTML = `<span class="neg">${e.message}</span>`; }
-}
-
-async function editRules(id, name, limit) {
-  const v = prompt(`${name} için günlük ekran süresi limiti (dakika, 0 = sınırsız):`, limit || 180);
-  if (v === null) return;
-  const msg = document.getElementById('familymsg');
-  try {
-    const r = await fetch('/api/family/rules', { method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, daily_limit_min: Number(v) || 0 }) });
-    const d = await r.json();
-    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
-    msg.innerHTML = `<span class="pos">${name} limiti güncellendi.</span>`;
-    renderFamily(d.family);
-  } catch (e) { msg.innerHTML = `<span class="neg">${e.message}</span>`; }
-}
-
-async function removeChild(id, name) {
-  if (!confirm(name + ' kaydını silmek istiyor musun? (cihaz eşleşmesi de silinir)')) return;
-  const msg = document.getElementById('familymsg');
-  try {
-    const r = await fetch('/api/family/remove', { method: 'POST',
-      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
-    const d = await r.json();
-    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
-    msg.innerHTML = `<span class="pos">${name} silindi.</span>`;
-    renderFamily(d.family);
-  } catch (e) { msg.innerHTML = `<span class="neg">${e.message}</span>`; }
-}
-
 /* ---------------------- DİP & POZİSYON (paper) ---------------------- */
 let dipPayload = null, paperPayload = null;
 
 function verdictClass(v) {
+  if (v === 'goreli_avantaj') return 'warn';
   return v === 'olumlu' ? 'good' : (v === 'avantaj_yok' || v === 'kuyruk_piyangosu') ? 'bad' : 'warn';
 }
 
@@ -973,7 +830,7 @@ function renderDip(d) {
   if (!rows.length) { host.innerHTML = '<div class="empty">dip verisi yok</div>'; }
   else {
     host.innerHTML = `<table><thead><tr>
-        <th>Sembol</th><th>Konum %</th><th>24s %</th><th>Durum</th><th class="h-sm">41g olay</th>
+        <th>Sembol</th><th>Konum %</th><th>24s %</th><th>Durum</th><th class="h-sm">41g olay</th><th></th>
       </tr></thead><tbody>
       ${rows.slice(0, 20).map(r => `<tr>
         <td><b>${r.symbol}</b></td>
@@ -981,6 +838,10 @@ function renderDip(d) {
         <td class="${cls(r.chg_24h)}">${r.chg_24h === null ? '—' : signed(r.chg_24h)}</td>
         <td>${r.is_dip ? '<span class="tag no">DİP</span>' : r.pos_pct !== null && r.pos_pct <= 25 ? '<span class="tag warn">dipte yakın</span>' : '<span class="tag ok">normal</span>'}</td>
         <td class="muted h-sm">${r.dip_events_41d ?? '—'}</td>
+        <td>${(() => { const pos = OPENMAP()[r.symbol];
+          return pos
+            ? `<button class="mini red" onclick="closePaper('${pos.id}','${r.symbol}',${pos.local})">KAPAT</button>`
+            : `<button class="mini green" onclick="quickOpen('${r.symbol}')">AL</button>`; })()}</td>
       </tr>`).join('')}</tbody></table>`;
   }
 
@@ -1010,10 +871,103 @@ async function loadDip(force) {
   catch (e) { document.getElementById('diptable').innerHTML = `<div class="empty neg">dip verisi alınamadı: ${e.message}</div>`; }
 }
 
+/* --- telefon yerel kagıt pozisyonlar (bulut modunda ac/kapa) --- */
+const LP_KEY = 'fc_local_paper';
+const localPapers = () => {
+  try { return JSON.parse(localStorage.getItem(LP_KEY) || '{"open":[],"closed":[]}'); }
+  catch (e) { return { open: [], closed: [] }; }
+};
+const saveLocalPapers = o => { try { localStorage.setItem(LP_KEY, JSON.stringify(o)); } catch (e) {} };
+const staticPaperMode = () => LOCAL_MODE || !!(paperPayload && paperPayload.static);
+
+let LIVE = {}, LIVE_AT = 0, LIVE_ERR = null, LIVE_TIMER = null;
+
+/* Telefonda/statik modda Binance'ten canli fiyat (CORS acik, tek istek tum semboller) */
+async function refreshPrices() {
+  if (!(LOCAL_MODE || staticPaperMode())) return;
+  try {
+    const r = await fetch('https://fapi.binance.com/fapi/v1/ticker/price');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const arr = await r.json();
+    const m = {};
+    for (const t of arr) m[t.symbol] = Number(t.price);
+    LIVE = m; LIVE_AT = Date.now(); LIVE_ERR = null;
+  } catch (e) { LIVE_ERR = e.message; }
+  if (paperPayload && (tab === 'dip')) renderPaper(paperPayload);
+}
+
+function startLivePrices() {
+  if (LIVE_TIMER) return;
+  LIVE_TIMER = setInterval(() => {
+    if (document.hidden) return;
+    if (tab === 'dip') refreshPrices();
+  }, 20000);
+}
+
+const priceOf = (sym, fallback) => LIVE[sym] || (fallback || {})[sym] || null;
+
+function localRow(x, prices) {
+  const now = priceOf(x.symbol, prices);
+  const p = now ? (now / x.entry_price - 1) * 100 : null;
+  return { ...x, local: true, price_now: now || null, pnl_pct: p,
+    pnl_usd: p === null ? null : p / 100 * x.notional_usd,
+    r_multiple: p === null ? null : p / x.stop_pct,
+    to_stop_pct: p === null ? null : -x.stop_pct - p,
+    to_target_pct: p === null ? null : x.target_pct - p,
+    hours_open: (Date.now() - new Date(x.opened_at).getTime()) / 3.6e6 };
+}
+
+function OPENMAP() {
+  const m = {};
+  ((paperPayload && paperPayload.positions) || []).filter(x => x.status === 'open')
+    .forEach(x => { m[x.symbol] = { id: x.id, local: false }; });
+  if (staticPaperMode()) localPapers().open.forEach(x => { m[x.symbol] = { id: x.id, local: true }; });
+  return m;
+}
+
+const quickNotional = () => Number(localStorage.getItem('fc_quick_notional') || 100) || 100;
+
+function paperMsg(html) {
+  const el = document.getElementById('papermsg');
+  if (el) el.innerHTML = html;
+}
+
+async function quickOpen(sym) {
+  const notional = quickNotional();
+  if (staticPaperMode()) {
+    const p0 = priceOf(sym, (paperPayload && paperPayload.prices) || {});
+    if (!p0) { paperMsg(`<span class="neg">${sym} için fiyat yok — Binance USDT-M sembolü olmalı.</span>`); return; }
+    const def = (paperPayload && paperPayload.defaults) || { stop_pct: 4.75, target_pct: 2.38 };
+    const lp = localPapers();
+    lp.open.push({ id: 'L' + Date.now().toString(36), symbol: sym, side: 'LONG',
+      notional_usd: notional, entry_price: p0, stop_pct: def.stop_pct, target_pct: def.target_pct,
+      stop_price: p0 * (1 - def.stop_pct / 100), target_price: p0 * (1 + def.target_pct / 100),
+      opened_at: new Date().toISOString(), note: '', status: 'open' });
+    saveLocalPapers(lp);
+    paperMsg(`<span class="pos">${sym} ALIŞ — ${notional}$ · giriş ${px(p0)}</span>`);
+    if (paperPayload) renderPaper(paperPayload);
+    if (dipPayload) renderDip(dipPayload);
+    return;
+  }
+  try {
+    const r = await fetch('/api/paper/add', { method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ symbol: sym, notional_usd: notional }) });
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
+    paperMsg(`<span class="pos">${sym} açıldı</span>`);
+    renderPaper(d.paper);
+    if (dipPayload) renderDip(dipPayload);
+  } catch (e) { paperMsg(`<span class="neg">${e.message}</span>`); }
+}
+
 function renderPaper(p) {
   paperPayload = p;
-  const canWrite = !LOCAL_MODE && !p.static;
-  document.getElementById('paperaddbox').classList.toggle('hidden', !canWrite);
+  const sm = LOCAL_MODE || !!p.static;
+  document.getElementById('paperaddbox').classList.toggle('hidden', false);
+  const lp = localPapers();
+  const prices = p.prices || {};
+  const locals = sm ? lp.open.map(x => localRow(x, prices)) : [];
   if (p.defaults) {
     const st = document.getElementById('pstop'), tg = document.getElementById('ptgt');
     if (st && !st.placeholder.startsWith('0')) { st.placeholder = p.defaults.stop_pct; tg.placeholder = p.defaults.target_pct; }
@@ -1021,8 +975,12 @@ function renderPaper(p) {
       `Otomatik stop ${p.defaults.stop_pct}% · hedef ${p.defaults.target_pct}% — ${p.defaults.source}`;
   }
   const d1 = document.getElementById('d1'), d2 = document.getElementById('d2'), d3 = document.getElementById('d3');
-  d1.textContent = (p.open || 0) + (p.closed ? ` / ${p.closed}` : '');
-  d2.textContent = signed(p.unrealized_usd, 2) + '$'; d2.className = 'val ' + cls(p.unrealized_usd);
+  const openCount = sm ? ((p.positions || []).filter(x => x.status === 'open').length + locals.length)
+                       : (p.open || 0);
+  const closedCount = (p.closed || 0) + (sm ? lp.closed.length : 0);
+  const unreal = (p.unrealized_usd || 0) + locals.reduce((a, x) => a + (x.pnl_usd || 0), 0);
+  d1.textContent = openCount + (closedCount ? ` / ${closedCount}` : '');
+  d2.textContent = signed(unreal, 2) + '$'; d2.className = 'val ' + cls(unreal);
   d3.textContent = signed(p.realized_usd, 2) + '$'; d3.className = 'val ' + cls(p.realized_usd);
   const tg = p.telegram || {};
   const d4 = document.getElementById('d4');
@@ -1035,14 +993,15 @@ function renderPaper(p) {
     : 'Telegram bağlı değil: bot token + chat id gerekiyor (README → Telegram).';
 
   const host = document.getElementById('papertable');
-  const rows = (p.positions || []).filter(x => x.status === 'open');
+  const rows = [...(p.positions || []).filter(x => x.status === 'open'), ...locals];
   if (!rows.length) { host.innerHTML = '<div class="empty">Açık pozisyon yok.</div>'; return; }
   host.innerHTML = `<table><thead><tr>
       <th>Sembol</th><th>Giriş</th><th>Şimdi</th><th>PnL $</th><th>PnL %</th><th>R</th>
       <th class="h-sm">Stop</th><th class="h-sm">Hedef</th><th class="h-sm">Süre</th><th></th>
     </tr></thead><tbody>
     ${rows.map(x => `<tr>
-      <td><b>${x.symbol}</b>${x.note ? `<div class="muted" style="font-size:10px">${x.note}</div>` : ''}</td>
+      <td><b>${x.symbol}</b>${x.local ? '<div class="muted" style="font-size:10px">telefonda açıldı</div>'
+        : (x.note ? `<div class="muted" style="font-size:10px">${x.note}</div>` : '')}</td>
       <td class="muted">${px(x.entry_price)}</td>
       <td>${px(x.price_now)}</td>
       <td class="${cls(x.pnl_usd)}">${signed(x.pnl_usd, 2)}</td>
@@ -1051,8 +1010,51 @@ function renderPaper(p) {
       <td class="muted h-sm">${x.to_stop_pct === null ? '—' : signed(x.to_stop_pct, 1) + '%'}</td>
       <td class="muted h-sm">${x.to_target_pct === null ? '—' : signed(x.to_target_pct, 1) + '%'}</td>
       <td class="muted h-sm">${x.hours_open === null ? '—' : fmt(x.hours_open, 1) + ' sa'}</td>
-      <td>${canWrite ? `<button onclick="closePaper('${x.id}','${x.symbol}')" title="kapat">×</button>` : ''}</td>
+      <td><button onclick="closePaper('${x.id}','${x.symbol}',${x.local ? 'true' : 'false'})" title="kapat">×</button></td>
     </tr>`).join('')}</tbody></table>`;
+
+  // --- stop / hedef uyarilari (canli fiyatla) ---
+  const hits = locals.filter(x => x.price_now && (
+    (x.stop_price && x.price_now <= x.stop_price) || (x.target_price && x.price_now >= x.target_price)));
+  if (hits.length) {
+    host.innerHTML = `<div class="verdict neg"><b>DİKKAT · stop/hedefe değdi</b>` +
+      hits.map(x => {
+        const stop = x.stop_price && x.price_now <= x.stop_price;
+        return `<br>${x.symbol}: ${px(x.price_now)} — ${stop ? 'STOP' : 'HEDEF'} seviyesinde ` +
+          `(${signed(x.pnl_pct)}%) <button onclick="closePaper('${x.id}','${x.symbol}',true)">kapat</button>`;
+      }).join('') + `</div>` + host.innerHTML;
+  }
+
+  // --- kapananlar ---
+  const closedAll = [
+    ...(p.positions || []).filter(x => x.status !== 'open').map(x => ({ ...x,
+      closed_price: x.closed_price || null,
+      closed_pnl_pct: x.closed_pnl_pct === undefined ? (x.pnl_pct || null) : x.closed_pnl_pct,
+      closed_pnl_usd: x.closed_pnl_usd === undefined ? null : x.closed_pnl_usd })),
+    ...(sm ? lp.closed.slice(-20) : [])];
+  if (closedAll.length) {
+    const sum = closedAll.reduce((a, x) => a + (Number(x.closed_pnl_pct) || 0), 0);
+    host.innerHTML += `<hr class="sep"><h2 style="margin:0 0 8px">Kapananlar
+      <span class="muted" style="text-transform:none;letter-spacing:0">${closedAll.length} işlem ·
+      ortalama ${signed(sum / closedAll.length)}%</span></h2>
+      <table><thead><tr><th>Sembol</th><th>Giriş</th><th>Çıkış</th><th>PnL %</th>
+      <th class="h-sm">PnL $</th><th class="h-sm">Kapanış</th></tr></thead><tbody>
+      ${closedAll.slice(-10).reverse().map(x => `<tr>
+        <td><b>${x.symbol}</b>${x.local ? '<div class="muted" style="font-size:10px">telefonda</div>' : ''}</td>
+        <td class="muted">${px(x.entry_price)}</td>
+        <td class="muted">${x.closed_price ? px(x.closed_price) : '—'}</td>
+        <td class="${cls(x.closed_pnl_pct)}"><b>${x.closed_pnl_pct === null || x.closed_pnl_pct === undefined ? '—' : signed(x.closed_pnl_pct)}</b></td>
+        <td class="muted h-sm">${x.closed_pnl_usd === null || x.closed_pnl_usd === undefined ? '—' : signed(x.closed_pnl_usd, 2)}</td>
+        <td class="muted h-sm">${x.closed_at ? String(x.closed_at).slice(5, 16).replace('T', ' ') : '—'}</td>
+      </tr>`).join('')}</tbody></table>`;
+  }
+
+  // --- fiyat kaynagi bilgisi ---
+  const src = LIVE_AT ? `canlı fiyat · ${new Date(LIVE_AT).toLocaleTimeString('tr-TR')}`
+    : (p.prices_at ? `bulut fiyatı · ${new Date(p.prices_at).toLocaleTimeString('tr-TR')}` : 'fiyat bekleniyor');
+  host.innerHTML += `<div class="note">${src}` +
+    (LIVE_ERR ? ` · canlı fiyat hatası: ${LIVE_ERR}` : '') +
+    (sm ? ' · telefonda açılan pozisyonlar bu cihazda saklanır, Telegram alarmı göndermez' : '') + '</div>';
 }
 
 async function loadPaper(force) {
@@ -1071,6 +1073,26 @@ async function addPaper() {
     note: document.getElementById('pnote').value || '',
   };
   if (!body.symbol || !body.notional_usd) { msg.innerHTML = '<span class="neg">Sembol ve notional gerekli.</span>'; return; }
+  if (staticPaperMode()) {
+    const prices = (paperPayload && paperPayload.prices) || {};
+    const p0 = priceOf(body.symbol, prices);
+    if (!p0) {
+      msg.innerHTML = `<span class="neg">${body.symbol} için fiyat yok. Binance USDT-M vadeli sembolü olmalı (ör. BTCUSDT) — listede değilse açılamaz.</span>`;
+      return;
+    }
+    const def = (paperPayload && paperPayload.defaults) || { stop_pct: 4.75, target_pct: 2.38 };
+    const stop = body.stop_pct || def.stop_pct, tgt = body.target_pct || def.target_pct;
+    const lp = localPapers();
+    lp.open.push({ id: 'L' + Date.now().toString(36), symbol: body.symbol, side: 'LONG',
+      notional_usd: body.notional_usd, entry_price: p0, stop_pct: stop, target_pct: tgt,
+      stop_price: p0 * (1 - stop / 100), target_price: p0 * (1 + tgt / 100),
+      opened_at: new Date().toISOString(), note: body.note || '', status: 'open' });
+    saveLocalPapers(lp);
+    ['psym', 'pnot', 'pstop', 'ptgt', 'pnote'].forEach(id => { document.getElementById(id).value = ''; });
+    msg.innerHTML = `<span class="pos">${body.symbol} açıldı — giriş ${px(p0)} · telefonda saklanıyor</span>`;
+    renderPaper(paperPayload);
+    return;
+  }
   msg.innerHTML = '<span class="spin"></span> pozisyon açılıyor…';
   try {
     const r = await fetch('/api/paper/add', { method: 'POST',
@@ -1083,9 +1105,25 @@ async function addPaper() {
   } catch (e) { msg.innerHTML = `<span class="neg">${e.message}</span>`; }
 }
 
-async function closePaper(id, sym) {
+async function closePaper(id, sym, isLocal) {
   if (!confirm(sym + ' pozisyonunu kapatmak istiyor musun?')) return;
   const msg = document.getElementById('papermsg');
+  if (isLocal || String(id).startsWith('L')) {
+    const lp = localPapers();
+    const i = lp.open.findIndex(x => x.id === id);
+    if (i < 0) { msg.innerHTML = '<span class="neg">pozisyon bulunamadı</span>'; return; }
+    const x = lp.open.splice(i, 1)[0];
+    const now = priceOf(x.symbol, (paperPayload && paperPayload.prices) || {});
+    const pnl = now ? (now / x.entry_price - 1) * 100 : null;
+    lp.closed.push({ ...x, status: 'closed', closed_at: new Date().toISOString(),
+      closed_price: now || null, closed_pnl_pct: pnl,
+      closed_pnl_usd: pnl === null ? null : pnl / 100 * x.notional_usd });
+    saveLocalPapers(lp);
+    msg.innerHTML = `<span class="pos">${sym} kapatıldı — ${pnl === null ? 'fiyat yok' : signed(pnl) + '%'}</span>`;
+    renderPaper(paperPayload);
+    if (dipPayload) renderDip(dipPayload);
+    return;
+  }
   try {
     const r = await fetch('/api/paper/close', { method: 'POST',
       headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
@@ -1837,6 +1875,13 @@ function drawMulti(cv, series, opt) {
 }
 
 window.addEventListener('resize', () => {
+  try {
+    const p = window.__payload;
+    if (p && p.analysis) {
+      drawScoreChart(p.analysis.symbols);
+      if (p.series) drawLineChart(p.series);
+    }
+  } catch (e) {}
   clearTimeout(window._rz);
   window._rz = setTimeout(() => {
     if (smartPayload) renderSmartTable(smartPayload);
@@ -1876,7 +1921,7 @@ if ('serviceWorker' in navigator) {
 
 // kısayol derin bağlantısı: ?tab=screen | smart | genel
 const _tabParam = new URLSearchParams(location.search).get('tab');
-if (['carry', 'dip', 'aile', 'genel', 'smart', 'screen'].includes(_tabParam)) setTab(_tabParam);
+if (['carry', 'dip', 'genel', 'smart', 'screen'].includes(_tabParam)) setTab(_tabParam);
 const _cu = document.getElementById('cloudurl');
 if (_cu) _cu.value = cloudUrl();
 netState();

@@ -1,0 +1,8 @@
+
+[OK  ] paylasim: canli servis + bayt esitligi — 3770244 bayt, sha256 esit, 0.0.0.0:8090
+[OK  ] paylasim: dizin listesi — dizin listesinde APK gorunuyor
+[OK  ] betik: idempotent yeniden baslatma — iki kosu -> tek dinleyici, servis saglam
+[OK  ] paylasim: kapsam (sadece APK) — yalnizca FundingCarry-1.4.apk paylasimda (data/ ve pozisyonlar disarida)
+
+4/4 gecti
+KAPSAM DISI: fiziksel telefondan indirme/kurulum (bu makineden test edilemez), WiFi izolasyonu (AP isolation) — telefon ulasamazsa ayri konu.

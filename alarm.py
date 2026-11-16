@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import notify
+import watch
 import paper
 
 ROOT = Path(__file__).parent
@@ -26,6 +27,7 @@ def dip_digest() -> dict | None:
     except Exception:
         return None
     rows = [r for r in d.get("rows", []) if r.get("is_dip")]
+    rows = watch.filter_symbols(rows)          # sadece izlenen semboller (liste doluysa)
     if not rows:
         return None
     # ayni sembol seti 4 saatte bir bildirilir

@@ -326,6 +326,7 @@
         <button onclick="telegramTest()" id="tgtest">Telegram test mesajı</button>
         <button onclick="tgToggle()" id="tgtoggle">Telegram'ı aç / kapat</button>
         <span class="muted" id="tgstate" style="font-size:11px"></span>
+        <span class="muted" id="watchstate" style="font-size:11px;flex-basis:100%"></span>
       </div>
       <div class="note">Stop/hedef boş bırakılırsa <b>ölçülen +24s çeyreklerinden</b> gelir
         (p25 → stop, p75 → hedef). Pozisyon açılınca, stop veya hedefe değince Telegram'a
@@ -560,7 +561,7 @@ function setTab(t) {
   document.getElementById('tab-smart').classList.toggle('active', t === 'smart');
   document.getElementById('tab-screen').classList.toggle('active', t === 'screen');
   if (t === 'carry') loadCarry(false);
-  if (t === 'dip') { loadDip(false); loadPaper(false); startLivePrices(); refreshPrices(); }
+  if (t === 'dip') { loadWatch(); loadDip(false); loadPaper(false); startLivePrices(); refreshPrices(); }
   if (t === 'risk') loadRiskHealth(false);
   if (t === 'smart') {
     // Veri zaten elde varsa (statik mod / onceki tarama) dogrudan ciz;
@@ -673,6 +674,7 @@ function renderCloudPayload(d) {
     if (tab === 'carry') renderCarry(d.carry);
   }
   if (d.dip) { dipPayload = d.dip; if (tab === 'dip') renderDip(d.dip); }
+  if (d.watch) { cloudWatch = d.watch; WATCH = new Set(d.watch.symbols || []); WATCH_ACTIVE = !!WATCH.size; }
   if (d.risk || d.vol) {
     cloudRisk = { risk: d.risk, vol: d.vol, carry_health: d.carry_health,
                   xfund: d.xfund, journal: d.journal, health: d.health };
@@ -876,6 +878,38 @@ async function jgetSafe(url) {
 }
 
 let cloudRisk = null;
+let WATCH = new Set(), WATCH_ACTIVE = false, cloudWatch = null;
+
+async function loadWatch() {
+  if (LOCAL_MODE) {
+    const w = cloudWatch || { symbols: [] };
+    WATCH = new Set(w.symbols || []); WATCH_ACTIVE = !!WATCH.size;
+    return;
+  }
+  try {
+    const w = await jget('/api/watch');
+    WATCH = new Set(w.symbols || []); WATCH_ACTIVE = !!WATCH.size;
+  } catch (e) { /* sessiz */ }
+}
+
+async function toggleWatch(sym) {
+  if (LOCAL_MODE) {
+    paperMsg('<span class="neg">Bildirim listesi telefondan değiştirilemez — panelden veya Telegram\'dan /izle ' + sym + '</span>');
+    return;
+  }
+  const on = WATCH.has(sym);
+  try {
+    const r = await fetch(on ? '/api/watch/remove' : '/api/watch/add', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ symbols: [sym] }) });
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
+    WATCH = new Set(d.symbols || []); WATCH_ACTIVE = !!WATCH.size;
+    if (dipPayload) renderDip(dipPayload);
+    paperMsg(`<span class="pos">${sym} ${on ? 'bildirimden çıkarıldı' : 'bildirim listesine eklendi'}` +
+      (WATCH_ACTIVE ? ` · izlenen: ${[...WATCH].join(', ')}` : ' · liste boş, tüm dipte olanlar gelir') + '</span>');
+  } catch (e) { paperMsg(`<span class="neg">${e.message}</span>`); }
+}
 
 async function loadRiskHealth(force) {
   /* Telefon/bulut modu: veriler data.json içinden gelir (sunucu yok) */
@@ -1061,7 +1095,9 @@ function renderDip(d) {
         <th>Sembol</th><th>Konum %</th><th>24s %</th><th>Durum</th><th class="h-sm">41g olay</th><th></th>
       </tr></thead><tbody>
       ${rows.slice(0, 20).map(r => `<tr>
-        <td><b>${r.symbol}</b></td>
+        <td onclick="toggleWatch('${r.symbol}')" style="cursor:pointer"
+            title="${LOCAL_MODE ? 'bildirim listesi: panel/Telegram' : 'bildirime ekle/çıkar'}">
+          <b>${r.symbol}</b>${WATCH.has(r.symbol) ? ' 🔔' : ''}</td>
         <td class="${r.pos_pct !== null && r.pos_pct <= 10 ? 'neg' : r.pos_pct >= 90 ? 'pos' : 'muted'}">${r.pos_pct === null ? '—' : fmt(r.pos_pct, 1)}</td>
         <td class="${cls(r.chg_24h)}">${r.chg_24h === null ? '—' : signed(r.chg_24h)}</td>
         <td>${r.is_dip ? '<span class="tag no">DİP</span>' : r.pos_pct !== null && r.pos_pct <= 25 ? '<span class="tag warn">dipte yakın</span>' : '<span class="tag ok">normal</span>'}</td>
@@ -1264,6 +1300,10 @@ function renderPaper(p) {
     const b = document.getElementById(id);
     if (b) b.style.display = sm ? 'none' : '';
   });
+  const wl = document.getElementById('watchstate');
+  if (wl) wl.textContent = WATCH.size
+    ? `Bildirim yalnızca: ${[...WATCH].join(', ')} (${WATCH.size})`
+    : 'Bildirim: tüm dipte olanlar (liste boş) — sembol eklemek için listede sembole dokun';
   document.getElementById('tgstate').textContent = tgOn
     ? `Telegram açık · ${tg.pending_unsent || 0} bekleyen mesaj kuyrukta.`
     : (tg.has_token
@@ -1506,7 +1546,9 @@ function renderCarry(c) {
       <td>${p.warnings.length
             ? `<span class="tag no" title="${p.warnings.join(' | ')}">${p.delta_neutral ? 'UYARI' : 'RİSK'}</span>`
             : '<span class="tag ok">NORMAL</span>'}</td>
-      <td>${canWrite ? `<button onclick="removePosition('${p.id}','${p.symbol}')" title="sil">×</button>` : ''}</td>
+      <td>${canWrite
+        ? `<button onclick="removePosition('${p.id}','${p.symbol}')" title="sil">×</button>`
+        : '<span class="muted" style="font-size:10px">sunucuda</span>'}</td>
     </tr>`).join('')}</tbody></table>
     <div class="note">${(c.positions.flatMap(p => p.warnings.map(w => `${p.symbol}: ${w}`)).join(' · ')) || ''}</div>`;
 }

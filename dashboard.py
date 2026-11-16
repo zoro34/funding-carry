@@ -33,6 +33,7 @@ import journal
 import notify
 import paper
 import risk
+import watch
 import vol
 import xfund
 import screener
@@ -446,6 +447,35 @@ def api_carry_health():
 @app.get("/api/xfund")
 def api_xfund():
     return jsonify(_cached("xfund", 600, xfund.compare))
+
+
+
+@app.get("/api/watch")
+def api_watch():
+    return jsonify(watch.status())
+
+
+@app.post("/api/watch/add")
+def api_watch_add():
+    if not _write_allowed():
+        return jsonify({"error": "sadece yerel makineden"}), 403
+    d = request.get_json(silent=True) or {}
+    return jsonify(watch.add(*(d.get("symbols") or [d.get("symbol")])))
+
+
+@app.post("/api/watch/remove")
+def api_watch_remove():
+    if not _write_allowed():
+        return jsonify({"error": "sadece yerel makineden"}), 403
+    d = request.get_json(silent=True) or {}
+    return jsonify(watch.remove(*(d.get("symbols") or [d.get("symbol")])))
+
+
+@app.post("/api/watch/clear")
+def api_watch_clear():
+    if not _write_allowed():
+        return jsonify({"error": "sadece yerel makineden"}), 403
+    return jsonify(watch.clear())
 
 
 @app.post("/api/telegram/toggle")

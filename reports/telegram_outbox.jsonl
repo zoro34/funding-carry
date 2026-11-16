@@ -1,3 +1,7 @@
 {"ts": "2026-11-16T18:18:25.652377+00:00", "text": "<b>Funding Carry</b>\nTest mesajı — bildirim kanalı çalışıyor.", "key": "test", "status": "dry_run"}
 {"ts": "2026-11-16T18:19:01.601971+00:00", "text": "<b>Pozisyon elle kapatıldı</b> BTCUSDT\nPnL +0.00% (+0.01$)", "key": "close:5fa9f37d", "status": "error", "error": "<urlopen error [Errno 104] Connection reset by peer>"}
 {"ts": "2026-11-16T18:19:11.630241+00:00", "text": "<b>Funding Carry</b>\nTest mesajı — bildirim kanalı çalışıyor.", "key": "test", "status": "dry_run"}
+{"ts": "2026-11-16T18:26:19.844819+00:00", "text": "<b>Funding Carry</b>\nTest mesajı — bildirim kanalı çalışıyor.", "key": "test", "status": "dry_run"}
+{"ts": "2026-11-16T18:29:04.637240+00:00", "text": "<b>Funding Carry</b>\nTest mesajı — bildirim kanalı çalışıyor.", "key": "test", "status": "dry_run"}
+{"ts": "2026-11-16T18:29:14.887373+00:00", "text": "<b>Funding Carry</b>\nTest mesajı — bildirim kanalı çalışıyor.", "key": "test", "status": "dry_run"}
+{"ts": "2026-11-16T18:31:07.857809+00:00", "text": "<b>Funding Carry</b>\nTest mesajı — bildirim kanalı çalışıyor.", "key": "test", "status": "dry_run"}

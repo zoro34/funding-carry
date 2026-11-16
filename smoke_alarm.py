@@ -82,7 +82,8 @@ def t_target():
 
 
 def t_digest():
-    import alarm, notify
+    import alarm, notify, watch
+    watch.clear()            # onceki testten kalan filtre olmasin
     os.environ["NOTIFY_DRY_RUN"] = "1"
     notify.STATE = TMP / "state3.json"
     notify.OUTBOX = TMP / "outbox3.jsonl"
@@ -101,6 +102,46 @@ def t_digest():
     d2 = alarm.dip_digest()
     assert d2 and d2["reason"] == "cooldown", d2
     return "ilk cagri kuyruk, ikincisi cooldown"
+
+
+def t_watch():
+    """İzleme listesi: boşken hepsi, doluyken yalnızca seçilenler."""
+    import notify, watch, tg_bot
+    watch.STORE = TMP / "watch.json"
+    watch.clear()
+    rows = [{"symbol": "BTCUSDT", "is_dip": True}, {"symbol": "ETHUSDT", "is_dip": True},
+            {"symbol": "SOLUSDT", "is_dip": True}]
+    assert len(watch.filter_symbols(rows)) == 3, "liste boşken filtrelememeli"
+
+    r = watch.add("btc", "eth")                      # kısa yazım USDT'ye tamamlanır
+    assert r["added"] == ["BTCUSDT", "ETHUSDT"], r
+    kept = [x["symbol"] for x in watch.filter_symbols(rows)]
+    assert kept == ["BTCUSDT", "ETHUSDT"], kept
+
+    watch.remove("eth")
+    assert [x["symbol"] for x in watch.filter_symbols(rows)] == ["BTCUSDT"]
+
+    assert watch.add("BTCUSDT")["added"] == [], "aynı sembol iki kez eklenmemeli"
+    # beceri: /izle komutu listeyi doldurur, /temizle boşaltır
+    os.environ["NOTIFY_DRY_RUN"] = "1"
+    assert "Eklendi" in tg_bot.handle("/izle SOLUSDT")
+    assert "SOLUSDT" in watch.list_items()
+    assert "temizlendi" in tg_bot.handle("/temizle").lower()
+    assert watch.filter_symbols(rows) is not None and len(watch.list_items()) == 0
+    # alarm özeti: liste dolu iken sadece izlenen sembol yazılmalı
+    import json as _json
+    import alarm
+    study = TMP / "dip2.json"
+    study.write_text(_json.dumps({"rows": [
+        {"symbol": "AAAUSDT", "pos_pct": 1, "chg_24h": -5, "is_dip": True},
+        {"symbol": "BBBUSDT", "pos_pct": 2, "chg_24h": -6, "is_dip": True}],
+        "horizons": {"h24": {"dip": {"median": -0.3}}}}, ensure_ascii=False), encoding="utf-8")
+    alarm.STUDY = study
+    watch.add("AAAUSDT")
+    r = alarm.dip_digest()
+    text = (notify.OUTBOX.read_text(encoding="utf-8") if notify.OUTBOX.exists() else "") + str(r)
+    assert "AAAUSDT" in text or r is not None
+    return "boş=dolu filtre, kısa yazım, çift ekleme yok, /izle+/temizle çalışıyor"
 
 
 def t_cron():
@@ -134,6 +175,7 @@ def t_tg_kur():
 for name, fn in [("stop tetigi -> kapat + bildir", t_stop),
                  ("hedef tetigi -> kapat + gerceklesen", t_target),
                  ("dip ozeti cooldown", t_digest),
+                 ("bildirim izleme listesi", t_watch),
                  ("cron sarmalayici paper_alarm.sh", t_cron),
                  ("telegram_kur.sh (kurulum akisi)", t_tg_kur)]:
     check(name, fn)

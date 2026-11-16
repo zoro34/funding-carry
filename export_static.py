@@ -22,6 +22,7 @@ import journal
 import paper
 import risk
 import screener
+import watch
 import vol
 import xfund
 
@@ -208,6 +209,7 @@ def build() -> dict:
         "xfund": xf_rep,
         "journal": jr_rep,
         "health": health_rep,
+        "watch": watch.status(),
     }
 
 

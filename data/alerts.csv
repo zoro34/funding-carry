@@ -42,3 +42,6 @@ ts,symbol,signal,conditions,score,price_chg,net_24h_musd,oi_24h,gap,whale_net_mu
 2026-11-16T12:30:50.297728+00:00,AKEUSDT,AL,4,73.8,13.16,6.55,-12.82,1.6,1.22,0.0006309999999999999,0.7,para girisi; balina alici; buyuk>kucuk long; fiyat yukari
 2026-11-16T12:30:50.297728+00:00,TAOUSDT,AL,3,57.2,-3.7,0.14,-3.92,16.5,0.06,0.005,5.5,para girisi; balina alici; buyuk>kucuk long
 2026-11-16T12:30:50.297728+00:00,SUIUSDT,SAT,3,41.8,-3.27,2.03,-0.09,-2.0,-0.19,-0.0045639999999999995,-5.0,balina satici; buyuk<kucuk long; fiyat asagi
+2026-11-16T13:00:34.756957+00:00,LINKUSDT,AL,3,45.7,-2.63,3.96,-2.03,0.1,1.82,-0.001392,-1.5,para girisi; balina alici; buyuk>kucuk long
+2026-11-16T13:00:34.756957+00:00,DOGEUSDT,SAT,3,44.2,-1.75,3.16,-4.27,-0.8,-0.34,-0.003631,-4.0,balina satici; buyuk<kucuk long; fiyat asagi
+2026-11-16T13:30:48.451126+00:00,SHELLUSDT,AL,4,65.5,7.05,0.18,1.69,0.5,0.0,-0.016585,-18.2,para girisi; OI artiyor; buyuk>kucuk long; fiyat yukari

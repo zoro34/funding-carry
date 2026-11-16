@@ -74,8 +74,90 @@
   .sbar{display:inline-block;height:6px;border-radius:3px;background:#243040;vertical-align:middle;width:52px;position:relative;overflow:hidden}
   .sbar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
   .hidden{display:none}
-  #screentable,#smarttable,#livetable,#alertlist{overflow-x:auto}
+  #screentable,#smarttable,#livetable,#alertlist,#carrytable,#carrycand{overflow-x:auto}
+  /* Telefon (<=640px): genis tablolarin ikincil kolonlarini gizle.
+     Boylece bilgi "yana kaymaz", ekrana sigar. Kaydirma yalnizca yedek yol. */
+  @media(max-width:640px){
+    /* Mobil tablo sıkılaştırma: 390px'e sığsın, kaydırma gerekmesin */
+    #carrytable table,#smarttable table,#screentable table,#livetable table,#carrycand table,#alertlist table{font-size:10px}
+    #carrytable th,#carrytable td,#smarttable th,#smarttable td,
+    #screentable th,#screentable td,#livetable th,#livetable td,
+    #carrycand th,#carrycand td,#alertlist th,#alertlist td{padding:4px 3px}
+    #carrytable th,#smarttable th,#screentable th,#livetable th{white-space:nowrap}
+    /* yeni sekmelerde kolon gizleme sinifi */
+    .h-sm{display:none}
+    #diptable table,#papertable table{font-size:10px}
+    #diptable th,#diptable td,#papertable th,#papertable td{padding:4px 3px}
+    /* sembol altindaki uzun not ve skor cubugu mobilde yeri yiyor */
+    #carrytable td > div{display:none}
+    .sbar{width:34px}
+    /* gerekce/yorum hucresi: uzun metin tabloyu sismesin */
+    .wrapcell{max-width:120px;white-space:normal;text-align:left}
+    #carrytable th:nth-child(3),#carrytable td:nth-child(3),
+    #carrytable th:nth-child(5),#carrytable td:nth-child(5),
+    #carrytable th:nth-child(7),#carrytable td:nth-child(7),
+    #carrytable th:nth-child(8),#carrytable td:nth-child(8),
+    #carrytable th:nth-child(10),#carrytable td:nth-child(10),
+    #carrytable th:nth-child(11),#carrytable td:nth-child(11),
+    #carrytable th:nth-child(12),#carrytable td:nth-child(12){display:none}
+    #carrycand th:nth-child(3),#carrycand td:nth-child(3),
+    #carrycand th:nth-child(5),#carrycand td:nth-child(5),
+    #carrycand th:nth-child(7),#carrycand td:nth-child(7),
+    #carrycand th:nth-child(8),#carrycand td:nth-child(8){display:none}
+    #livetable th:nth-child(2),#livetable td:nth-child(2),
+    #livetable th:nth-child(4),#livetable td:nth-child(4),
+    #livetable th:nth-child(6),#livetable td:nth-child(6),
+    #livetable th:nth-child(8),#livetable td:nth-child(8),
+    #livetable th:nth-child(9),#livetable td:nth-child(9){display:none}
+    #smarttable th:nth-child(2),#smarttable td:nth-child(2),
+    #smarttable th:nth-child(3),#smarttable td:nth-child(3),
+    #smarttable th:nth-child(5),#smarttable td:nth-child(5),
+    #smarttable th:nth-child(6),#smarttable td:nth-child(6),
+    #smarttable th:nth-child(7),#smarttable td:nth-child(7){display:none}
+    #screentable th:nth-child(2),#screentable td:nth-child(2),
+    #screentable th:nth-child(4),#screentable td:nth-child(4),
+    #screentable th:nth-child(7),#screentable td:nth-child(7),
+    #screentable th:nth-child(8),#screentable td:nth-child(8),
+    #screentable th:nth-child(9),#screentable td:nth-child(9),
+    #screentable th:nth-child(10),#screentable td:nth-child(10),
+    #screentable th:nth-child(11),#screentable td:nth-child(11),
+    #screentable th:nth-child(12),#screentable td:nth-child(12){display:none}
+    #alertlist th:nth-child(1),#alertlist td:nth-child(1),
+    #alertlist th:nth-child(4),#alertlist td:nth-child(4),
+    #alertlist th:nth-child(5),#alertlist td:nth-child(5),
+    #alertlist th:nth-child(7),#alertlist td:nth-child(7){display:none}
+    /* kagit pozisyon tablosu: mobilde sembol + PnL% + R + kapat kalsin */
+    #papertable th:nth-child(2),#papertable td:nth-child(2),
+    #papertable th:nth-child(3),#papertable td:nth-child(3),
+    #papertable th:nth-child(4),#papertable td:nth-child(4),
+    #papertable th:nth-child(7),#papertable td:nth-child(7),
+    #papertable th:nth-child(8),#papertable td:nth-child(8),
+    #papertable th:nth-child(9),#papertable td:nth-child(9){display:none}
+  }
   tr.rowclick{cursor:pointer}
+  /* ---------- görsel toparlama (v1.7) ---------- */
+  :root{--card-grad:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,0))}
+  header h1{letter-spacing:.2px}
+  .card{background:var(--panel) var(--card-grad);transition:border-color .15s}
+  .card:hover{border-color:#2c3745}
+  .tab{border-radius:999px;padding:8px 14px;font-weight:600;letter-spacing:.2px;transition:background .15s,color .15s}
+  .tab.active{background:linear-gradient(180deg,#3f8dff,#2f6fd0);border-color:transparent;color:#fff;box-shadow:0 2px 10px rgba(63,141,255,.28)}
+  .kpi .val{letter-spacing:.3px}
+  tbody tr:nth-child(even){background:rgba(255,255,255,.014)}
+  tbody tr:hover{background:rgba(76,154,255,.06)}
+  .tag{border-radius:999px;font-weight:600;letter-spacing:.2px}
+  .btn-primary{background:linear-gradient(180deg,#3f8dff,#2f6fd0);border-color:transparent;color:#fff;font-weight:600}
+  .btn-primary:hover{filter:brightness(1.08)}
+  .verdict{border-radius:9px;padding:11px 13px;margin-bottom:11px;font-size:12px;line-height:1.55;border:1px solid}
+  .verdict.bad{background:rgba(229,83,75,.07);border-color:rgba(229,83,75,.45)}
+  .verdict.good{background:rgba(63,185,80,.07);border-color:rgba(63,185,80,.45)}
+  .verdict.warn{background:rgba(210,153,34,.08);border-color:rgba(210,153,34,.42)}
+  .verdict b{display:block;margin-bottom:4px;letter-spacing:.2px}
+  .band{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:9px;margin-top:9px}
+  .band .cell{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:9px 11px}
+  .band .cell .k{font-size:9.5px;letter-spacing:.7px;text-transform:uppercase;color:var(--muted)}
+  .band .cell .v{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
+  hr.sep{border:0;border-top:1px solid #232b36;margin:12px 0}
   .breadth{display:flex;gap:14px;flex-wrap:wrap;align-items:center;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:9px 13px;margin-bottom:11px;font-size:11.5px}
   .breadth b{font-variant-numeric:tabular-nums}
   .overlay{position:fixed;inset:0;background:rgba(4,7,11,.82);display:flex;align-items:flex-start;justify-content:center;padding:26px 16px;overflow-y:auto;z-index:50}
@@ -127,13 +209,110 @@
   </header>
 
   <div class="tabs">
-    <button class="tab active" id="tab-genel" onclick="setTab('genel')">GENEL</button>
+    <button class="tab active" id="tab-carry" onclick="setTab('carry')">KİRA GELİRİ (CARRY)</button>
+    <button class="tab" id="tab-dip" onclick="setTab('dip')">DİP &amp; POZİSYON</button>
+    <button class="tab" id="tab-genel" onclick="setTab('genel')">GENEL</button>
     <button class="tab" id="tab-smart" onclick="setTab('smart')">AKILLI PARA / BALİNA</button>
     <button class="tab" id="tab-screen" onclick="setTab('screen')">TARAYICI — AL / SAT</button>
   </div>
 
+  <!-- ============================ KIRA GELIRI ============================ -->
+  <section id="view-carry">
+    <div class="warnbox" id="carryintro">
+      <b>Bu sekme gerçek pozisyonları ölçer, tahmin göstermez.</b>
+      Açtığın spot long + vadeli short pozisyonları buraya kaydediyorsun; panel Binance'in
+      <b>gerçek funding geçmişinden</b> o güne kadar ne kadar kira geliri biriktirdiğini topluyor.
+      Yön tahmini yok — kazanç, funding oranı pozitifken short bacağın aldığı ödemedir.
+      <span id="carrymeasured"></span>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="lbl">Açık Pozisyon</div><div class="val" id="c1">—</div><div class="sub" id="c1s">delta-nötr</div></div>
+      <div class="kpi"><div class="lbl">Toplam Notional</div><div class="val" id="c2">—</div><div class="sub">iki bacak toplamı değil, tek bacak</div></div>
+      <div class="kpi"><div class="lbl">Birikmiş Kira</div><div class="val" id="c3">—</div><div class="sub" id="c3s">gerçek funding olayları</div></div>
+      <div class="kpi"><div class="lbl">Ağırlıklı Yıllık</div><div class="val" id="c4">—</div><div class="sub">kira geliri bazında</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Pozisyonlar <span class="muted" id="carryinfo" style="text-transform:none;letter-spacing:0"></span></h2>
+      <div id="carrytable"><div class="empty"><span class="spin"></span> pozisyonlar hesaplanıyor…</div></div>
+      <div id="carryaddbox" class="hidden" style="margin-top:12px;border-top:1px solid #232b36;padding-top:10px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+          <label style="font-size:11px">Sembol<br><input id="csym" placeholder="BTCUSDT" style="width:110px;text-transform:uppercase"></label>
+          <label style="font-size:11px">Notional (USD)<br><input id="cnot" type="number" min="10" step="10" placeholder="1000" style="width:110px"></label>
+          <label style="font-size:11px">Açılış tarihi<br><input id="cdate" type="date" style="width:140px"></label>
+          <label style="font-size:11px">Not (opsiyonel)<br><input id="cnote" placeholder="spread dar, funding yüksek" style="width:210px"></label>
+          <button onclick="addPosition()">Pozisyon ekle</button>
+        </div>
+        <div class="note" id="carrymsg"></div>
+      </div>
+      <div class="note">
+        Kira = notional × funding oranı, her funding anında (8 saatte bir) toplanır.
+        Delta-nötr kontrolü: spot bacak yoksa pozisyon <b>delta-nötr değildir</b> ve uyarı çıkar.
+        Notional sabit tutulur (bileşik faiz yok) — muhafazakâr hesap.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Bugünkü Adaylar <span class="muted" style="text-transform:none;letter-spacing:0">giriş kuralını geçenler</span></h2>
+      <div id="carrycand"><div class="empty">canlı tarama bekleniyor…</div></div>
+      <div class="note">Kural: temkinli yıllık (25. persentil) &gt; 0, anlık funding ≥ 0, basis &lt; %0.3.
+        Sıralama temkinli yıllığa göre. Bunlar <b>ölçülmüş geçmiş</b> değil, o anki fırsat listesidir.</div>
+    </div>
+  </section>
+
+  <!-- ========================= DİP & POZİSYON ========================= -->
+  <section id="view-dip" class="hidden">
+    <div class="verdict bad" id="dipverdict"><b>Ölçüm yükleniyor…</b>dip çalışması okunuyor</div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="lbl">Açık Pozisyon</div><div class="val" id="d1">—</div><div class="sub">kâğıt, emir yok</div></div>
+      <div class="kpi"><div class="lbl">Açık PnL</div><div class="val" id="d2">—</div><div class="sub">canlı fiyatla</div></div>
+      <div class="kpi"><div class="lbl">Gerçekleşen</div><div class="val" id="d3">—</div><div class="sub">kapanan pozisyonlar</div></div>
+      <div class="kpi"><div class="lbl">Telegram</div><div class="val" id="d4">—</div><div class="sub" id="d4s">bildirim kanalı</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Dipte Olanlar <span class="muted" style="text-transform:none;letter-spacing:0">7 günlük aralığın alt %10'u</span></h2>
+      <div id="diptable"><div class="empty"><span class="spin"></span> taranıyor…</div></div>
+      <div class="note">Konum %: 0 = 7 günün dibi, 100 = tepesi. Liste dipte olanları üstte gösterir.
+        <b>Bu bir alım listesi değil</b> — aşağıdaki ölçüm bandı neden olduğunu söylüyor.</div>
+    </div>
+
+    <div class="card">
+      <h2>Ölçülen Kısa Vade <span class="muted" style="text-transform:none;letter-spacing:0">dip sonrası gerçekleşen getiriler</span></h2>
+      <div class="band" id="dipband"></div>
+      <div class="note" id="dipbandnote"></div>
+    </div>
+
+    <div class="card">
+      <h2>Pozisyon Aç <span class="muted" style="text-transform:none;letter-spacing:0">kâğıt pozisyon — gerçek emir gönderilmez</span></h2>
+      <div id="paperaddbox" class="hidden">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+          <label style="font-size:11px">Sembol<br><input id="psym" placeholder="BTCUSDT" style="width:110px;text-transform:uppercase"></label>
+          <label style="font-size:11px">Notional (USD)<br><input id="pnot" type="number" min="10" step="10" placeholder="500" style="width:110px"></label>
+          <label style="font-size:11px">Stop %<br><input id="pstop" type="number" step="0.1" placeholder="otomatik" style="width:90px"></label>
+          <label style="font-size:11px">Hedef %<br><input id="ptgt" type="number" step="0.1" placeholder="otomatik" style="width:90px"></label>
+          <label style="font-size:11px">Not<br><input id="pnote" placeholder="sebep" style="width:170px"></label>
+          <button class="btn-primary" onclick="addPaper()">Pozisyon aç</button>
+        </div>
+        <div class="note" id="paperdefaults"></div>
+      </div>
+      <div id="papertable" style="margin-top:8px"><div class="empty">pozisyon yok</div></div>
+      <div class="note" id="papermsg"></div>
+      <hr class="sep">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button onclick="telegramTest()">Telegram test mesajı</button>
+        <span class="muted" id="tgstate" style="font-size:11px"></span>
+      </div>
+      <div class="note">Stop/hedef boş bırakılırsa <b>ölçülen +24s çeyreklerinden</b> gelir
+        (p25 → stop, p75 → hedef). Pozisyon açılınca, stop veya hedefe değince Telegram'a
+        bildirim gider. Token yoksa mesajlar kuyruğa yazılır, panelde görünür.</div>
+    </div>
+  </section>
+
   <!-- ============================ GENEL ============================ -->
-  <section id="view-genel">
+  <section id="view-genel" class="hidden">
     <div class="kpis">
       <div class="kpi"><div class="lbl">İzlenen Sembol</div><div class="val" id="k1">—</div><div class="sub">birikmiş veri</div></div>
       <div class="kpi"><div class="lbl">Tarama Sayısı</div><div class="val" id="k2">—</div><div class="sub">6 saatte bir otomatik</div></div>
@@ -274,7 +453,7 @@
 <script src="local.js"></script>
 <script>
 const REFRESH_MS = 5 * 60 * 1000;
-let timer = null, tab = 'genel', smartLoaded = false, smartPayload = null, filter = 'all', staticSmart = null;
+let timer = null, tab = 'carry', smartLoaded = false, smartPayload = null, filter = 'all', staticSmart = null;
 let screenLoaded = false, screenPayload = null, screenFilter = 'all', staticScreen = null;
 let LOCAL_MODE = new URLSearchParams(location.search).has('local') || window.FORCE_LOCAL === true;
 let localModelReady = false;
@@ -291,18 +470,31 @@ async function jget(url, opts) {
   catch (e) { throw new Error(`JSON değil (HTTP ${res.status}) — ${url}`); }
 }
 const signed = (v, d = 2) => (v === null || v === undefined || isNaN(v)) ? '—' : (v >= 0 ? '+' : '') + Number(v).toFixed(d);
+/* fiyat: büyüklüğe göre ondalık (64921.9 -> 64.921,90 · 0.00042 -> 0.000420) */
+const px = v => {
+  if (v === null || v === undefined || isNaN(v)) return '—';
+  const n = Number(v);
+  const d = n >= 1000 ? 2 : n >= 10 ? 3 : n >= 0.1 ? 4 : 6;
+  return n.toLocaleString('tr-TR', { minimumFractionDigits: d, maximumFractionDigits: d });
+};
 const cls = v => (v === null || v === undefined || isNaN(v)) ? 'muted' : (v >= 0 ? 'pos' : 'neg');
 const money = v => (v === null || v === undefined || isNaN(v)) ? '—' : (v >= 0 ? '+' : '') + Number(v).toFixed(1) + 'M';
 const probCls = p => (p === null || p === undefined) ? 'muted' : (p >= 0.45 ? 'pos' : p <= 0.20 ? 'neg' : '');
 
 function setTab(t) {
   tab = t;
+  document.getElementById('view-carry').classList.toggle('hidden', t !== 'carry');
+  document.getElementById('view-dip').classList.toggle('hidden', t !== 'dip');
   document.getElementById('view-genel').classList.toggle('hidden', t !== 'genel');
   document.getElementById('view-smart').classList.toggle('hidden', t !== 'smart');
   document.getElementById('view-screen').classList.toggle('hidden', t !== 'screen');
+  document.getElementById('tab-carry').classList.toggle('active', t === 'carry');
+  document.getElementById('tab-dip').classList.toggle('active', t === 'dip');
   document.getElementById('tab-genel').classList.toggle('active', t === 'genel');
   document.getElementById('tab-smart').classList.toggle('active', t === 'smart');
   document.getElementById('tab-screen').classList.toggle('active', t === 'screen');
+  if (t === 'carry') loadCarry(false);
+  if (t === 'dip') { loadDip(false); loadPaper(false); }
   if (t === 'smart') {
     // Veri zaten elde varsa (statik mod / onceki tarama) dogrudan ciz;
     // yoksa tara. Boylece sekme degisimi her zaman dolu bir tablo gosterir.
@@ -409,6 +601,10 @@ function renderCloudPayload(d) {
   if (d.analysis) renderAnalysis(d.analysis);
   if (d.series) renderLine(d.series);
   if (d.live) renderLive(d.live);
+  if (d.carry) {
+    d.carry.static = true; carryPayload = d.carry;
+    if (tab === 'carry') renderCarry(d.carry);
+  }
   if (d.smart && d.smart.rows && d.smart.rows.length) {
     staticSmart = d.smart; smartLoaded = true; smartPayload = d.smart;
     if (tab === 'smart') renderSmart(d.smart);
@@ -502,6 +698,17 @@ async function refresh(force) {
     // 3) Canli bolum
     if (staticMode) {
       renderLive(payload.live);
+      // statik modda carry raporu data.json icinden gelir (salt okuma)
+      if (payload.carry) {
+        payload.carry.static = true; carryPayload = payload.carry;
+        if (tab === 'carry') renderCarry(payload.carry);
+      }
+      // statik modda dip + kagit pozisyonlar (salt okuma)
+      if (payload.dip) { dipPayload = payload.dip; if (tab === 'dip') renderDip(payload.dip); }
+      if (payload.paper) {
+        payload.paper.static = true; paperPayload = payload.paper;
+        if (tab === 'dip') renderPaper(payload.paper);
+      }
       // statik modda akilli para verisi data.json icinden gelir
       if (payload.smart && payload.smart.rows && payload.smart.rows.length) {
         staticSmart = payload.smart; smartLoaded = true; smartPayload = payload.smart;
@@ -519,6 +726,8 @@ async function refresh(force) {
       try {
         const live = await jget(force ? '/api/refresh' : '/api/live');
         renderLive(live);
+        await loadCarry(force);
+        if (tab === 'dip') { await loadDip(force); await loadPaper(force); }
         if (force) {
           const a2 = await jget('/api/all', { cache: 'no-store' });
           renderAnalysis(a2.analysis); renderLine(a2.series);
@@ -579,7 +788,328 @@ function renderAnalysis(a) {
   drawScoreChart(a.symbols);
 }
 
+/* ---------------------- DİP & POZİSYON (paper) ---------------------- */
+let dipPayload = null, paperPayload = null;
+
+function verdictClass(v) {
+  return v === 'olumlu' ? 'good' : (v === 'avantaj_yok' || v === 'kuyruk_piyangosu') ? 'bad' : 'warn';
+}
+
+function renderDip(d) {
+  dipPayload = d;
+  const v = document.getElementById('dipverdict');
+  if (!d || !d.available) {
+    v.className = 'verdict warn';
+    v.innerHTML = `<b>Ölçüm yok</b>${d && d.verdict_text ? d.verdict_text : 'python dip.py çalıştırılmalı'}`;
+  } else {
+    v.className = 'verdict ' + verdictClass(d.verdict);
+    v.innerHTML = `<b>ÖLÇÜLMÜŞ SONUÇ · ${d.symbols_used} sembol · ~41 gün · ` +
+      `${(d.horizons.h24 && d.horizons.h24.dip) ? d.horizons.h24.dip.n : 0} dip olayı</b>${d.verdict_text}`;
+  }
+
+  const host = document.getElementById('diptable');
+  const rows = (d && d.rows) || [];
+  if (!rows.length) { host.innerHTML = '<div class="empty">dip verisi yok</div>'; }
+  else {
+    host.innerHTML = `<table><thead><tr>
+        <th>Sembol</th><th>Konum %</th><th>24s %</th><th>Durum</th><th class="h-sm">41g olay</th>
+      </tr></thead><tbody>
+      ${rows.slice(0, 20).map(r => `<tr>
+        <td><b>${r.symbol}</b></td>
+        <td class="${r.pos_pct !== null && r.pos_pct <= 10 ? 'neg' : r.pos_pct >= 90 ? 'pos' : 'muted'}">${r.pos_pct === null ? '—' : fmt(r.pos_pct, 1)}</td>
+        <td class="${cls(r.chg_24h)}">${r.chg_24h === null ? '—' : signed(r.chg_24h)}</td>
+        <td>${r.is_dip ? '<span class="tag no">DİP</span>' : r.pos_pct !== null && r.pos_pct <= 25 ? '<span class="tag warn">dipte yakın</span>' : '<span class="tag ok">normal</span>'}</td>
+        <td class="muted h-sm">${r.dip_events_41d ?? '—'}</td>
+      </tr>`).join('')}</tbody></table>`;
+  }
+
+  const band = document.getElementById('dipband');
+  const h24 = d && d.horizons && d.horizons.h24, h4 = d && d.horizons && d.horizons.h4;
+  if (!h24 || !h24.dip || !h24.dip.n) { band.innerHTML = ''; return; }
+  const cell = (k, val, klass) => `<div class="cell"><div class="k">${k}</div>
+    <div class="v ${klass || ''}">${val}</div></div>`;
+  band.innerHTML = [
+    cell('+24s medyan', signed(h24.dip.median) + '%', cls(h24.dip.median)),
+    cell('+24s ilk çeyrek', signed(h24.dip.p25) + '%', cls(h24.dip.p25)),
+    cell('+24s üst çeyrek', signed(h24.dip.p75) + '%', cls(h24.dip.p75)),
+    cell('yukarı oran', fmt(h24.dip.up_pct, 0) + '%', 'muted'),
+    cell('+4s medyan', h4 && h4.dip ? signed(h4.dip.median) + '%' : '—', h4 && h4.dip ? cls(h4.dip.median) : 'muted'),
+    cell('taban medyan', signed(h24.baseline.median) + '%', 'muted'),
+  ].join('');
+  document.getElementById('dipbandnote').innerHTML =
+    `Bu sayılar <b>geçmişte gerçekleşmiş</b> getiriler; tahmin değil. Örnek: +24s medyan ` +
+    `${signed(h24.dip.median)}% ise dipten alınan pozisyonların yarısı bundan daha kötü kapatmıştır. ` +
+    `Ortalama ${signed(h24.dip.mean)}% görünüyorsa bile aşırı sıçramalardan şişmiştir — ` +
+    `uçlar kırpılınca ${signed(h24.dip.mean_trimmed)}%.`;
+}
+
+async function loadDip(force) {
+  if (LOCAL_MODE && dipPayload) { renderDip(dipPayload); return; }
+  try { renderDip(await jget(force ? '/api/dip/refresh' : '/api/dip')); }
+  catch (e) { document.getElementById('diptable').innerHTML = `<div class="empty neg">dip verisi alınamadı: ${e.message}</div>`; }
+}
+
+function renderPaper(p) {
+  paperPayload = p;
+  const canWrite = !LOCAL_MODE && !p.static;
+  document.getElementById('paperaddbox').classList.toggle('hidden', !canWrite);
+  if (p.defaults) {
+    const st = document.getElementById('pstop'), tg = document.getElementById('ptgt');
+    if (st && !st.placeholder.startsWith('0')) { st.placeholder = p.defaults.stop_pct; tg.placeholder = p.defaults.target_pct; }
+    document.getElementById('paperdefaults').textContent =
+      `Otomatik stop ${p.defaults.stop_pct}% · hedef ${p.defaults.target_pct}% — ${p.defaults.source}`;
+  }
+  const d1 = document.getElementById('d1'), d2 = document.getElementById('d2'), d3 = document.getElementById('d3');
+  d1.textContent = (p.open || 0) + (p.closed ? ` / ${p.closed}` : '');
+  d2.textContent = signed(p.unrealized_usd, 2) + '$'; d2.className = 'val ' + cls(p.unrealized_usd);
+  d3.textContent = signed(p.realized_usd, 2) + '$'; d3.className = 'val ' + cls(p.realized_usd);
+  const tg = p.telegram || {};
+  const d4 = document.getElementById('d4');
+  d4.textContent = tg.configured ? 'BAĞLI' : 'YOK';
+  d4.className = 'val ' + (tg.configured ? 'pos' : 'neg');
+  document.getElementById('d4s').textContent = tg.configured ? 'stop/hedef bildirimi açık'
+    : (tg.pending_unsent ? `${tg.pending_unsent} mesaj kuyrukta` : 'token yok — mesajlar kuyrukta');
+  document.getElementById('tgstate').textContent = tg.configured
+    ? 'Telegram bağlı.' 
+    : 'Telegram bağlı değil: bot token + chat id gerekiyor (README → Telegram).';
+
+  const host = document.getElementById('papertable');
+  const rows = (p.positions || []).filter(x => x.status === 'open');
+  if (!rows.length) { host.innerHTML = '<div class="empty">Açık pozisyon yok.</div>'; return; }
+  host.innerHTML = `<table><thead><tr>
+      <th>Sembol</th><th>Giriş</th><th>Şimdi</th><th>PnL $</th><th>PnL %</th><th>R</th>
+      <th class="h-sm">Stop</th><th class="h-sm">Hedef</th><th class="h-sm">Süre</th><th></th>
+    </tr></thead><tbody>
+    ${rows.map(x => `<tr>
+      <td><b>${x.symbol}</b>${x.note ? `<div class="muted" style="font-size:10px">${x.note}</div>` : ''}</td>
+      <td class="muted">${px(x.entry_price)}</td>
+      <td>${px(x.price_now)}</td>
+      <td class="${cls(x.pnl_usd)}">${signed(x.pnl_usd, 2)}</td>
+      <td class="${cls(x.pnl_pct)}"><b>${x.pnl_pct === null ? '—' : signed(x.pnl_pct)}</b></td>
+      <td class="${cls(x.r_multiple)}">${x.r_multiple === null ? '—' : signed(x.r_multiple)}</td>
+      <td class="muted h-sm">${x.to_stop_pct === null ? '—' : signed(x.to_stop_pct, 1) + '%'}</td>
+      <td class="muted h-sm">${x.to_target_pct === null ? '—' : signed(x.to_target_pct, 1) + '%'}</td>
+      <td class="muted h-sm">${x.hours_open === null ? '—' : fmt(x.hours_open, 1) + ' sa'}</td>
+      <td>${canWrite ? `<button onclick="closePaper('${x.id}','${x.symbol}')" title="kapat">×</button>` : ''}</td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+async function loadPaper(force) {
+  if (LOCAL_MODE && paperPayload) { renderPaper(paperPayload); return; }
+  try { renderPaper(await jget('/api/paper')); }
+  catch (e) { document.getElementById('papertable').innerHTML = `<div class="empty neg">pozisyonlar alınamadı: ${e.message}</div>`; }
+}
+
+async function addPaper() {
+  const msg = document.getElementById('papermsg');
+  const body = {
+    symbol: (document.getElementById('psym').value || '').trim().toUpperCase(),
+    notional_usd: Number(document.getElementById('pnot').value),
+    stop_pct: Number(document.getElementById('pstop').value) || null,
+    target_pct: Number(document.getElementById('ptgt').value) || null,
+    note: document.getElementById('pnote').value || '',
+  };
+  if (!body.symbol || !body.notional_usd) { msg.innerHTML = '<span class="neg">Sembol ve notional gerekli.</span>'; return; }
+  msg.innerHTML = '<span class="spin"></span> pozisyon açılıyor…';
+  try {
+    const r = await fetch('/api/paper/add', { method: 'POST',
+      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
+    msg.innerHTML = `<span class="pos">${body.symbol} açıldı — giriş ${px(d.position.entry_price)}</span>`;
+    ['psym', 'pnot', 'pstop', 'ptgt', 'pnote'].forEach(id => { document.getElementById(id).value = ''; });
+    renderPaper(d.paper);
+  } catch (e) { msg.innerHTML = `<span class="neg">${e.message}</span>`; }
+}
+
+async function closePaper(id, sym) {
+  if (!confirm(sym + ' pozisyonunu kapatmak istiyor musun?')) return;
+  const msg = document.getElementById('papermsg');
+  try {
+    const r = await fetch('/api/paper/close', { method: 'POST',
+      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
+    msg.innerHTML = `<span class="pos">${sym} kapatıldı.</span>`;
+    renderPaper(d.paper);
+  } catch (e) { msg.innerHTML = `<span class="neg">${e.message}</span>`; }
+}
+
+async function telegramTest() {
+  const msg = document.getElementById('papermsg');
+  if (LOCAL_MODE) { msg.innerHTML = '<span class="neg">Telegram testi sunucu gerektirir.</span>'; return; }
+  msg.innerHTML = '<span class="spin"></span> gönderiliyor…';
+  try {
+    const r = await fetch('/api/telegram/test', { method: 'POST' });
+    const d = await r.json();
+    if (d.sent) msg.innerHTML = '<span class="pos">Test mesajı gönderildi — Telegram\'ı kontrol et.</span>';
+    else if (d.reason === 'no_credentials') msg.innerHTML = '<span class="neg">Token yok: mesaj kuyruğa yazıldı. README → Telegram adımları.</span>';
+    else msg.innerHTML = `<span class="neg">gönderilemedi: ${d.error || d.reason}</span>`;
+    if (d.status) renderPaper({ ...(paperPayload || {}), telegram: d.status });
+  } catch (e) { msg.innerHTML = `<span class="neg">${e.message}</span>`; }
+}
+
+/* --------------------------- KİRA GELİRİ (carry) --------------------------- */
+let carryPayload = null, livePayload = null;
+
+function renderCarryMeasured(m) {
+  const host = document.getElementById('carrymeasured');
+  if (!m || !m.rows || !m.rows.length) { host.textContent = ''; return; }
+  const ref = m.rows.map(r => `${r.symbol.replace('USDT', '')} +${r.ann_pct.toFixed(2)}%/yıl`).join(' · ');
+  host.innerHTML = `<br><span class="muted">Ölçülmüş referans (${m.window}, komisyon dahil): ${ref}. ` +
+                   `Bu bir vaat değil — geçmişte ne yaptığının ölçümü.</span>`;
+}
+
+function renderCarry(c) {
+  carryPayload = c;
+  const host = document.getElementById('carrytable');
+  const msg = document.getElementById('carrymsg');
+  if (!c || !c.available) {
+    host.innerHTML = `<div class="empty">${(c && c.error) || 'Carry verisi alınamadı.'}</div>`;
+    return;
+  }
+  renderCarryMeasured(c.measured);
+
+  // yazma (ekle/sil) sadece sunucu varken
+  const canWrite = !LOCAL_MODE && !c.static;
+  document.getElementById('carryaddbox').classList.toggle('hidden', !canWrite);
+  if (canWrite) {
+    const dt = document.getElementById('cdate');
+    if (dt && !dt.value) dt.value = new Date().toISOString().slice(0, 10);
+  }
+
+  const t = c.totals || {};
+  document.getElementById('c1').textContent = (t.count || 0) + ' / ' + (t.delta_neutral_count || 0);
+  document.getElementById('c1s').textContent = 'toplam / delta-nötr';
+  document.getElementById('c2').textContent = (t.notional_usd ? fmt(t.notional_usd, 0) + '$' : '—');
+  const c3 = document.getElementById('c3');
+  c3.textContent = t.funding_usd === undefined ? '—' : signed(t.funding_usd, 2) + '$';
+  c3.className = 'val ' + cls(t.funding_usd);
+  document.getElementById('c3s').textContent = t.funding_pct === undefined ? '' : signed(t.funding_pct, 3) + '% notional';
+  const c4 = document.getElementById('c4');
+  c4.textContent = (t.weighted_ann_pct === null || t.weighted_ann_pct === undefined) ? '—' : signed(t.weighted_ann_pct) + '%';
+  c4.className = 'val ' + cls(t.weighted_ann_pct);
+  document.getElementById('carryinfo').textContent = c.generated_at
+    ? ` · ${new Date(c.generated_at).toLocaleTimeString('tr-TR')}${c.cached ? ' (önbellek)' : ''}` : '';
+  if (c.amounts_hidden) {
+    document.getElementById('carryinfo').textContent += ' · tutarlar bulut sürümünde gizli (yüzdeler açık)';
+  }
+
+  if (!c.positions || !c.positions.length) {
+    host.innerHTML = '<div class="empty">Henüz pozisyon yok. ' +
+      (canWrite ? 'Aşağıdaki formdan ilk pozisyonunu ekle.' : 'Pozisyon eklemek için sunucunun çalıştığı makineden aç.') + '</div>';
+    return;
+  }
+
+  host.innerHTML = `<table><thead><tr>
+      <th>Sembol</th><th>Gün</th><th>Periyot</th><th>Kira $</th><th>Kira %</th><th>Yıllık %</th>
+      <th>Spot P&L</th><th>Short P&L</th><th>Net $</th><th>Net %</th><th>Basis %</th><th>Sıradaki</th><th>Durum</th><th></th>
+    </tr></thead><tbody>
+    ${c.positions.map(p => `<tr>
+      <td><b>${p.symbol}</b>${p.note ? `<div class="muted" style="font-size:10px">${p.note}</div>` : ''}</td>
+      <td class="muted">${fmt(p.days, 1)}</td>
+      <td class="muted">${p.funding_periods}${p.funding_neg_periods ? ` <span class="neg">(${p.funding_neg_periods}−)</span>` : ''}</td>
+      <td class="${cls(p.funding_usd)}">${signed(p.funding_usd, 2)}</td>
+      <td class="${cls(p.funding_pct)}">${signed(p.funding_pct, 3)}</td>
+      <td class="${cls(p.funding_ann_pct)}">${p.funding_ann_pct === null ? '—' : signed(p.funding_ann_pct) + '%'}</td>
+      <td class="${cls(p.spot_pnl)}">${signed(p.spot_pnl, 2)}</td>
+      <td class="${cls(p.perp_pnl)}">${signed(p.perp_pnl, 2)}</td>
+      <td class="${cls(p.net_usd)}"><b>${signed(p.net_usd, 2)}</b></td>
+      <td class="${cls(p.net_pct)}">${signed(p.net_pct, 3)}</td>
+      <td class="muted">${p.basis_now_pct === null ? '—' : signed(p.basis_now_pct, 3)}</td>
+      <td class="muted">${p.hours_to_next === null ? '—' : fmt(p.hours_to_next, 1) + ' sa'}</td>
+      <td>${p.warnings.length
+            ? `<span class="tag no" title="${p.warnings.join(' | ')}">${p.delta_neutral ? 'UYARI' : 'RİSK'}</span>`
+            : '<span class="tag ok">NORMAL</span>'}</td>
+      <td>${canWrite ? `<button onclick="removePosition('${p.id}','${p.symbol}')" title="sil">×</button>` : ''}</td>
+    </tr>`).join('')}</tbody></table>
+    <div class="note">${(c.positions.flatMap(p => p.warnings.map(w => `${p.symbol}: ${w}`)).join(' · ')) || ''}</div>`;
+}
+
+function renderCarryCand(rows) {
+  const host = document.getElementById('carrycand');
+  if (!rows || !rows.length) {
+    host.innerHTML = '<div class="empty">Uygun aday yok (hacim filtresi: 50M$).</div>';
+    return;
+  }
+  const ok = rows.filter(r => r.ok).sort((a, b) => b.ann_p25_pct - a.ann_p25_pct).slice(0, 8);
+  if (!ok.length) { host.innerHTML = '<div class="empty">Şu an giriş kuralını geçen sembol yok.</div>'; return; }
+  host.innerHTML = `<table><thead><tr>
+      <th>Sembol</th><th>Şu an %</th><th>Ort. yıl %</th><th>Temkinli %</th><th>Pozitif %</th>
+      <th>Basis %</th><th>Hacim M$</th><th>Maliyet gün</th>
+    </tr></thead><tbody>
+    ${ok.map(r => `<tr>
+      <td><b>${r.symbol}</b></td>
+      <td class="${cls(r.funding_now_pct)}">${signed(r.funding_now_pct, 4)}</td>
+      <td class="${cls(r.ann_30d_pct)}">${signed(r.ann_30d_pct)}</td>
+      <td class="${cls(r.ann_p25_pct)}"><b>${signed(r.ann_p25_pct)}</b></td>
+      <td class="muted">${fmt(r.pos_share_pct, 0)}</td>
+      <td class="${r.basis_pct > 0.3 ? 'neg' : 'muted'}">${signed(r.basis_pct, 3)}</td>
+      <td class="muted">${fmt(r.vol_musd, 0)}</td>
+      <td class="muted">${r.breakeven_days === null ? '∞' : fmt(r.breakeven_days, 1)}</td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+async function loadCarry(force) {
+  const host = document.getElementById('carrytable');
+  if (LOCAL_MODE) {
+    // APK / bulut: data.json icindeki carry raporu (salt okuma)
+    if (carryPayload && carryPayload.available) { renderCarry(carryPayload); return; }
+    host.innerHTML = '<div class="empty">Carry sekmesi sunucu gerektirir. Telefonda salt okuma için ' +
+      'bulut verisi kullanılır; pozisyon eklemek için bilgisayardaki paneli aç.</div>';
+    return;
+  }
+  if (!host.querySelector('table')) host.innerHTML = '<div class="empty"><span class="spin"></span> funding geçmişi hesaplanıyor…</div>';
+  try {
+    renderCarry(await jget(force ? '/api/carry/refresh' : '/api/carry'));
+  } catch (e) {
+    host.innerHTML = `<div class="empty neg">Carry alınamadı: ${e.message}</div>`;
+  }
+}
+
+async function addPosition() {
+  const msg = document.getElementById('carrymsg');
+  const body = {
+    symbol: (document.getElementById('csym').value || '').trim().toUpperCase(),
+    notional_usd: Number(document.getElementById('cnot').value),
+    opened_at: document.getElementById('cdate').value || null,
+    note: document.getElementById('cnote').value || '',
+  };
+  if (!body.symbol || !body.notional_usd) { msg.innerHTML = '<span class="neg">Sembol ve notional gerekli.</span>'; return; }
+  msg.innerHTML = '<span class="spin"></span> hesaplanıyor…';
+  try {
+    const r = await fetch('/api/carry/add', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    });
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
+    msg.innerHTML = `<span class="pos">${body.symbol} eklendi.</span>`;
+    ['csym', 'cnot', 'cnote'].forEach(id => { document.getElementById(id).value = ''; });
+    renderCarry(d.carry);
+  } catch (e) {
+    msg.innerHTML = `<span class="neg">${e.message}</span>`;
+  }
+}
+
+async function removePosition(id, sym) {
+  if (!confirm(sym + ' pozisyonunu silmek istiyor musun? (geçmiş kaydı silinir)')) return;
+  const msg = document.getElementById('carrymsg');
+  try {
+    const r = await fetch('/api/carry/remove', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }),
+    });
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
+    msg.innerHTML = `<span class="pos">${sym} silindi.</span>`;
+    renderCarry(d.carry);
+  } catch (e) {
+    msg.innerHTML = `<span class="neg">${e.message}</span>`;
+  }
+}
+
 function renderLive(live) {
+  livePayload = live;
+  renderCarryCand(live ? live.rows : null);
   document.getElementById('liveinfo').textContent =
     live ? ` · ${live.count} sembol · ${new Date(live.fetched_at).toLocaleTimeString('tr-TR')}` : '';
   const host = document.getElementById('livetable');
@@ -666,7 +1196,7 @@ function renderSmartTable(r) {
       <td class="${cls(x.whale_net_musd)}">${money(x.whale_net_musd)}</td>
       <td><span class="sbar"><i style="width:${x.score}%;background:${x.score >= 60 ? 'var(--good2)' : x.score >= 40 ? 'var(--warn)' : 'var(--bad)'}"></i></span>
           <span class="muted" style="margin-left:5px">${fmt(x.score, 0)}</span></td>
-      <td style="text-align:left"><span class="tag ${x.tone}" title="${x.detail || ''}">${x.label}</span></td>
+      <td class="wrapcell"><span class="tag ${x.tone}" title="${x.detail || ''}">${x.label}</span></td>
     </tr>`).join('')}</tbody></table>`;
 
   host.querySelectorAll('canvas.spark').forEach(cv => {
@@ -932,7 +1462,7 @@ function renderScreen(r) {
         <td class="${cls(x.top_retail_gap)}">${signed(x.top_retail_gap, 1)}</td>
         <td class="${cls(x.whale_net_musd)}">${money(x.whale_net_musd)}</td>
         <td class="${cls(x.ann_funding_pct)}">${signed(x.ann_funding_pct, 0)}</td>
-        <td style="text-align:left" class="muted">${(x.reasons || []).slice(0, 3).join(', ')}</td>
+        <td class="wrapcell muted">${(x.reasons || []).slice(0, 3).join(', ')}</td>
       </tr>`).join('')}</tbody></table>`;
 
     host.querySelectorAll('canvas.spark').forEach(cv => {
@@ -962,7 +1492,7 @@ function renderAlerts(alerts) {
       <td class="${cls(Number(a.price_chg))}">${signed(Number(a.price_chg))}</td>
       <td class="${cls(Number(a.net_24h_musd))}">${money(Number(a.net_24h_musd))}</td>
       <td class="${cls(Number(a.gap))}">${signed(Number(a.gap), 1)}</td>
-      <td style="text-align:left" class="muted">${a.reasons || ''}</td>
+      <td class="wrapcell muted">${a.reasons || ''}</td>
     </tr>`).join('')}</tbody></table>`;
 }
 
@@ -1185,7 +1715,7 @@ if ('serviceWorker' in navigator) {
 
 // kısayol derin bağlantısı: ?tab=screen | smart | genel
 const _tabParam = new URLSearchParams(location.search).get('tab');
-if (['genel', 'smart', 'screen'].includes(_tabParam)) setTab(_tabParam);
+if (['carry', 'dip', 'genel', 'smart', 'screen'].includes(_tabParam)) setTab(_tabParam);
 const _cu = document.getElementById('cloudurl');
 if (_cu) _cu.value = cloudUrl();
 netState();

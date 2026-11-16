@@ -224,6 +224,7 @@
     <button class="tab" id="tab-genel" onclick="setTab('genel')">GENEL</button>
     <button class="tab" id="tab-smart" onclick="setTab('smart')">AKILLI PARA / BALİNA</button>
     <button class="tab" id="tab-screen" onclick="setTab('screen')">TARAYICI — AL / SAT</button>
+    <button class="tab" id="tab-risk" onclick="setTab('risk')">RİSK &amp; SAĞLIK</button>
   </div>
 
   <!-- ============================ KIRA GELIRI ============================ -->
@@ -288,6 +289,7 @@
         <label>Tutar (USD) <input id="qnot" type="number" min="10" step="10" value="100"
           onchange="localStorage.setItem('fc_quick_notional', this.value)"></label>
         <span class="muted">Satırdaki <b>AL</b> bu tutarla açar · <b>KAPAT</b> açık olanı kapatır</span>
+        <span class="muted" id="volhint" style="flex-basis:100%;font-size:11px"></span>
       </div>
       <div id="diptable"><div class="empty"><span class="spin"></span> taranıyor…</div></div>
       <div class="note">Konum %: 0 = 7 günün dibi, 100 = tepesi. Liste dipte olanları üstte gösterir.
@@ -317,12 +319,59 @@
       <div class="note" id="papermsg"></div>
       <hr class="sep">
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <button onclick="telegramTest()">Telegram test mesajı</button>
+        <button onclick="telegramTest()" id="tgtest">Telegram test mesajı</button>
+        <button onclick="tgToggle()" id="tgtoggle">Telegram'ı aç / kapat</button>
         <span class="muted" id="tgstate" style="font-size:11px"></span>
       </div>
       <div class="note">Stop/hedef boş bırakılırsa <b>ölçülen +24s çeyreklerinden</b> gelir
         (p25 → stop, p75 → hedef). Pozisyon açılınca, stop veya hedefe değince Telegram'a
         bildirim gider. Token yoksa mesajlar kuyruğa yazılır, panelde görünür.</div>
+    </div>
+  </section>
+
+
+  <!-- ========================== RİSK & SAĞLIK ========================== -->
+  <section id="view-risk" class="hidden">
+    <div class="kpis">
+      <div class="kpi"><div class="lbl">Brüt Maruziyet</div><div class="val" id="r1">—</div><div class="sub">carry 2× + yön</div></div>
+      <div class="kpi"><div class="lbl">En Kötü Stres</div><div class="val" id="r2">—</div><div class="sub">basis ±%1</div></div>
+      <div class="kpi"><div class="lbl">Risk Seviyesi</div><div class="val" id="r3">—</div><div class="sub" id="r3s">senaryo</div></div>
+      <div class="kpi"><div class="lbl">Veri Sağlığı</div><div class="val" id="r4">—</div><div class="sub" id="r4s">tazelik</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Stres Testi <span class="muted" style="text-transform:none;letter-spacing:0">basis açılırsa / funding dönerse</span></h2>
+      <div id="risktable"><div class="empty"><span class="spin"></span> hesaplanıyor…</div></div>
+      <div class="note" id="risknote"></div>
+    </div>
+
+    <div class="card">
+      <h2>Oynaklık Rejimi <span class="muted" style="text-transform:none;letter-spacing:0">ölçülen tek işe yarar sinyal (AUC ~0.61)</span></h2>
+      <div id="voltable"><div class="empty">yükleniyor…</div></div>
+      <div class="note">Yüksek oynaklıkta önerilen tutar küçültülür, stop genişletilir — aynı risk için.
+        AL düğmesi bu öneriyi kullanır (tutar alanı boşsa).</div>
+    </div>
+
+    <div class="card">
+      <h2>Carry Sağlığı <span class="muted" style="text-transform:none;letter-spacing:0">funding trendi + basis primi + giriş skoru</span></h2>
+      <div id="chtable"><div class="empty">yükleniyor…</div></div>
+      <div class="note" id="chnote"></div>
+    </div>
+
+    <div class="card">
+      <h2>Borsa Farkı <span class="muted" style="text-transform:none;letter-spacing:0">Binance · Bybit · OKX funding farkı</span></h2>
+      <div id="xftable"><div class="empty">yükleniyor… (10 dk önbellek)</div></div>
+      <div class="note" id="xfnote"></div>
+    </div>
+
+    <div class="card">
+      <h2>Sağlık Kontrolü <span class="muted" style="text-transform:none;letter-spacing:0">sessiz hata yok</span></h2>
+      <div id="hlthtable"><div class="empty">yükleniyor…</div></div>
+    </div>
+
+    <div class="card">
+      <h2>İşlem Günlüğü <span class="muted" style="text-transform:none;letter-spacing:0">kendi isabet oranın</span></h2>
+      <div id="jrtable"><div class="empty">yükleniyor…</div></div>
     </div>
   </section>
 
@@ -494,6 +543,7 @@ function setTab(t) {
   tab = t;
   document.getElementById('view-carry').classList.toggle('hidden', t !== 'carry');
   document.getElementById('view-dip').classList.toggle('hidden', t !== 'dip');
+  document.getElementById('view-risk').classList.toggle('hidden', t !== 'risk');
   document.getElementById('view-genel').classList.toggle('hidden', t !== 'genel');
   document.getElementById('view-smart').classList.toggle('hidden', t !== 'smart');
   document.getElementById('view-screen').classList.toggle('hidden', t !== 'screen');
@@ -501,11 +551,13 @@ function setTab(t) {
   if (qn && !qn.dataset.init) { qn.value = quickNotional(); qn.dataset.init = '1'; }
   document.getElementById('tab-carry').classList.toggle('active', t === 'carry');
   document.getElementById('tab-dip').classList.toggle('active', t === 'dip');
+  document.getElementById('tab-risk').classList.toggle('active', t === 'risk');
   document.getElementById('tab-genel').classList.toggle('active', t === 'genel');
   document.getElementById('tab-smart').classList.toggle('active', t === 'smart');
   document.getElementById('tab-screen').classList.toggle('active', t === 'screen');
   if (t === 'carry') loadCarry(false);
   if (t === 'dip') { loadDip(false); loadPaper(false); startLivePrices(); refreshPrices(); }
+  if (t === 'risk') loadRiskHealth(false);
   if (t === 'smart') {
     // Veri zaten elde varsa (statik mod / onceki tarama) dogrudan ciz;
     // yoksa tara. Boylece sekme degisimi her zaman dolu bir tablo gosterir.
@@ -805,8 +857,155 @@ function renderAnalysis(a) {
   drawScoreChart(a.symbols);
 }
 
+/* --------------------------- RİSK & SAĞLIK --------------------------- */
+let riskPayload = null, volPayload = null;
+
+async function jgetSafe(url) {
+  try { return await jget(url); } catch (e) { return { error: e.message }; }
+}
+
+async function loadRiskHealth(force) {
+  const [r, v, ch, xf, h, jr] = await Promise.all([
+    jgetSafe('/api/risk'), jgetSafe('/api/vol'), jgetSafe('/api/carry-health'),
+    jgetSafe('/api/xfund'), jgetSafe('/api/health'), jgetSafe('/api/journal')]);
+
+  /* --- KPI --- */
+  const setKpi = (id, txt, cls, sub) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = txt;
+    if (cls !== undefined) el.className = 'val ' + (cls || '');
+    if (sub) { const s2 = document.getElementById(id + 's'); if (s2) s2.textContent = sub; }
+  };
+  if (!r.error) {
+    riskPayload = r;
+    setKpi('r1', fmt(r.gross_exposure, 0) + '$', 'muted', `${r.carry_positions} carry · ${r.paper_positions} yön`);
+    const worst = r.worst_case_usd || 0;
+    setKpi('r2', signed(worst, 2) + '$', cls(worst), 'basis ±%1 · funding dönüşü');
+    setKpi('r3', String(r.risk_level || '—').toUpperCase(), r.risk_level === 'yuksek' ? 'neg' : r.risk_level === 'orta' ? 'muted' : 'pos', r.verdict);
+  }
+  if (!h.error) {
+    const bad = (h.problems || []).length;
+    setKpi('r4', bad ? bad + ' SORUN' : 'NORMAL', bad ? 'neg' : 'pos', h.summary);
+  }
+
+  /* --- risk tablosu --- */
+  const rt = document.getElementById('risktable');
+  if (r.error) rt.innerHTML = `<div class="empty neg">${r.error}</div>`;
+  else {
+    const label = { basis_plus_1pct: 'basis +%1 açılır', basis_minus_1pct: 'basis −%1 açılır',
+                    funding_flip_3d: 'funding 3 gün tersine', single_symbol_minus_10pct: 'yön pozisyonu −%10' };
+    rt.innerHTML = `<table><thead><tr><th>Senaryo</th><th>Etki (USD)</th></tr></thead><tbody>
+      ${Object.entries(r.stress || {}).map(([k, v]) => `<tr>
+        <td>${label[k] || k}</td><td class="${cls(v)}"><b>${signed(v, 2)}</b></td></tr>`).join('')}
+      </tbody></table>
+      <div class="note">Yoğunlaşma: en büyük pozisyon %${r.top_position_share_pct} · BTC/ETH payı %${r.btc_eth_share_pct}
+      · ${r.net_delta_note}</div>`;
+    document.getElementById('risknote').textContent = r.assumptions
+      ? `Varsayım: basis şoku %${r.assumptions.basis_shock_pct} · funding günlük %${r.assumptions.funding_flip_daily_pct} · yön şoku %${r.assumptions.paper_direction_shock_pct}`
+      : '';
+  }
+
+  /* --- oynaklık --- */
+  const vt = document.getElementById('voltable');
+  if (v.error) vt.innerHTML = `<div class="empty neg">${v.error}</div>`;
+  else {
+    volPayload = {};
+    (v.rows || []).forEach(x => { volPayload[x.symbol] = x; });
+    vt.innerHTML = `<table><thead><tr><th>Sembol</th><th>Rejim</th><th>Yüzdelik</th>
+      <th class="h-sm">24s oynaklık</th><th>Öneri tutar</th><th class="h-sm">Öneri stop</th></tr></thead><tbody>
+      ${(v.rows || []).map(x => `<tr>
+        <td><b>${x.symbol}</b></td>
+        <td class="${x.regime === 'yüksek' ? 'neg' : x.regime === 'sakin' ? 'pos' : 'muted'}">${x.regime}</td>
+        <td class="muted">p${fmt(x.percentile, 0)}</td>
+        <td class="muted h-sm">${fmt(x.vol_24h_pct, 2)}%</td>
+        <td>${x.suggested_notional}$</td>
+        <td class="muted h-sm">${fmt(x.suggested_stop_pct, 1)}%</td></tr>`).join('')}
+      </tbody></table>`;
+  }
+
+  /* --- carry sağlığı --- */
+  const ct = document.getElementById('chtable');
+  if (ch.error) ct.innerHTML = `<div class="empty neg">${ch.error}</div>`;
+  else {
+    ct.innerHTML = `<table><thead><tr><th>Sembol</th><th>Skor</th><th>Yıllık</th>
+      <th class="h-sm">3g trend</th><th class="h-sm">Basis</th><th>Karar</th></tr></thead><tbody>
+      ${(ch.rows || []).slice(0, 12).map(x => `<tr>
+        <td><b>${x.symbol}</b></td>
+        <td class="${x.entry_score >= 65 ? 'pos' : x.entry_score >= 50 ? 'muted' : 'neg'}"><b>${fmt(x.entry_score, 0)}</b></td>
+        <td class="${cls(x.ann_30d_pct)}">${signed(x.ann_30d_pct)}%</td>
+        <td class="${cls(x.trend_3d)} h-sm">${signed(x.trend_3d, 1)}</td>
+        <td class="muted h-sm">${fmt(x.basis_pct, 3)}</td>
+        <td class="muted">${x.verdict}</td></tr>`).join('')}
+      </tbody></table>`;
+    document.getElementById('chnote').textContent = ch.note || '';
+  }
+
+  /* --- borsa farkı --- */
+  const xft = document.getElementById('xftable');
+  if (xf.error) xft.innerHTML = `<div class="empty neg">${xf.error}</div>`;
+  else {
+    xft.innerHTML = `<table><thead><tr><th>Sembol</th><th>Fark (yıllık)</th>
+      <th class="h-sm">Long</th><th class="h-sm">Short</th><th class="h-sm">Oranlar</th></tr></thead><tbody>
+      ${(xf.rows || []).slice(0, 10).map(x => `<tr>
+        <td><b>${x.symbol}</b></td>
+        <td class="${cls(x.spread_ann_pct)}"><b>${signed(x.spread_ann_pct, 2)}%</b></td>
+        <td class="muted h-sm">${x.long_on}</td>
+        <td class="muted h-sm">${x.short_on}</td>
+        <td class="muted h-sm">${Object.entries(x.rates_pct_8h || {}).map(([k, v]) => `${k.slice(0, 3)} ${v}`).join(' · ')}</td>
+      </tr>`).join('')}
+      </tbody></table>`;
+    document.getElementById('xfnote').textContent = xf.note || '';
+  }
+
+  /* --- sağlık --- */
+  const ht = document.getElementById('hlthtable');
+  if (h.error) ht.innerHTML = `<div class="empty neg">${h.error}</div>`;
+  else {
+    ht.innerHTML = `<table><thead><tr><th>Kontrol</th><th>Durum</th><th>Ayrıntı</th></tr></thead><tbody>
+      ${(h.checks || []).map(c => `<tr><td>${c.name}</td>
+        <td class="${c.ok ? 'pos' : 'neg'}">${c.ok ? '✓' : '✗'}</td>
+        <td class="muted">${c.detail || ''}</td></tr>`).join('')}
+      </tbody></table>`;
+  }
+
+  /* --- günlük --- */
+  const jt = document.getElementById('jrtable');
+  if (jr.error) jt.innerHTML = `<div class="empty neg">${jr.error}</div>`;
+  else if (!jr.available) jt.innerHTML = `<div class="empty">${jr.note || 'kapanan işlem yok'}</div>`;
+  else {
+    jt.innerHTML = `<table><thead><tr><th>İşlem</th><th>İsabet</th><th>Beklenti</th>
+      <th class="h-sm">Ort. kazanç</th><th class="h-sm">Ort. kayıp</th><th class="h-sm">Toplam</th></tr></thead><tbody>
+      <tr><td><b>${jr.trades}</b></td>
+        <td class="${jr.hit_rate_pct >= 50 ? 'pos' : 'neg'}"><b>${fmt(jr.hit_rate_pct, 1)}%</b></td>
+        <td class="${cls(jr.expectancy_pct)}">${signed(jr.expectancy_pct)}%</td>
+        <td class="pos h-sm">${signed(jr.avg_win_pct)}%</td>
+        <td class="neg h-sm">${signed(jr.avg_loss_pct)}%</td>
+        <td class="${cls(jr.total_pnl_pct)} h-sm">${signed(jr.total_pnl_pct)}%</td></tr>
+      </tbody></table>
+      <div class="note">${jr.note || ''} · kapanış nedenleri: ${Object.entries(jr.close_reasons || {}).map(([k, v]) => `${k} ${v}`).join(', ')}</div>`;
+  }
+}
+
 /* ---------------------- DİP & POZİSYON (paper) ---------------------- */
 let dipPayload = null, paperPayload = null;
+
+async function tgToggle() {
+  const cur = paperPayload && paperPayload.telegram ? paperPayload.telegram : {};
+  const turnOn = !(cur.configured && cur.enabled !== false);
+  const msg = document.getElementById('papermsg');
+  try {
+    const r = await fetch('/api/telegram/toggle', { method: 'POST',
+      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ on: turnOn }) });
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
+    if (paperPayload) { paperPayload.telegram = d.telegram; renderPaper(paperPayload); }
+    msg.innerHTML = `<span class="pos">Telegram ${turnOn ? 'açıldı' : 'kapatıldı'}.</span>`;
+  } catch (e) {
+    msg.innerHTML = `<span class="neg">${e.message}` +
+      (String(e.message).includes('403') ? ' — bu düğme yalnızca bilgisayardaki panelde çalışır.' : '') + '</span>';
+  }
+}
 
 function verdictClass(v) {
   if (v === 'goreli_avantaj') return 'warn';
@@ -858,6 +1057,16 @@ function renderDip(d) {
     cell('+4s medyan', h4 && h4.dip ? signed(h4.dip.median) + '%' : '—', h4 && h4.dip ? cls(h4.dip.median) : 'muted'),
     cell('taban medyan', signed(h24.baseline.median) + '%', 'muted'),
   ].join('');
+  (function volHint() {
+    const el = document.getElementById('volhint');
+    if (!el) return;
+    if (!volPayload) { el.textContent = ''; return; }
+    const hi = (rows || []).filter(r => volPayload[r.symbol] && volPayload[r.symbol].regime === 'yüksek')
+      .slice(0, 3)
+      .map(r => `${r.symbol} ${volPayload[r.symbol].suggested_notional}$ (stop ${volPayload[r.symbol].suggested_stop_pct}%)`);
+    el.textContent = hi.length ? 'Yüksek oynaklık — öneri: ' + hi.join(' · ') : '';
+  })();
+
   document.getElementById('dipbandnote').innerHTML =
     `Bu sayılar <b>geçmişte gerçekleşmiş</b> getiriler; tahmin değil. Örnek: +24s medyan ` +
     `${signed(h24.dip.median)}% ise dipten alınan pozisyonların yarısı bundan daha kötü kapatmıştır. ` +
@@ -984,13 +1193,21 @@ function renderPaper(p) {
   d3.textContent = signed(p.realized_usd, 2) + '$'; d3.className = 'val ' + cls(p.realized_usd);
   const tg = p.telegram || {};
   const d4 = document.getElementById('d4');
-  d4.textContent = tg.configured ? 'BAĞLI' : 'YOK';
-  d4.className = 'val ' + (tg.configured ? 'pos' : 'neg');
-  document.getElementById('d4s').textContent = tg.configured ? 'stop/hedef bildirimi açık'
-    : (tg.pending_unsent ? `${tg.pending_unsent} mesaj kuyrukta` : 'token yok — mesajlar kuyrukta');
-  document.getElementById('tgstate').textContent = tg.configured
-    ? 'Telegram bağlı.' 
-    : 'Telegram bağlı değil: bot token + chat id gerekiyor (README → Telegram).';
+  const tgOn = tg.configured && tg.enabled !== false;
+  d4.textContent = tgOn ? 'BAĞLI' : (tg.has_token ? 'KAPALI' : 'YOK');
+  d4.className = 'val ' + (tgOn ? 'pos' : 'neg');
+  document.getElementById('d4s').textContent = tgOn ? 'stop/hedef bildirimi açık'
+    : (tg.has_token ? 'senin isteğinle kapalı · açmak için aşağıdaki düğme'
+                    : 'token yok — mesajlar kuyrukta');
+  ['tgtest', 'tgtoggle'].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) b.style.display = sm ? 'none' : '';
+  });
+  document.getElementById('tgstate').textContent = tgOn
+    ? `Telegram açık · ${tg.pending_unsent || 0} bekleyen mesaj kuyrukta.`
+    : (tg.has_token
+        ? `Telegram KAPALI (senin isteğinle). ${tg.pending_unsent || 0} mesaj kuyrukta bekliyor.`
+        : 'Telegram bağlı değil: bot token + chat id gerekiyor (README → Telegram).');
 
   const host = document.getElementById('papertable');
   const rows = [...(p.positions || []).filter(x => x.status === 'open'), ...locals];
@@ -1010,7 +1227,8 @@ function renderPaper(p) {
       <td class="muted h-sm">${x.to_stop_pct === null ? '—' : signed(x.to_stop_pct, 1) + '%'}</td>
       <td class="muted h-sm">${x.to_target_pct === null ? '—' : signed(x.to_target_pct, 1) + '%'}</td>
       <td class="muted h-sm">${x.hours_open === null ? '—' : fmt(x.hours_open, 1) + ' sa'}</td>
-      <td><button onclick="closePaper('${x.id}','${x.symbol}',${x.local ? 'true' : 'false'})" title="kapat">×</button></td>
+      <td>${(sm && !x.local) ? '<span class="muted" style="font-size:10px">sunucuda</span>'
+        : `<button onclick="closePaper('${x.id}','${x.symbol}',${x.local ? 'true' : 'false'})" title="kapat">×</button>`}</td>
     </tr>`).join('')}</tbody></table>`;
 
   // --- stop / hedef uyarilari (canli fiyatla) ---
@@ -1921,7 +2139,7 @@ if ('serviceWorker' in navigator) {
 
 // kısayol derin bağlantısı: ?tab=screen | smart | genel
 const _tabParam = new URLSearchParams(location.search).get('tab');
-if (['carry', 'dip', 'genel', 'smart', 'screen'].includes(_tabParam)) setTab(_tabParam);
+if (['carry', 'dip', 'risk', 'genel', 'smart', 'screen'].includes(_tabParam)) setTab(_tabParam);
 const _cu = document.getElementById('cloudurl');
 if (_cu) _cu.value = cloudUrl();
 netState();

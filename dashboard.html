@@ -75,6 +75,50 @@
   .sbar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
   .hidden{display:none}
   #screentable,#smarttable,#livetable,#alertlist,#carrytable,#carrycand{overflow-x:auto}
+  /* Telefon (<=640px): genis tablolarin ikincil kolonlarini gizle.
+     Boylece bilgi "yana kaymaz", ekrana sigar. Kaydirma yalnizca yedek yol. */
+  @media(max-width:640px){
+    /* Mobil tablo sıkılaştırma: 390px'e sığsın, kaydırma gerekmesin */
+    #carrytable table,#smarttable table,#screentable table,#livetable table,#carrycand table{font-size:10px}
+    #carrytable th,#carrytable td,#smarttable th,#smarttable td,
+    #screentable th,#screentable td,#livetable th,#livetable td,
+    #carrycand th,#carrycand td{padding:4px 3px}
+    #carrytable th,#smarttable th,#screentable th,#livetable th{white-space:nowrap}
+    /* sembol altindaki uzun not ve skor cubugu mobilde yeri yiyor */
+    #carrytable td > div{display:none}
+    .sbar{width:34px}
+    /* gerekce/yorum hucresi: uzun metin tabloyu sismesin */
+    .wrapcell{max-width:120px;white-space:normal;text-align:left}
+    #carrytable th:nth-child(3),#carrytable td:nth-child(3),
+    #carrytable th:nth-child(5),#carrytable td:nth-child(5),
+    #carrytable th:nth-child(7),#carrytable td:nth-child(7),
+    #carrytable th:nth-child(8),#carrytable td:nth-child(8),
+    #carrytable th:nth-child(10),#carrytable td:nth-child(10),
+    #carrytable th:nth-child(11),#carrytable td:nth-child(11),
+    #carrytable th:nth-child(12),#carrytable td:nth-child(12){display:none}
+    #carrycand th:nth-child(3),#carrycand td:nth-child(3),
+    #carrycand th:nth-child(5),#carrycand td:nth-child(5),
+    #carrycand th:nth-child(7),#carrycand td:nth-child(7),
+    #carrycand th:nth-child(8),#carrycand td:nth-child(8){display:none}
+    #livetable th:nth-child(2),#livetable td:nth-child(2),
+    #livetable th:nth-child(4),#livetable td:nth-child(4),
+    #livetable th:nth-child(6),#livetable td:nth-child(6),
+    #livetable th:nth-child(8),#livetable td:nth-child(8),
+    #livetable th:nth-child(9),#livetable td:nth-child(9){display:none}
+    #smarttable th:nth-child(2),#smarttable td:nth-child(2),
+    #smarttable th:nth-child(3),#smarttable td:nth-child(3),
+    #smarttable th:nth-child(5),#smarttable td:nth-child(5),
+    #smarttable th:nth-child(6),#smarttable td:nth-child(6),
+    #smarttable th:nth-child(7),#smarttable td:nth-child(7){display:none}
+    #screentable th:nth-child(2),#screentable td:nth-child(2),
+    #screentable th:nth-child(4),#screentable td:nth-child(4),
+    #screentable th:nth-child(7),#screentable td:nth-child(7),
+    #screentable th:nth-child(8),#screentable td:nth-child(8),
+    #screentable th:nth-child(9),#screentable td:nth-child(9),
+    #screentable th:nth-child(10),#screentable td:nth-child(10),
+    #screentable th:nth-child(11),#screentable td:nth-child(11),
+    #screentable th:nth-child(12),#screentable td:nth-child(12){display:none}
+  }
   tr.rowclick{cursor:pointer}
   .breadth{display:flex;gap:14px;flex-wrap:wrap;align-items:center;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:9px 13px;margin-bottom:11px;font-size:11.5px}
   .breadth b{font-variant-numeric:tabular-nums}
@@ -708,7 +752,7 @@ function renderCarry(c) {
       <td class="muted">${p.basis_now_pct === null ? '—' : signed(p.basis_now_pct, 3)}</td>
       <td class="muted">${p.hours_to_next === null ? '—' : fmt(p.hours_to_next, 1) + ' sa'}</td>
       <td>${p.warnings.length
-            ? `<span class="tag no" title="${p.warnings.join(' | ')}">${p.delta_neutral ? 'UYARI' : 'DELTA-NÖTR DEĞİL'}</span>`
+            ? `<span class="tag no" title="${p.warnings.join(' | ')}">${p.delta_neutral ? 'UYARI' : 'RİSK'}</span>`
             : '<span class="tag ok">NORMAL</span>'}</td>
       <td>${canWrite ? `<button onclick="removePosition('${p.id}','${p.symbol}')" title="sil">×</button>` : ''}</td>
     </tr>`).join('')}</tbody></table>
@@ -885,7 +929,7 @@ function renderSmartTable(r) {
       <td class="${cls(x.whale_net_musd)}">${money(x.whale_net_musd)}</td>
       <td><span class="sbar"><i style="width:${x.score}%;background:${x.score >= 60 ? 'var(--good2)' : x.score >= 40 ? 'var(--warn)' : 'var(--bad)'}"></i></span>
           <span class="muted" style="margin-left:5px">${fmt(x.score, 0)}</span></td>
-      <td style="text-align:left"><span class="tag ${x.tone}" title="${x.detail || ''}">${x.label}</span></td>
+      <td class="wrapcell"><span class="tag ${x.tone}" title="${x.detail || ''}">${x.label}</span></td>
     </tr>`).join('')}</tbody></table>`;
 
   host.querySelectorAll('canvas.spark').forEach(cv => {
@@ -1151,7 +1195,7 @@ function renderScreen(r) {
         <td class="${cls(x.top_retail_gap)}">${signed(x.top_retail_gap, 1)}</td>
         <td class="${cls(x.whale_net_musd)}">${money(x.whale_net_musd)}</td>
         <td class="${cls(x.ann_funding_pct)}">${signed(x.ann_funding_pct, 0)}</td>
-        <td style="text-align:left" class="muted">${(x.reasons || []).slice(0, 3).join(', ')}</td>
+        <td class="wrapcell muted">${(x.reasons || []).slice(0, 3).join(', ')}</td>
       </tr>`).join('')}</tbody></table>`;
 
     host.querySelectorAll('canvas.spark').forEach(cv => {

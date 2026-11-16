@@ -1,0 +1,38 @@
+Mobil yerlesim duzeltmesi — dogrulama kaniti
+Tarih: 2026-11-16 10:27 (+03)  |  Panel: /root/binance-bot/dashboard.html  |  APK: FundingCarry-1.5.apk
+
+SORUN
+  Telefonda "bilgiler yana tasiyor" sikayeti. Kok neden: kurulu APK 1.4, mobil tasma
+  duzeltmesinden (overflow-x + kolon gizleme) ONCE derlenmisti. Ayrica tablolar 390px
+  ekrana sigmiyordu (carry 1022px, genel 630px).
+
+YAPILAN
+  1) Tablo kapsayicilarina overflow-x:auto (sayfa tasmasi yerine kart icinde kaydirma)
+  2) <=640px: ikincil kolonlar gizlenir (nth-child kurallari)
+  3) Mobil sikilastirma: tablo fontu 10px, hucre dolgusu 4px 3px, skor cubugu 34px
+  4) Uzun metin hucreleri .wrapcell (max-width 120px, satir kirar)
+  5) Sembol altindaki uzun not mobilde gizli
+
+OLCUM (390px genislik, iframe ile gercek DOM)
+  Sekme     Sayfa tasmasi   Tablo genisligi
+  carry     -15px (yok)     331px  (kapsayici genisligi = sigiyor)
+  genel     -15px (yok)     331px
+  smart     -15px (yok)     331px
+  screen    -15px (yok)     331px
+  ONCE: carry 1022px, genel 630px, smart 564px, screen 637px -> kaydirma gerekiyordu
+  SONRA: hepsi 331px, yatay kaydirma yok.
+
+APK ARTEFAKT KONTROLU (app-debug.apk -> FundingCarry-1.5.apk)
+  package versionName 1.5 / versionCode 6                      OK
+  assets/public/index.html icinde "carrycand{overflow-x:auto}" 1 kez   OK
+  "wrapcell" 3 kez, "th:nth-child(12)" 2 kez                   OK
+  "KİRA GELİRİ" 2 kez                                          OK
+  apksigner verify                                             EXIT=0 (yalnizca zararsiz META-INF uyarilari)
+  sw.js APK icinde yok — beklenen: Capacitor WebView servis calistirici kullanmaz,
+  sw.js yalnizca PWA/tarayici yolu icin (orada v5'e yukseltildi).
+
+KAPSAM DISI
+  Fiziksel telefonda kurulum sonrasi gorsel kontrol (cihazda kurulum kullaniciya ait).
+  Gercek cihaz genisligi 360px ise: tablolar 331px kapsayiciya sigmaya devam eder
+  (kapsayici ekran genisligine gore daralir), ancak cok dar cihazlarda kart ici
+  kaydirma yedek yol olarak kalir.

@@ -67,3 +67,6 @@
 {"ts": "2026-11-16T17:06:24.661213+00:00", "text": "<b>Pozisyon elle kapatıldı</b> BTCUSDT\nPnL +0.00% (+0.00$)", "key": "close:7173c2ca", "status": "no_credentials"}
 {"ts": "2026-11-16T17:06:45.647114+00:00", "text": "<b>Pozisyon açıldı</b> BTCUSDT\nGiriş: 64870.1$ · Notional: 400$\nStop: 62145.6$ (-4.20%) · Hedef: 66485.4$ (+2.49%)\n<i>Kâğıt pozisyon — gerçek emir gönderilmedi.</i>", "key": "open:BTCUSDT:fe4c91f8", "status": "no_credentials"}
 {"ts": "2026-11-16T17:06:46.569035+00:00", "text": "<b>Pozisyon elle kapatıldı</b> BTCUSDT\nPnL +0.01% (+0.02$)", "key": "close:fe4c91f8", "status": "no_credentials"}
+{"ts": "2026-11-16T17:34:20.455552+00:00", "text": "<b>Pozisyon açıldı</b> BTCUSDT\nGiriş: 64856.1$ · Notional: 400$\nStop: 62132.1$ (-4.20%) · Hedef: 66471$ (+2.49%)\n<i>Kâğıt pozisyon — gerçek emir gönderilmedi.</i>", "key": "open:BTCUSDT:52d5120a", "status": "no_credentials"}
+{"ts": "2026-11-16T17:34:21.366637+00:00", "text": "<b>Pozisyon elle kapatıldı</b> BTCUSDT\nPnL +0.00% (+0.00$)", "key": "close:52d5120a", "status": "no_credentials"}
+{"ts": "2026-11-16T17:34:24.591062+00:00", "text": "<b>Funding Carry</b>\nTest mesajı — bildirim kanalı çalışıyor.", "key": "test", "status": "dry_run"}

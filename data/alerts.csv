@@ -26,3 +26,6 @@ ts,symbol,signal,conditions,score,price_chg,net_24h_musd,oi_24h,gap,whale_net_mu
 2026-11-16T07:00:30.393345+00:00,LINKUSDT,AL,3,49.2,0.27,4.8,-4.29,-1.0,1.24,0.0020109999999999998,2.2,para girisi; balina alici; fiyat yukari
 2026-11-16T08:00:38.440454+00:00,ENAUSDT,AL,3,55.7,0.33,2.64,-2.23,5.6,-0.15,0.005,5.5,para girisi; buyuk>kucuk long; fiyat yukari
 2026-11-16T08:00:38.440454+00:00,XMRUSDT,AL,3,46.8,0.83,0.77,-3.71,-3.5,0.7,0.009044,9.9,para girisi; balina alici; fiyat yukari
+2026-11-16T08:30:51.608144+00:00,PIEVERSEUSDT,AL,3,53.8,-4.11,0.86,-3.76,13.5,0.29,0.005,5.5,para girisi; balina alici; buyuk>kucuk long
+2026-11-16T08:30:51.608144+00:00,BTCUSDT,SAT,3,48.9,-0.15,-197.64,-3.49,-9.6,119.95,0.00063,0.7,para cikisi; buyuk<kucuk long; fiyat asagi
+2026-11-16T08:30:51.608144+00:00,LTCUSDT,SAT,3,47.1,-0.22,1.27,-0.87,-2.3,0.0,-0.006255999999999999,-6.9,balina satici; buyuk<kucuk long; fiyat asagi

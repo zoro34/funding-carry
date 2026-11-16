@@ -181,7 +181,8 @@ def build() -> dict:
         health_rep = {"ok": hs["ok"], "summary": hs["summary"],
                       "problems": hs["problems"],
                       "checks": [{"name": c["name"], "ok": c["ok"], "detail": c.get("detail", "")}
-                                 for c in hs["checks"]]}
+                                 for c in hs["checks"]
+                                 if not c["name"].startswith("bulut verisi")]}
     except Exception as e:
         health_rep = {"ok": False, "summary": str(e), "problems": [str(e)], "checks": []}
 

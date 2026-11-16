@@ -728,7 +728,9 @@ async function refresh(force) {
     const cu = cloudUrl();
     if (cu) {
       try {
-        const d = await jget(cu, { cache: 'no-store' });
+        // CDN/tarayıcı önbelleğini atla: her istekte zaman damgası
+        const bust = cu + (cu.includes('?') ? '&' : '?') + 'v=' + Date.now();
+        const d = await jget(bust, { cache: 'no-store' });
         renderCloudPayload(d);
         st.textContent = 'bulut · ' + new Date().toLocaleTimeString('tr-TR');
         btn.disabled = false; btn.textContent = 'Yenile';
@@ -918,12 +920,12 @@ function applyRiskHealth(r, v, ch, xf, h, jr) {
   else {
     const label = { basis_plus_1pct: 'basis +%1 açılır', basis_minus_1pct: 'basis −%1 açılır',
                     funding_flip_3d: 'funding 3 gün tersine', single_symbol_minus_10pct: 'yön pozisyonu −%10' };
-    rt.innerHTML = `<table><thead><tr><th>Senaryo</th><th>Etki (USD)</th></tr></thead><tbody>
+    rt.innerHTML = `<table><thead><tr><th>Senaryo</th><th>Etki (${r.amounts_hidden ? '%' : 'USD'})</th></tr></thead><tbody>
       ${Object.entries(r.amounts_hidden ? (r.stress_pct || {}) : (r.stress || {})).map(([k, v]) => `<tr>
         <td>${label[k] || k}</td><td class="${cls(v)}"><b>${signed(v, 2)}${r.amounts_hidden ? '%' : ''}</b></td></tr>`).join('')}
       </tbody></table>
       <div class="note">Yoğunlaşma: en büyük pozisyon %${r.top_position_share_pct} · BTC/ETH payı %${r.btc_eth_share_pct}
-      · ${r.net_delta_note}</div>`;
+      · ${r.note || r.net_delta_note || ''}</div>`;
     document.getElementById('risknote').textContent = r.assumptions
       ? `Varsayım: basis şoku %${r.assumptions.basis_shock_pct} · funding günlük %${r.assumptions.funding_flip_daily_pct} · yön şoku %${r.assumptions.paper_direction_shock_pct}`
       : '';

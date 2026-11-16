@@ -16,3 +16,9 @@
 {"ts": "2026-11-16T15:58:12.403203+00:00", "text": "<b>Elif</b> günlük ekran süresini aştı: 214 dk (limit 120 dk)", "key": "family:44c21576:screen_limit", "status": "dry_run"}
 {"ts": "2026-11-16T15:58:12.428377+00:00", "text": "<b>Elif</b> kısıtlı uygulama kullandı: com.mojang.minecraftpe 20dk", "key": "family:44c21576:blocked_app", "status": "dry_run"}
 {"ts": "2026-11-16T15:58:12.437841+00:00", "text": "<b>Elif</b> · com.whatsapp limiti aşıldı: 45 dk (limit 30 dk)", "key": "family:44c21576:app_limit:com.whatsapp", "status": "dry_run"}
+{"ts": "2026-11-16T16:00:03.078237+00:00", "text": "<b>VERIFY-AJAN</b> günlük ekran süresini aştı: 95 dk (limit 30 dk)", "key": "family:a04e9147:screen_limit", "status": "no_credentials"}
+{"ts": "2026-11-16T16:00:31.149556+00:00", "text": "<b>VERIFY-AJAN</b> günlük ekran süresini aştı: 95 dk (limit 30 dk)", "key": "family:92956cf6:screen_limit", "status": "no_credentials"}
+{"ts": "2026-11-16T16:00:55.681040+00:00", "text": "<b>VERIFY-AJAN</b> günlük ekran süresini aştı: 95 dk (limit 30 dk)", "key": "family:0562bf86:screen_limit", "status": "no_credentials"}
+{"ts": "2026-11-16T16:01:40.966455+00:00", "text": "<b>VERIFY-AJAN</b> günlük ekran süresini aştı: 95 dk (limit 30 dk)", "key": "family:5090a925:screen_limit", "status": "no_credentials"}
+{"ts": "2026-11-16T16:02:12.294653+00:00", "text": "<b>VERIFY-AJAN</b> günlük ekran süresini aştı: 95 dk (limit 30 dk)", "key": "family:81d9cb39:screen_limit", "status": "no_credentials"}
+{"ts": "2026-11-16T16:12:55.968013+00:00", "text": "<b>VERIFY-AJAN</b> günlük ekran süresini aştı: 95 dk (limit 30 dk)", "key": "family:ff15a653:screen_limit", "status": "no_credentials"}

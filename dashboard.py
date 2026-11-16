@@ -478,10 +478,12 @@ def api_family_report():
 def family_apk():
     """Ajan APK'sını paylaş (davet sayfasından indirme)."""
     share = Path("/root/apk-share")
-    name = "AileAjani-0.1.apk"
-    if not (share / name).exists():
-        return jsonify({"error": "APK bulunamadı"}), 404
-    return send_from_directory(share, name, mimetype="application/vnd.android.package-archive")
+    # imzalı sürüm varsa onu ver (Play Protect debug anahtarını daha çok işaretliyor)
+    for name in ("AileAjani-0.1-imzali.apk", "AileAjani-0.1.apk"):
+        if (share / name).exists():
+            return send_from_directory(share, name,
+                                       mimetype="application/vnd.android.package-archive")
+    return jsonify({"error": "APK bulunamadı"}), 404
 
 
 @app.get("/aile-davet")

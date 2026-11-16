@@ -23,6 +23,7 @@ from pathlib import Path
 
 from flask import Flask, jsonify, request, send_from_directory
 
+import alerts
 import analytics
 import carry
 import carry_health
@@ -476,6 +477,47 @@ def api_watch_clear():
     if not _write_allowed():
         return jsonify({"error": "sadece yerel makineden"}), 403
     return jsonify(watch.clear())
+
+
+
+@app.get("/api/alarms")
+def api_alarms():
+    return jsonify(alerts.status())
+
+
+@app.post("/api/alarms/add")
+def api_alarms_add():
+    if not _write_allowed():
+        return jsonify({"error": "sadece yerel makineden"}), 403
+    d = request.get_json(silent=True) or {}
+    try:
+        a = alerts.add(d.get("symbol", ""), d.get("kind", ""), d.get("value"),
+                       d.get("note", ""), one_shot=bool(d.get("one_shot", True)))
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    return jsonify({"ok": True, "alarm": a, "status": alerts.status()})
+
+
+@app.post("/api/alarms/toggle")
+def api_alarms_toggle():
+    if not _write_allowed():
+        return jsonify({"error": "sadece yerel makineden"}), 403
+    d = request.get_json(silent=True) or {}
+    try:
+        a = alerts.toggle(d.get("id", ""), d.get("enabled"))
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 404
+    return jsonify({"ok": True, "alarm": a, "status": alerts.status()})
+
+
+@app.post("/api/alarms/remove")
+def api_alarms_remove():
+    if not _write_allowed():
+        return jsonify({"error": "sadece yerel makineden"}), 403
+    d = request.get_json(silent=True) or {}
+    if not alerts.remove(d.get("id", "")):
+        return jsonify({"error": "alarm bulunamadı"}), 404
+    return jsonify({"ok": True, "status": alerts.status()})
 
 
 @app.post("/api/telegram/toggle")

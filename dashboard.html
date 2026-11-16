@@ -301,6 +301,31 @@
     </div>
 
     <div class="card">
+      <h2>Alarmlarım <span class="muted" style="text-transform:none;letter-spacing:0">istediğin coin için kendi alarmın</span></h2>
+      <div id="alarmaddbox">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+          <label style="font-size:11px">Sembol<br><input id="asym" placeholder="BTCUSDT" style="width:120px"></label>
+          <label style="font-size:11px">Koşul<br>
+            <select id="akind" style="background:#0b0f14;border:1px solid #26303d;color:#dbe4ee;
+              padding:6px;border-radius:6px">
+              <option value="price_above">fiyat üstüne çıkarsa</option>
+              <option value="price_below">fiyat altına inerse</option>
+              <option value="pct_up">24s değişim +% üstü</option>
+              <option value="pct_down">24s değişim -% altı</option>
+              <option value="funding_above">funding (8s %) üstü</option>
+            </select></label>
+          <label style="font-size:11px">Değer<br><input id="aval" type="number" step="any" style="width:110px"></label>
+          <label style="font-size:11px">Not<br><input id="anote" placeholder="opsiyonel" style="width:130px"></label>
+          <button class="btn-primary" onclick="addAlarm()">Alarm kur</button>
+        </div>
+        <div class="note" id="alarmmsg"></div>
+      </div>
+      <div id="alarmtable"><div class="empty">alarm yok</div></div>
+      <div class="note">Telegram'dan da kurabilirsin: <code>/alarm BTCUSDT &gt; 70000</code> ·
+        <code>/alarmlar</code> · <code>/kapat id</code>. Tek seferlik alarm tetiklenince kapanır.</div>
+    </div>
+
+    <div class="card">
       <h2>Ölçülen Kısa Vade <span class="muted" style="text-transform:none;letter-spacing:0">dip sonrası gerçekleşen getiriler</span></h2>
       <div class="band" id="dipband"></div>
       <div class="note" id="dipbandnote"></div>
@@ -561,7 +586,7 @@ function setTab(t) {
   document.getElementById('tab-smart').classList.toggle('active', t === 'smart');
   document.getElementById('tab-screen').classList.toggle('active', t === 'screen');
   if (t === 'carry') loadCarry(false);
-  if (t === 'dip') { loadWatch(); loadDip(false); loadPaper(false); startLivePrices(); refreshPrices(); }
+  if (t === 'dip') { loadWatch(); loadAlarms(); loadDip(false); loadPaper(false); startLivePrices(); refreshPrices(); }
   if (t === 'risk') loadRiskHealth(false);
   if (t === 'smart') {
     // Veri zaten elde varsa (statik mod / onceki tarama) dogrudan ciz;
@@ -868,6 +893,84 @@ function renderAnalysis(a) {
   document.getElementById('sub').textContent =
     `ilk tarama ${f} · son tarama ${l} · tur maliyeti %${fmt(a.round_trip_cost_pct)}`;
   drawScoreChart(a.symbols);
+}
+
+/* --------------------------- ÖZEL ALARMLAR --------------------------- */
+async function loadAlarms() {
+  const host = document.getElementById('alarmtable');
+  const box = document.getElementById('alarmaddbox');
+  if (!host) return;
+  if (LOCAL_MODE) {
+    if (box) box.classList.add('hidden');
+    host.innerHTML = '<div class="empty">Alarmlar sunucuda çalışır — telefonundan Telegram ile kur: ' +
+      '<code>/alarm BTCUSDT &gt; 70000</code></div>';
+    return;
+  }
+  if (box) box.classList.remove('hidden');
+  try { renderAlarms(await jget('/api/alarms')); }
+  catch (e) { host.innerHTML = `<div class="empty neg">${e.message}</div>`; }
+}
+
+function renderAlarms(s) {
+  const host = document.getElementById('alarmtable');
+  const rows = (s && s.alarms) || [];
+  if (!rows.length) {
+    host.innerHTML = '<div class="empty">Henüz alarm yok. Yukarıdan kur ya da Telegram: /alarm BTCUSDT &gt; 70000</div>';
+    return;
+  }
+  const KINDS = s.kinds || {};
+  host.innerHTML = `<table><thead><tr><th>Sembol</th><th>Koşul</th><th>Değer</th>
+      <th class="h-sm">Not</th><th class="h-sm">Tetik</th><th>Aç/Kapa</th><th></th></tr></thead><tbody>
+    ${rows.map(a => `<tr>
+      <td><b>${a.symbol}</b></td>
+      <td class="muted">${KINDS[a.kind] || a.kind}</td>
+      <td>${a.value}</td>
+      <td class="muted h-sm">${a.note || '—'}</td>
+      <td class="muted h-sm">${a.trigger_count || 0}x</td>
+      <td><button class="mini ${a.enabled ? 'red' : 'green'}"
+        onclick="toggleAlarm('${a.id}')">${a.enabled ? 'KAPAT' : 'AÇ'}</button></td>
+      <td><button onclick="delAlarm('${a.id}')" title="sil">×</button></td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+async function addAlarm() {
+  const msg = document.getElementById('alarmmsg');
+  const body = { symbol: (document.getElementById('asym').value || '').trim(),
+                 kind: document.getElementById('akind').value,
+                 value: document.getElementById('aval').value,
+                 note: (document.getElementById('anote').value || '').trim(),
+                 one_shot: true };
+  if (!body.symbol || body.value === '') { msg.innerHTML = '<span class="neg">Sembol ve değer gerekli.</span>'; return; }
+  try {
+    const r = await fetch('/api/alarms/add', { method: 'POST',
+      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
+    msg.innerHTML = `<span class="pos">Alarm kuruldu: ${d.alarm.symbol} ${d.alarm.value}</span>`;
+    ['asym', 'aval', 'anote'].forEach(id => { document.getElementById(id).value = ''; });
+    renderAlarms(d.status);
+  } catch (e) { msg.innerHTML = `<span class="neg">${e.message}</span>`; }
+}
+
+async function toggleAlarm(id) {
+  try {
+    const r = await fetch('/api/alarms/toggle', { method: 'POST',
+      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
+    renderAlarms(d.status);
+  } catch (e) { document.getElementById('alarmmsg').innerHTML = `<span class="neg">${e.message}</span>`; }
+}
+
+async function delAlarm(id) {
+  if (!confirm('Alarmı silmek istiyor musun?')) return;
+  try {
+    const r = await fetch('/api/alarms/remove', { method: 'POST',
+      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
+    renderAlarms(d.status);
+  } catch (e) { document.getElementById('alarmmsg').innerHTML = `<span class="neg">${e.message}</span>`; }
 }
 
 /* --------------------------- RİSK & SAĞLIK --------------------------- */

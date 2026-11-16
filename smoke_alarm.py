@@ -144,6 +144,50 @@ def t_watch():
     return "boş=dolu filtre, kısa yazım, çift ekleme yok, /izle+/temizle çalışıyor"
 
 
+def t_custom():
+    """Özel coin alarmı: kur, aç/kapa, tek seferlik tetik, API."""
+    import alerts
+    alerts.STORE = TMP / "alarms.json"
+    alerts.clear()
+    a = alerts.add("btc", "price_above", 1, one_shot=True)
+    assert a["symbol"] == "BTCUSDT" and a["enabled"] and a["one_shot"], a
+    # koşul sağlanıyor mu (BTC > 1$ her zaman doğru)
+    res = alerts.evaluate()
+    assert res["fired"], "tetiklenmedi"
+    assert res["fired"][0]["symbol"] == "BTCUSDT"
+    # tek seferlik: tetiklendikten sonra kapalı
+    after = [x for x in alerts.load() if x["id"] == a["id"]][0]
+    assert after["enabled"] is False, "tek seferlik alarm kapanmadı"
+    assert after["trigger_count"] == 1
+    # aç/kapa düğmesi
+    on = alerts.toggle(a["id"])
+    assert on["enabled"] is True, "açma çalışmadı"
+    off = alerts.toggle(a["id"])
+    assert off["enabled"] is False, "kapatma çalışmadı"
+    # geçersiz girdiler
+    for bad in [("", "price_above", 1), ("BTC", "yok", 1), ("BTC", "price_above", "abc")]:
+        try:
+            alerts.add(*bad)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"reddedilmeliydi: {bad}")
+    # API uçları
+    import dashboard
+    cl = dashboard.app.test_client()
+    r = cl.get("/api/alarms")
+    assert r.status_code == 200 and "alarms" in r.get_json()
+    r = cl.post("/api/alarms/add", json={"symbol": "ETHUSDT", "kind": "pct_up", "value": 5})
+    assert r.status_code == 200, r.get_data(as_text=True)[:200]
+    aid = r.get_json()["alarm"]["id"]
+    assert cl.post("/api/alarms/toggle", json={"id": aid}).status_code == 200
+    assert cl.post("/api/alarms/remove", json={"id": aid}).status_code == 200
+    assert cl.post("/api/alarms/remove", json={"id": "yok"}).status_code == 404
+    assert cl.post("/api/alarms/add", json={"symbol": "X", "kind": "kötü", "value": 1}).status_code == 400
+    alerts.clear()
+    return "kur/tetik/tek-sefer/aç-kapa + API 200/400/404"
+
+
 def t_cron():
     log = ROOT / "reports" / "alarm.log"
     before = log.stat().st_size if log.exists() else 0
@@ -176,6 +220,7 @@ for name, fn in [("stop tetigi -> kapat + bildir", t_stop),
                  ("hedef tetigi -> kapat + gerceklesen", t_target),
                  ("dip ozeti cooldown", t_digest),
                  ("bildirim izleme listesi", t_watch),
+                 ("özel coin alarmı", t_custom),
                  ("cron sarmalayici paper_alarm.sh", t_cron),
                  ("telegram_kur.sh (kurulum akisi)", t_tg_kur)]:
     check(name, fn)

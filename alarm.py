@@ -12,6 +12,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+import alerts
 import notify
 import watch
 import paper
@@ -43,6 +44,14 @@ def dip_digest() -> dict | None:
     return notify.send("\n".join(lines), key=key, cooldown_min=DIP_KEY_COOLDOWN_H * 60)
 
 
+def check_custom() -> dict:
+    """Kullanıcının kurduğu coin alarmlarını değerlendir (tetiklenen Telegram'a gider)."""
+    res = alerts.evaluate(send=notify.send)
+    for f in res["fired"]:
+        print(f"  alarm tetiklendi: {f['symbol']} ({f['kind']}) — {f['why']}")
+    return res
+
+
 def main() -> int:
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     r = paper.report(alert=True)
@@ -56,6 +65,8 @@ def main() -> int:
     dg = dip_digest()
     if dg:
         print(f"  dip ozeti: sent={dg.get('sent')} {dg.get('reason') or ''}")
+    cc = check_custom()
+    print(f"  ozel alarm: kontrol {cc['checked']} · tetiklenen {len(cc['fired'])}")
     return 0
 
 

@@ -20,6 +20,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+import alerts
 import notify
 import watch
 
@@ -104,9 +105,68 @@ def handle(text: str) -> str:
         notify.set_enabled(True)
         return "Telegram bildirimleri AÇILDI."
 
+    if cmd in ("alarm", "alarmkur"):
+        # /alarm BTCUSDT > 70000   |  /alarm BTC > 70000  |  /alarm BTC %5
+        raw = " ".join(args).replace(">=", ">").replace("<=", "<")
+        if not raw:
+            return ("Kullanım:\n/alarm BTCUSDT > 70000  (fiyat üstü)\n"
+                    "/alarm BTC < 60000   (fiyat altı)\n/alarm ETH %5       (24s +%5)\n"
+                    "/alarm ETH -%5      (24s -%5)\n/alarm SOL f0.05    (funding %0.05)")
+        sym, rest = raw.split(" ", 1) if " " in raw else (raw, "")
+        rest = rest.strip()
+        try:
+            if rest.startswith("> "):
+                a = alerts.add(sym, "price_above", rest[2:])
+            elif rest.startswith(">"):
+                a = alerts.add(sym, "price_above", rest[1:])
+            elif rest.startswith("< "):
+                a = alerts.add(sym, "price_below", rest[2:])
+            elif rest.startswith("<"):
+                a = alerts.add(sym, "price_below", rest[1:])
+            elif rest.startswith("-%"):
+                a = alerts.add(sym, "pct_down", rest[2:])
+            elif rest.startswith("%"):
+                a = alerts.add(sym, "pct_up", rest[1:])
+            elif rest.startswith("f"):
+                a = alerts.add(sym, "funding_above", rest[1:])
+            else:
+                return "Koşul anlaşılmadı. Örnek: /alarm BTCUSDT > 70000"
+        except ValueError as e:
+            return f"Hata: {e}"
+        return (f"Alarm kuruldu (#{a['id']}): {a['symbol']} · {alerts.KINDS[a['kind']]} "
+                f"{a['value']:g}\nKapatmak için: /kapat {a['id']}")
+
+    if cmd in ("alarmlar", "alarms"):
+        rows = alerts.load()
+        if not rows:
+            return "Alarm yok. Kurmak için: /alarm BTCUSDT > 70000"
+        out = ["Alarmlar:"]
+        for r in rows:
+            out.append(f"#{r['id']} {'✅' if r['enabled'] else '⛔'} {r['symbol']} "
+                       f"{alerts.KINDS[r['kind']]} {r['value']:g}"
+                       + (f" · tetik {r['trigger_count']}x" if r.get('trigger_count') else ""))
+        out.append("Kapat/aç: /kapat <id> · sil: /sil <id>")
+        return "\n".join(out)
+
+    if cmd in ("kapat", "ac"):
+        if not args:
+            return "Kullanım: /kapat <id>  (yeniden açmak için aynı komut)"
+        try:
+            a = alerts.toggle(args[0])
+        except ValueError as e:
+            return f"Hata: {e}"
+        return f"#{a['id']} {'AÇIK' if a['enabled'] else 'KAPALI'}"
+
+    if cmd == "sil":
+        if not args:
+            return "Kullanım: /sil <id>"
+        return "Silindi." if alerts.remove(args[0]) else "Alarm bulunamadı."
+
     if cmd in ("yardim", "help", "komutlar"):
         return ("Komutlar:\n/izle BTCUSDT — bildirime ekle\n/birak BTCUSDT — çıkar\n"
                 "/liste — listeyi göster\n/temizle — listeyi boşalt\n"
+                "/alarm BTCUSDT > 70000 — coin alarmı kur\n/alarmlar — alarmları göster\n"
+                "/kapat <id> — alarmı aç/kapa\n/sil <id> — alarmı sil\n"
                 "/dur — bildirimleri kapat\n/basla — aç")
     return ""
 

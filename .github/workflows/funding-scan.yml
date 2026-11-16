@@ -33,8 +33,46 @@ jobs:
       - name: Bagimliliklar
         run: pip install pandas numpy requests
 
+      # TANI: Binance bu IP'den erisilebiliyor mu? Sonuc repoya yazilir ki
+      # basarisiz kosunun sebebi API/log yetkisi olmadan da gorulebilsin.
+      - name: Binance erisim tanisi
+        continue-on-error: true
+        run: |
+          mkdir -p reports
+          {
+            echo "tarih: $(date -u '+%Y-%m-%d %H:%M UTC')"
+            echo "runner: $(hostname) / $(curl -s https://api.ipify.org || echo ip-yok)"
+            for u in \
+              "https://fapi.binance.com/fapi/v1/premiumIndex" \
+              "https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=5m&limit=2" \
+              "https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&limit=2"
+            do
+              code=$(curl -s -o /tmp/body -w "%{http_code}" --max-time 20 "$u" || echo ERR)
+              echo "HTTP $code  $u"
+              head -c 200 /tmp/body 2>/dev/null; echo
+            done
+            echo "python: $(python --version 2>&1)"
+          } > reports/ci_diag.txt 2>&1
+          cat reports/ci_diag.txt
+
       - name: Funding taramasi
-        run: python export_static.py
+        # CI'da daha küçük tarama: paylaşımlı runner IP'si 429/418 yiyebiliyor.
+        env:
+          SCAN_MIN_VOL: "150"
+          SCAN_TOP: "20"
+          SMART_MIN_VOL: "300"
+          SMART_TOP: "8"
+          SCREEN_STAGE2: "25"
+          SCREEN_STAGE3: "8"
+          SCAN_WORKERS: "2"
+        run: python export_static.py 2>&1 | tee /tmp/scan.log
+
+      - name: Tarama hatasi varsa kayda gec
+        if: failure()
+        run: |
+          mkdir -p reports
+          { echo "=== export_static hatasi ==="; tail -40 /tmp/scan.log 2>/dev/null; } >> reports/ci_diag.txt
+          cat reports/ci_diag.txt
 
       - name: Sayfa ciktisini hazirla (GitHub Pages -> /docs)
         run: |
@@ -54,15 +92,19 @@ jobs:
           grep -m1 "const CACHE" docs/sw.js
 
       - name: Commit ve push
+        # Hata olsa da calisir: tani dosyasi (reports/ci_diag.txt) repoya yazilsin,
+        # boylece basarisiz kosunun sebebi API/log yetkisi olmadan gorulebilsin.
+        if: always()
         run: |
           git config user.name  "funding-scan-bot"
           git config user.email "funding-scan-bot@users.noreply.github.com"
-          git add -A data/funding_snapshots.csv data/smart_snapshots.csv data/alerts.csv data.json docs/
+          git add -A data/funding_snapshots.csv data/smart_snapshots.csv data/alerts.csv \
+                     data.json docs/ reports/ci_diag.txt 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "Degisiklik yok, commit atlandi."
           else
             git commit -m "funding scan: $(date -u +'%Y-%m-%d %H:%M UTC')"
-            git push
+            git push || echo "PUSH BASARISIZ (Actions yazma izni gerekli olabilir)"
           fi
 
       - name: Ozet

@@ -1,0 +1,35 @@
+
+A) APK 1.3
+  PASS  versionName 1.3
+  PASS  versionCode 4
+  PASS  imza geçerli   [3.8 MB]
+  PASS  bulut adresi gömülü
+  PASS  bulut render yolu
+  PASS  cihaz taraması yedek olarak duruyor
+  PASS  tek FORCE_LOCAL enjeksiyonu   [1 adet]
+
+B) bulut kaynağı (Pages gerekmiyor)
+  PASS  HTTP 200
+  PASS  CORS açık   [*]
+  PASS  4 sekme verisi tam   [87480 bayt]
+  PASS  sinyal satırı var   [12 satır]
+  PASS  üretim zamanı kayıtlı   [2026-11-15T19:21:23]
+
+C) repo senkronu
+  PASS  yerel = uzak   [bfef745 / bfef745]
+  PASS  docs repoda
+  PASS  bulut push betiği var
+  PASS  push log yazılmış
+
+D) zamanlanmış işler
+  PASS  5 cron işi   [5/5]
+
+E) regresyon
+  PASS  /api/all
+  PASS  /api/model
+  PASS  /api/screener
+  PASS  yerel kararlar (ağsız)
+
+========================================================
+SONUC: 21 gecti, 0 kaldi
+========================================================

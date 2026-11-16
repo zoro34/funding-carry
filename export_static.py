@@ -8,6 +8,7 @@ bilgisayar kapaliyken de guncel kalir.
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -19,10 +20,21 @@ import screener
 ROOT = Path(__file__).parent
 OUT = ROOT / "data.json"
 
+# Tarama büyüklüğü ortamdan ayarlanabilir: GitHub Actions gibi paylaşımlı IP'lerde
+# 150+ istek/35 sn Binance tarafından 429/418 ile karşılanabiliyor. CI daha küçük
+# ve daha yavaş tarar; yerelde varsayılanlar kullanılır.
+MIN_VOL = float(os.environ.get("SCAN_MIN_VOL", 50))
+TOP = int(os.environ.get("SCAN_TOP", 40))
+SMART_MIN_VOL = float(os.environ.get("SMART_MIN_VOL", 100))
+SMART_TOP = int(os.environ.get("SMART_TOP", 12))
+STAGE2 = int(os.environ.get("SCREEN_STAGE2", 40))
+STAGE3 = int(os.environ.get("SCREEN_STAGE3", 12))
+WORKERS = int(os.environ.get("SCAN_WORKERS", 2))
+
 
 def build() -> dict:
     # 1) canli tarama + snapshot (bu GERCEK bir tarama, yazmasi dogru)
-    df = fm.scan(min_ann=0.0, min_vol=50.0, top=40)
+    df = fm.scan(min_ann=0.0, min_vol=MIN_VOL, top=TOP)
     rows = []
     if not df.empty:
         fm.save_snapshot(df)
@@ -50,14 +62,16 @@ def build() -> dict:
     # 3) akilli para taramasi — statik panelde de calissin diye data.json'a girer
     #    save=True: sinyaller gecmise yazilir (ileride dogrulama icin)
     try:
-        smart = flow.scan_smart_money(min_vol_musd=100.0, top=12, workers=2, save=True)
+        smart = flow.scan_smart_money(min_vol_musd=SMART_MIN_VOL, top=SMART_TOP,
+                                      workers=WORKERS, save=True)
     except Exception as e:
         smart = {"rows": [], "ok": 0, "requested": 0, "failed": 0,
                  "breadth": {}, "fetched_at": None, "error": str(e)}
 
     # 4) AL/SAT hunisi — statik panelde TARAYICI sekmesi de dolsun
     try:
-        s = screener.scan(min_vol=20.0, stage2_n=40, stage3_n=12, workers=2)
+        s = screener.scan(min_vol=MIN_VOL / 2, stage2_n=STAGE2, stage3_n=STAGE3,
+                          workers=WORKERS)
         screen = {**s, "alerts": screener.recent_alerts(30)}
     except Exception as e:
         screen = {"rows": [], "scanned_total": 0, "stage1": 0, "stage2": 0,

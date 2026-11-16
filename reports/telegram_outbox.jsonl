@@ -1,4 +1,9 @@
-{"ts": "2026-11-16T15:15:40.680747+00:00", "text": "<b>Pozisyon açıldı</b> BTCUSDT\nGiriş: 64305.7$ · Notional: 400$\nStop: 61251.2$ (-4.75%) · Hedef: 65836.2$ (+2.38%)\n<i>Kâğıt pozisyon — gerçek emir gönderilmedi.</i>", "key": "open:BTCUSDT:17fe11a3", "status": "no_credentials"}
-{"ts": "2026-11-16T15:15:41.601804+00:00", "text": "<b>Pozisyon elle kapatıldı</b> BTCUSDT\nPnL +0.00% (+0.00$)", "key": "close:17fe11a3", "status": "no_credentials"}
-{"ts": "2026-11-16T15:15:45.289832+00:00", "text": "<b>Dipte olanlar</b> (3 sembol)\n• <b>INITUSDT</b> konum %4 · 24s -11.4%\n• <b>1000PEPEUSDT</b> konum %5 · 24s -3.1%\n• <b>SOPHUSDT</b> konum %5 · 24s -45.3%\n\n<i>Ölçülen +24s medyan -0.98% — dip alımı ölçülen avantaj sağlamıyor, durum göstergesi.</i>", "key": "dip:1000PEPEUSDT,INITUSDT,SOPHUSDT", "status": "no_credentials"}
-{"ts": "2026-11-16T15:15:45.792275+00:00", "text": "<b>Funding Carry</b>\nTest mesajı — bildirim kanalı çalışıyor.", "key": "test", "status": "no_credentials"}
+{"ts": "2026-11-16T15:46:47.416294+00:00", "text": "<b>Pozisyon açıldı</b> BTCUSDT\nGiriş: 64608.3$ · Notional: 400$\nStop: 61539.4$ (-4.75%) · Hedef: 66146$ (+2.38%)\n<i>Kâğıt pozisyon — gerçek emir gönderilmedi.</i>", "key": "open:BTCUSDT:b8454883", "status": "dry_run"}
+{"ts": "2026-11-16T15:46:48.191932+00:00", "text": "<b>Pozisyon elle kapatıldı</b> BTCUSDT\nPnL +0.02% (+0.07$)", "key": "close:b8454883", "status": "dry_run"}
+{"ts": "2026-11-16T15:49:34.332460+00:00", "text": "<b>Funding Carry</b>\nTest mesajı — bildirim kanalı çalışıyor.", "key": "test", "status": "no_credentials"}
+{"ts": "2026-11-16T15:49:49.264661+00:00", "text": "<b>Pozisyon açıldı</b> BTCUSDT\nGiriş: 64541.2$ · Notional: 400$\nStop: 61475.5$ (-4.75%) · Hedef: 66077.3$ (+2.38%)\n<i>Kâğıt pozisyon — gerçek emir gönderilmedi.</i>", "key": "open:BTCUSDT:1f736372", "status": "no_credentials"}
+{"ts": "2026-11-16T15:49:50.131546+00:00", "text": "<b>Pozisyon elle kapatıldı</b> BTCUSDT\nPnL -0.02% (-0.08$)", "key": "close:1f736372", "status": "no_credentials"}
+{"ts": "2026-11-16T15:49:53.706161+00:00", "text": "<b>Funding Carry</b>\nTest mesajı — bildirim kanalı çalışıyor.", "key": "test", "status": "dry_run"}
+{"ts": "2026-11-16T15:49:53.912587+00:00", "text": "<b>Elif</b> günlük ekran süresini aştı: 214 dk (limit 120 dk)", "key": "family:cf860f9e:screen_limit", "status": "dry_run"}
+{"ts": "2026-11-16T15:49:53.949286+00:00", "text": "<b>Elif</b> kısıtlı uygulama kullandı: com.mojang.minecraftpe 20dk", "key": "family:cf860f9e:blocked_app", "status": "dry_run"}
+{"ts": "2026-11-16T15:49:53.958880+00:00", "text": "<b>Elif</b> · com.whatsapp limiti aşıldı: 45 dk (limit 30 dk)", "key": "family:cf860f9e:app_limit:com.whatsapp", "status": "dry_run"}

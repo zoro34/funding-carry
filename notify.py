@@ -41,6 +41,9 @@ def _read_env() -> dict[str, str]:
 
 def creds() -> tuple[str | None, str | None]:
     env = {**_read_env(), **os.environ}
+    # Ana şalter: TELEGRAM_ENABLED=0 ise hiçbir şey gönderilmez (kuyruğa yazılır).
+    if str(env.get("TELEGRAM_ENABLED", "1")).strip() in ("0", "false", "no", "off"):
+        return None, None
     return env.get("TELEGRAM_BOT_TOKEN") or None, env.get("TELEGRAM_CHAT_ID") or None
 
 
@@ -66,8 +69,12 @@ def _save_state(s: dict) -> None:
 
 
 def send(text: str, key: str | None = None, cooldown_min: int = 60) -> dict:
-    """Mesaj gönder. key verilirse cooldown içinde tekrar gönderilmez."""
+    """Mesaj gönder. key verilirse cooldown içinde tekrar gönderilmez.
+
+    NOTIFY_DRY_RUN=1 -> hiçbir şey göndermez, kuyruğa 'dry_run' olarak yazar (testler).
+    """
     now = time.time()
+    dry = os.environ.get("NOTIFY_DRY_RUN") == "1"
     st = _state()
     if key:
         h = hashlib.sha1(key.encode()).hexdigest()[:16]
@@ -81,12 +88,15 @@ def send(text: str, key: str | None = None, cooldown_min: int = 60) -> dict:
         _save_state(st)
 
     tok, chat = creds()
+    if dry:
+        tok = chat = None
     rec = {"ts": datetime.now(timezone.utc).isoformat(), "text": text, "key": key}
     if not (tok and chat):
         OUTBOX.parent.mkdir(parents=True, exist_ok=True)
         with OUTBOX.open("a", encoding="utf-8") as f:
-            f.write(json.dumps({**rec, "status": "no_credentials"}, ensure_ascii=False) + "\n")
-        return {"sent": False, "reason": "no_credentials", "queued": True}
+            f.write(json.dumps({**rec, "status": "dry_run" if dry else "no_credentials"},
+                               ensure_ascii=False) + "\n")
+        return {"sent": False, "reason": "dry_run" if dry else "no_credentials", "queued": True}
 
     url = f"https://api.telegram.org/bot{tok}/sendMessage"
     data = urllib.parse.urlencode({

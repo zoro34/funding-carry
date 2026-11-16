@@ -1,0 +1,5 @@
+{"ts": "2026-11-16T15:15:40.680747+00:00", "text": "<b>Pozisyon açıldı</b> BTCUSDT\nGiriş: 64305.7$ · Notional: 400$\nStop: 61251.2$ (-4.75%) · Hedef: 65836.2$ (+2.38%)\n<i>Kâğıt pozisyon — gerçek emir gönderilmedi.</i>", "key": "open:BTCUSDT:17fe11a3", "status": "no_credentials"}
+{"ts": "2026-11-16T15:15:41.601804+00:00", "text": "<b>Pozisyon elle kapatıldı</b> BTCUSDT\nPnL +0.00% (+0.00$)", "key": "close:17fe11a3", "status": "no_credentials"}
+{"ts": "2026-11-16T15:15:45.289832+00:00", "text": "<b>Dipte olanlar</b> (3 sembol)\n• <b>INITUSDT</b> konum %4 · 24s -11.4%\n• <b>1000PEPEUSDT</b> konum %5 · 24s -3.1%\n• <b>SOPHUSDT</b> konum %5 · 24s -45.3%\n\n<i>Ölçülen +24s medyan -0.98% — dip alımı ölçülen avantaj sağlamıyor, durum göstergesi.</i>", "key": "dip:1000PEPEUSDT,INITUSDT,SOPHUSDT", "status": "no_credentials"}
+{"ts": "2026-11-16T15:15:45.792275+00:00", "text": "<b>Funding Carry</b>\nTest mesajı — bildirim kanalı çalışıyor.", "key": "test", "status": "no_credentials"}
+{"ts": "2026-11-16T15:29:13.766795+00:00", "text": "<b>Funding Carry</b>\nTest mesajı — bildirim kanalı çalışıyor.", "key": "test", "status": "no_credentials"}

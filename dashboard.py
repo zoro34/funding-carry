@@ -25,6 +25,7 @@ from flask import Flask, jsonify, request, send_from_directory
 
 import analytics
 import carry
+import family
 import flow
 import funding_monitor as fm
 import notify
@@ -390,6 +391,116 @@ def api_paper_close():
 @app.get("/api/telegram")
 def api_telegram():
     return jsonify(notify.status())
+
+
+# ------------------------------------------------------------- aile paneli
+_family_cache: dict = {"ts": 0.0, "data": None}
+FAMILY_TTL = 20
+
+
+def family_data(force: bool = False) -> dict:
+    now_ts = time.time()
+    if not force and _family_cache["data"] is not None and now_ts - _family_cache["ts"] < FAMILY_TTL:
+        out = dict(_family_cache["data"])
+        out["cached"] = True
+        return out
+    out = family.summary()
+    out["cached"] = False
+    _family_cache.update({"ts": now_ts, "data": out})
+    return out
+
+
+@app.get("/api/family")
+def api_family():
+    if not _write_allowed():
+        # okuma yerelden; ajan raporu ayri uctan token ile gelir
+        return jsonify({"error": "aile paneli sadece yerel makineden okunur"}), 403
+    return jsonify(family_data())
+
+
+@app.post("/api/family/add")
+def api_family_add():
+    if not _write_allowed():
+        return jsonify({"error": "sadece yerel makineden"}), 403
+    d = request.get_json(silent=True) or {}
+    try:
+        child = family.add_child(d.get("name", ""), d.get("daily_limit_min"))
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    _family_cache["ts"] = 0.0
+    base = os.environ.get("PUBLIC_BASE") or f"http://{request.host}"
+    return jsonify({"ok": True, "child": child,
+                    "invite_url": f"{base}/aile-davet?t={child['invite']}",
+                    "family": family_data(force=True)})
+
+
+@app.post("/api/family/rules")
+def api_family_rules():
+    if not _write_allowed():
+        return jsonify({"error": "sadece yerel makineden"}), 403
+    d = request.get_json(silent=True) or {}
+    try:
+        child = family.set_rules(d.get("id", ""), daily_limit_min=d.get("daily_limit_min"),
+                                 bedtime_start=d.get("bedtime_start"),
+                                 bedtime_end=d.get("bedtime_end"),
+                                 blocked_apps=d.get("blocked_apps"),
+                                 app_limits=d.get("app_limits"))
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    _family_cache["ts"] = 0.0
+    return jsonify({"ok": True, "child": child, "family": family_data(force=True)})
+
+
+@app.post("/api/family/remove")
+def api_family_remove():
+    if not _write_allowed():
+        return jsonify({"error": "sadece yerel makineden"}), 403
+    cid = ((request.get_json(silent=True) or {}).get("id") or "").strip()
+    if not cid or not family.remove_child(cid):
+        return jsonify({"error": "çocuk bulunamadı"}), 404
+    _family_cache["ts"] = 0.0
+    return jsonify({"ok": True, "family": family_data(force=True)})
+
+
+@app.post("/api/family/report")
+def api_family_report():
+    """Ajan uç: davet token'ı ile gelir (yerel kısıtı yok — telefon ağdan bağlanır)."""
+    payload = request.get_json(silent=True) or {}
+    try:
+        res = family.ingest(payload)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 403
+    _family_cache["ts"] = 0.0
+    return jsonify(res)
+
+
+@app.get("/aile-davet")
+def family_invite():
+    """Davet linki: çocuğun cihazına kurulacak aile ajanını eşler."""
+    token = (request.args.get("t") or "").strip()
+    d = family.load()
+    child = next((c for c in d["children"] if c["invite"] == token), None)
+    if not child:
+        return ("<h1>Geçersiz davet</h1><p>Bağlantı süresi geçmiş veya hatalı. "
+                "Panelden yeni davet oluştur.</p>"), 404
+    return f"""<!doctype html><html lang="tr"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aile Paneli — {child['name']}</title>
+<style>body{{background:#0b0f14;color:#dbe4ee;font-family:system-ui,sans-serif;
+padding:22px;line-height:1.6}}code{{background:#161d26;padding:2px 6px;border-radius:5px}}
+.box{{max-width:520px;margin:auto;background:#111821;border:1px solid #232b36;
+border-radius:12px;padding:20px}}</style>
+<div class="box">
+<h2>Bu cihaz aile paneline eşlenecek</h2>
+<p><b>{child['name']}</b> için kurulum. Bu cihazda çalışacak aile ajanı şunları paylaşır:</p>
+<ul><li>günlük ekran süresi ve uygulama kullanım süreleri</li>
+<li>cihazın son konumu, pil durumu, açılma sayısı</li></ul>
+<p><b>Paylaşılmayan:</b> mesaj içerikleri (WhatsApp dahil — uçtan uca şifreli), fotoğraflar,
+kamera/mikrofon.</p>
+<p>Kurulum, cihazda görünen bir uygulama olarak yapılır ve istediğin an kaldırılabilir.</p>
+<p>Eşleme anahtarı: <code>{child['invite']}</code></p>
+<p>Ajan uygulaması henüz kurulmadıysa bu sayfa yalnızca eşleme bilgisini gösterir.</p>
+</div></html>""", 200
 
 
 @app.post("/api/telegram/test")

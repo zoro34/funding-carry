@@ -1,0 +1,20 @@
+{
+ "children": [
+  {
+   "id": "d5c0fd57",
+   "name": "DEMO",
+   "invite": "fELMZl-PO0dWIhBi",
+   "paired": true,
+   "device": "Redmi Note 12",
+   "created_at": "2026-11-16T15:44:59.752239+00:00",
+   "rules": {
+    "daily_limit_min": 120,
+    "bedtime_start": "22:00",
+    "bedtime_end": "07:00",
+    "blocked_apps": [],
+    "app_limits": {}
+   },
+   "last_seen": "2026-11-16T15:44:59.882508+00:00"
+  }
+ ]
+}

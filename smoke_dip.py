@@ -111,6 +111,7 @@ def t_paper():
 
 # --- 4) notify: kuyruk + cooldown -------------------------------------
 def t_notify():
+    os.environ["NOTIFY_DRY_RUN"] = "1"      # gercek Telegram'a mesaj gitmesin
     notify.OUTBOX = tmp / "outbox.jsonl"
     notify.STATE = tmp / "state.json"
     os.environ.pop("TELEGRAM_BOT_TOKEN", None)
@@ -118,7 +119,7 @@ def t_notify():
     st = notify.status()
     assert st["configured"] is False
     r1 = notify.send("birinci", key="k1", cooldown_min=60)
-    assert r1["reason"] == "no_credentials" and r1["queued"] is True
+    assert r1["reason"] in ("dry_run", "no_credentials") and r1["queued"] is True, r1
     n1 = sum(1 for _ in notify.OUTBOX.open(encoding="utf-8"))
     r2 = notify.send("ikinci", key="k1", cooldown_min=60)
     assert r2["reason"] == "cooldown", r2

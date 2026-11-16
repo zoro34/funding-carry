@@ -32,6 +32,7 @@ def check(name, fn):
 
 def t_stop():
     import notify, paper
+    os.environ["NOTIFY_DRY_RUN"] = "1"      # testler gercek mesaj gondermesin
     paper.STORE = TMP / "paper.json"
     notify.OUTBOX = TMP / "outbox.jsonl"
     notify.STATE = TMP / "state.json"
@@ -82,6 +83,7 @@ def t_target():
 
 def t_digest():
     import alarm, notify
+    os.environ["NOTIFY_DRY_RUN"] = "1"
     notify.STATE = TMP / "state3.json"
     notify.OUTBOX = TMP / "outbox3.jsonl"
     for k in ("TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID"):

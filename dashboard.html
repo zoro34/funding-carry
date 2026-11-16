@@ -148,6 +148,7 @@
   .tag{border-radius:999px;font-weight:600;letter-spacing:.2px}
   .btn-primary{background:linear-gradient(180deg,#3f8dff,#2f6fd0);border-color:transparent;color:#fff;font-weight:600}
   .btn-primary:hover{filter:brightness(1.08)}
+  #scoreChart,#lineChart{width:100%;display:block}
   .verdict{border-radius:9px;padding:11px 13px;margin-bottom:11px;font-size:12px;line-height:1.55;border:1px solid}
   .verdict.bad{background:rgba(229,83,75,.07);border-color:rgba(229,83,75,.45)}
   .verdict.good{background:rgba(63,185,80,.07);border-color:rgba(63,185,80,.45)}
@@ -707,6 +708,7 @@ async function refresh(force) {
     }
 
     // 2) Render — gercek hata varsa gorunur olsun
+    window.__payload = payload;
     renderAnalysis(payload.analysis);
     renderLine(payload.series);
 
@@ -807,6 +809,7 @@ function renderAnalysis(a) {
 let dipPayload = null, paperPayload = null;
 
 function verdictClass(v) {
+  if (v === 'goreli_avantaj') return 'warn';
   return v === 'olumlu' ? 'good' : (v === 'avantaj_yok' || v === 'kuyruk_piyangosu') ? 'bad' : 'warn';
 }
 
@@ -1872,6 +1875,13 @@ function drawMulti(cv, series, opt) {
 }
 
 window.addEventListener('resize', () => {
+  try {
+    const p = window.__payload;
+    if (p && p.analysis) {
+      drawScoreChart(p.analysis.symbols);
+      if (p.series) drawLineChart(p.series);
+    }
+  } catch (e) {}
   clearTimeout(window._rz);
   window._rz = setTimeout(() => {
     if (smartPayload) renderSmartTable(smartPayload);

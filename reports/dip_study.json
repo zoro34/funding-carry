@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-16T07:38:45.482374+00:00",
+ "generated_at": "2026-11-16T16:47:47.928873+00:00",
  "definition": {
   "range_h": 168,
   "low_pct": 10.0,
@@ -11,205 +11,205 @@
  "horizons": {
   "h4": {
    "dip": {
-    "n": 1777,
-    "mean": -0.203,
-    "mean_trimmed": -0.459,
-    "median": -0.238,
-    "p25": -2.231,
-    "p75": 1.396,
-    "up_pct": 45.1,
-    "tail_share_pct": -233.8,
+    "n": 1469,
+    "mean": -0.161,
+    "mean_trimmed": -0.443,
+    "median": -0.111,
+    "p25": -2.141,
+    "p75": 1.376,
+    "up_pct": 46.5,
+    "tail_share_pct": -313.4,
     "worst": -30.39,
     "best": 138.0
    },
    "baseline": {
     "n": 19900,
-    "mean": -0.005,
-    "mean_trimmed": -0.156,
-    "median": -0.095,
-    "p25": -1.009,
-    "p75": 0.63,
-    "up_pct": 45.7,
-    "tail_share_pct": -6584.6,
+    "mean": 0.031,
+    "mean_trimmed": -0.12,
+    "median": -0.087,
+    "p25": -0.959,
+    "p75": 0.637,
+    "up_pct": 46.0,
+    "tail_share_pct": 1117.1,
     "worst": -52.02,
     "best": 278.33
    },
-   "edge_vs_baseline": -0.198,
-   "median_edge": -0.143,
-   "random_percentile": 5.7
+   "edge_vs_baseline": -0.192,
+   "median_edge": -0.024,
+   "random_percentile": 8.0
   },
   "h24": {
    "dip": {
-    "n": 1760,
-    "mean": 2.374,
-    "mean_trimmed": -0.133,
-    "median": -0.976,
-    "p25": -4.747,
-    "p75": 2.376,
-    "up_pct": 42.8,
-    "tail_share_pct": 123.0,
+    "n": 1455,
+    "mean": 3.181,
+    "mean_trimmed": 0.529,
+    "median": -0.315,
+    "p25": -4.202,
+    "p75": 2.491,
+    "up_pct": 47.1,
+    "tail_share_pct": 96.9,
     "worst": -48.37,
     "best": 405.99
    },
    "baseline": {
     "n": 19500,
-    "mean": 0.18,
-    "mean_trimmed": -0.818,
-    "median": -0.739,
-    "p25": -3.362,
-    "p75": 1.148,
-    "up_pct": 39.7,
-    "tail_share_pct": 789.0,
+    "mean": 0.296,
+    "mean_trimmed": -0.72,
+    "median": -0.684,
+    "p25": -3.238,
+    "p75": 1.203,
+    "up_pct": 40.6,
+    "tail_share_pct": 477.2,
     "worst": -59.39,
     "best": 405.99
    },
-   "edge_vs_baseline": 2.194,
-   "median_edge": -0.237,
+   "edge_vs_baseline": 2.885,
+   "median_edge": 0.369,
    "random_percentile": 100.0
   }
  },
- "verdict": "kuyruk_piyangosu",
+ "verdict": "goreli_avantaj",
  "rows": [
   {
-   "symbol": "INITUSDT",
-   "pos_pct": 3.9,
-   "chg_24h": -11.36,
-   "is_dip": true,
-   "dip_events_41d": 146
-  },
-  {
-   "symbol": "1000PEPEUSDT",
-   "pos_pct": 4.6,
-   "chg_24h": -3.11,
-   "is_dip": true,
-   "dip_events_41d": 47
-  },
-  {
-   "symbol": "SOPHUSDT",
-   "pos_pct": 4.6,
-   "chg_24h": -45.34,
-   "is_dip": true,
-   "dip_events_41d": 267
-  },
-  {
    "symbol": "JCTUSDT",
-   "pos_pct": 6.1,
-   "chg_24h": 23.77,
+   "pos_pct": 6.0,
+   "chg_24h": 4.16,
    "is_dip": false,
    "dip_events_41d": 130
   },
   {
-   "symbol": "SOLUSDT",
-   "pos_pct": 19.6,
-   "chg_24h": 2.13,
+   "symbol": "1000PEPEUSDT",
+   "pos_pct": 8.5,
+   "chg_24h": -1.88,
    "is_dip": false,
-   "dip_events_41d": 68
+   "dip_events_41d": 56
+  },
+  {
+   "symbol": "SOLUSDT",
+   "pos_pct": 18.7,
+   "chg_24h": -0.49,
+   "is_dip": false,
+   "dip_events_41d": 65
   },
   {
    "symbol": "SOLUSDC",
-   "pos_pct": 19.6,
-   "chg_24h": 2.09,
+   "pos_pct": 18.9,
+   "chg_24h": -0.45,
    "is_dip": false,
-   "dip_events_41d": 70
+   "dip_events_41d": 67
+  },
+  {
+   "symbol": "BNBUSDT",
+   "pos_pct": 19.0,
+   "chg_24h": -0.3,
+   "is_dip": false,
+   "dip_events_41d": 32
   },
   {
    "symbol": "BTCUSDC",
-   "pos_pct": 21.4,
-   "chg_24h": 1.35,
+   "pos_pct": 19.8,
+   "chg_24h": -0.11,
    "is_dip": false,
    "dip_events_41d": 47
   },
   {
    "symbol": "BTCUSDT",
-   "pos_pct": 21.6,
-   "chg_24h": 1.41,
+   "pos_pct": 19.9,
+   "chg_24h": -0.07,
    "is_dip": false,
    "dip_events_41d": 51
   },
   {
-   "symbol": "BNBUSDT",
-   "pos_pct": 22.1,
-   "chg_24h": 1.21,
-   "is_dip": false,
-   "dip_events_41d": 32
-  },
-  {
    "symbol": "ZECUSDT",
-   "pos_pct": 22.2,
-   "chg_24h": 0.42,
+   "pos_pct": 21.8,
+   "chg_24h": -1.39,
    "is_dip": false,
    "dip_events_41d": 91
   },
   {
-   "symbol": "DOGEUSDT",
-   "pos_pct": 23.3,
-   "chg_24h": 2.52,
+   "symbol": "LITUSDT",
+   "pos_pct": 24.8,
+   "chg_24h": -8.46,
    "is_dip": false,
-   "dip_events_41d": 41
+   "dip_events_41d": 82
+  },
+  {
+   "symbol": "DOGEUSDT",
+   "pos_pct": 25.5,
+   "chg_24h": 1.42,
+   "is_dip": false,
+   "dip_events_41d": 40
   },
   {
    "symbol": "ETHUSDT",
-   "pos_pct": 25.0,
-   "chg_24h": 2.2,
+   "pos_pct": 26.2,
+   "chg_24h": 0.49,
    "is_dip": false,
    "dip_events_41d": 46
   },
   {
    "symbol": "ETHUSDC",
-   "pos_pct": 25.1,
-   "chg_24h": 2.17,
+   "pos_pct": 26.3,
+   "chg_24h": 0.46,
    "is_dip": false,
    "dip_events_41d": 49
   },
   {
    "symbol": "XRPUSDT",
-   "pos_pct": 30.3,
-   "chg_24h": 1.36,
+   "pos_pct": 29.4,
+   "chg_24h": 0.44,
    "is_dip": false,
    "dip_events_41d": 91
   },
   {
-   "symbol": "ASTERUSDT",
-   "pos_pct": 31.8,
-   "chg_24h": 4.54,
-   "is_dip": false,
-   "dip_events_41d": 16
-  },
-  {
    "symbol": "NEARUSDT",
-   "pos_pct": 34.7,
-   "chg_24h": 2.47,
+   "pos_pct": 32.6,
+   "chg_24h": 0.99,
    "is_dip": false,
    "dip_events_41d": 84
   },
   {
-   "symbol": "HYPEUSDT",
-   "pos_pct": 39.8,
-   "chg_24h": 2.64,
+   "symbol": "ASTERUSDT",
+   "pos_pct": 38.9,
+   "chg_24h": 7.1,
    "is_dip": false,
-   "dip_events_41d": 79
+   "dip_events_41d": 16
+  },
+  {
+   "symbol": "HYPEUSDT",
+   "pos_pct": 42.4,
+   "chg_24h": -0.31,
+   "is_dip": false,
+   "dip_events_41d": 71
   },
   {
    "symbol": "AKEUSDT",
-   "pos_pct": 53.2,
-   "chg_24h": -11.15,
+   "pos_pct": 53.8,
+   "chg_24h": -6.37,
    "is_dip": false,
-   "dip_events_41d": 204
+   "dip_events_41d": 197
   },
   {
    "symbol": "RAREUSDT",
-   "pos_pct": 59.6,
-   "chg_24h": 53.32,
+   "pos_pct": 65.6,
+   "chg_24h": 73.85,
    "is_dip": false,
    "dip_events_41d": 152
   },
   {
    "symbol": "EVAAUSDT",
-   "pos_pct": 98.4,
-   "chg_24h": 53.9,
+   "pos_pct": 72.2,
+   "chg_24h": 19.09,
    "is_dip": false,
-   "dip_events_41d": 66
+   "dip_events_41d": 58
+  },
+  {
+   "symbol": "BLESSUSDT",
+   "pos_pct": 87.3,
+   "chg_24h": 95.68,
+   "is_dip": false,
+   "dip_events_41d": 44
   }
  ],
- "verdict_text": "+24s medyan -0.98% (taban -0.74%) — tipik dip ALIMI KAYBETTIRIYOR. Yukari oran %43, ilk ceyrek %-4.75, en kotu %-48.4. Ortalama +2.37% pozitif cikiyor cunku nadir buyuk sicramalar toplami tum getirileri asiyor (medyan negatif, uclari kirpinca ortalama -0.13%). Ozet: bu bir 'nadir sicrama piyangosu' profili — kucuk pozisyon + stop olmadan kullanilamaz. Alim talimati degil."
+ "verdict_text": "+24s medyan: dip -0.32% vs taban -0.68% (yukari oran 47% vs 41%). Dipten almak piyasa ortalamasindan daha iyi ama MUTLAK medyan hala negatif — yani tipik islem yine zarar yaziyor. 'Daha az kotu' demek 'kar' demek degil."
 }

@@ -147,12 +147,20 @@ def measure(symbols: list[str]) -> dict:
     if d24.get("n", 0) < 30:
         out["verdict"] = "orneklem_yetersiz"
         out["verdict_text"] = f"Dip olayi {d24.get('n', 0)} tane — yorum yok."
-    elif d24["median"] > b24["median"] + 0.2 and d24["up_pct"] > b24["up_pct"] + 3:
+    elif d24["median"] < 0 and d24["median"] > b24["median"] + 0.2 and d24["up_pct"] > b24["up_pct"] + 3:
+        # dip, tabana gore daha iyi ama MUTLAK olarak hala eksi -> alim talimati degil
+        out["verdict"] = "goreli_avantaj"
+        out["verdict_text"] = (
+            f"+24s medyan: dip {d24['median']:+.2f}% vs taban {b24['median']:+.2f}% "
+            f"(yukari oran {d24['up_pct']:.0f}% vs {b24['up_pct']:.0f}%). "
+            "Dipten almak piyasa ortalamasindan daha iyi ama MUTLAK medyan hala negatif — "
+            "yani tipik islem yine zarar yaziyor. 'Daha az kotu' demek 'kar' demek degil.")
+    elif d24["median"] > 0 and d24["median"] > b24["median"] + 0.2 and d24["up_pct"] > b24["up_pct"] + 3:
         out["verdict"] = "olumlu"
         out["verdict_text"] = (
             f"+24s medyan: dip {d24['median']:+.2f}% vs taban {b24['median']:+.2f}% "
             f"(yukari oran {d24['up_pct']:.0f}% vs {b24['up_pct']:.0f}%). "
-            "Medyan da pozitif — olculen avantaj var, garanti degil.")
+            "Goreli fark pozitif ama MUTLAK medyan hala negatif olabilir — bu bir avantaj, kar garantisi degil.")
     elif d24.get("mean", 0) > 0 and d24["median"] < 0:
         # Ortalama farki istatistiksel olarak ayrissa bile tamami kuyruktan geliyorsa
         # bu "dipten al" degil, nadir sicrama piyangosudur.
@@ -179,6 +187,10 @@ def measure(symbols: list[str]) -> dict:
 
 def write_reports(res: dict) -> None:
     OUT_JSON.write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")
+    try:
+        save_snapshot(res.get("rows") or [])
+    except Exception as e:
+        print(f"  [warn] dip snapshot yazilamadi: {e}")
     lines = ["# Dip Calismasi — olculmus kisa vade beklentisi", "",
              f"- Tarih: {res['generated_at']}",
              f"- Sembol: {res['symbols_used']}/{res['symbols_requested']} · Pencere: ~41 gun (1h)",
@@ -203,6 +215,26 @@ def universe() -> list[str]:
         return flow.universe(min_vol_musd=100.0, top=20)
     except Exception:
         return ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "XRPUSDT"]
+
+
+def save_snapshot(rows: list[dict]) -> None:
+    """Her calismada TUM dip indikatorlerini CSV'ye ekle (hafiza -> ogrenme)."""
+    import csv
+    from datetime import datetime, timezone
+    path = ROOT / "data" / "dip_snapshots.csv"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fields = ["scanned_at", "symbol", "pos_pct", "chg_24h", "is_dip", "dip_events_41d"]
+    new = not path.exists()
+    ts = datetime.now(timezone.utc).isoformat()
+    with path.open("a", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=fields)
+        if new:
+            w.writeheader()
+        for r in rows:
+            w.writerow({"scanned_at": ts, "symbol": r.get("symbol"),
+                        "pos_pct": r.get("pos_pct"), "chg_24h": r.get("chg_24h"),
+                        "is_dip": int(bool(r.get("is_dip"))),
+                        "dip_events_41d": r.get("dip_events_41d")})
 
 
 def main() -> int:

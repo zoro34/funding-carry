@@ -15,3 +15,8 @@ lint:
 	$(PY) -m py_compile $(SRC)
 	@for f in *.sh .hermes/scripts/*.sh; do [ -f "$$f" ] && bash -n "$$f" || true; done
 	@echo "py_compile: $(words $(SRC)) dosya · bash -n: $(words $(wildcard *.sh)) betik OK"
+
+learn:
+	$(PY) learn_indicators.py
+
+.PHONY: learn

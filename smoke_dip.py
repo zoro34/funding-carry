@@ -67,9 +67,15 @@ def t_verdict():
     assert 'out["verdict"] = "kuyruk_piyangosu"' in src, "kuyruk verdict dali yok"
     assert 'elif d24.get("mean", 0) > 0 and d24["median"] < 0:' in src, \
         "kuyruk kosulu (ortalama>0 ve medyan<0) yok"
-    assert 'if d24["median"] > b24["median"] + 0.2' in src, "olumlu karar medyana bagli degil"
+    # "olumlu" SADECE mutlak medyan pozitifken verilebilir
+    assert 'elif d24["median"] > 0 and d24["median"] > b24["median"] + 0.2' in src, \
+        "olumlu karar mutlak medyana bagli degil"
+    assert 'out["verdict"] = "goreli_avantaj"' in src, \
+        "mutlak medyan negatifken 'goreli_avantaj' dali yok (daha az kotu = kar degil)"
     d = json.loads((ROOT / "reports" / "dip_study.json").read_text(encoding="utf-8"))
     v, h = d["verdict"], d["horizons"]["h24"]["dip"]
+    if v == "goreli_avantaj":
+        assert h["median"] < 0, "goreli_avantaj ama mutlak medyan negatif degil"
     if v == "kuyruk_piyangosu":
         assert h["median"] < 0, "kuyruk verdict'i ama medyan negatif degil"
         assert h["mean"] > 0, "kuyruk verdict'i ama ortalama pozitif degil"

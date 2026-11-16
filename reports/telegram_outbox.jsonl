@@ -45,3 +45,11 @@
 {"ts": "2026-11-16T16:39:41.031577+00:00", "text": "<b>Pozisyon açıldı</b> BTCUSDT\nGiriş: 64619.2$ · Notional: 400$\nStop: 61549.8$ (-4.75%) · Hedef: 66157.1$ (+2.38%)\n<i>Kâğıt pozisyon — gerçek emir gönderilmedi.</i>", "key": "open:BTCUSDT:ba3284e8", "status": "no_credentials"}
 {"ts": "2026-11-16T16:39:41.810587+00:00", "text": "<b>Pozisyon elle kapatıldı</b> BTCUSDT\nPnL +0.01% (+0.02$)", "key": "close:ba3284e8", "status": "no_credentials"}
 {"ts": "2026-11-16T16:39:45.729679+00:00", "text": "<b>Funding Carry</b>\nTest mesajı — bildirim kanalı çalışıyor.", "key": "test", "status": "dry_run"}
+{"ts": "2026-11-16T16:48:55.798106+00:00", "text": "<b>Pozisyon açıldı</b> BTCUSDT\nGiriş: 64665.4$ · Notional: 400$\nStop: 61949.5$ (-4.20%) · Hedef: 66275.6$ (+2.49%)\n<i>Kâğıt pozisyon — gerçek emir gönderilmedi.</i>", "key": "open:BTCUSDT:a5254580", "status": "no_credentials"}
+{"ts": "2026-11-16T16:48:57.604618+00:00", "text": "<b>Pozisyon elle kapatıldı</b> BTCUSDT\nPnL +0.02% (+0.08$)", "key": "close:a5254580", "status": "no_credentials"}
+{"ts": "2026-11-16T16:49:20.729816+00:00", "text": "<b>Pozisyon açıldı</b> BTCUSDT\nGiriş: 64660.8$ · Notional: 400$\nStop: 61945$ (-4.20%) · Hedef: 66270.9$ (+2.49%)\n<i>Kâğıt pozisyon — gerçek emir gönderilmedi.</i>", "key": "open:BTCUSDT:e01d2f54", "status": "no_credentials"}
+{"ts": "2026-11-16T16:49:21.504184+00:00", "text": "<b>Pozisyon elle kapatıldı</b> BTCUSDT\nPnL +0.00% (+0.00$)", "key": "close:e01d2f54", "status": "no_credentials"}
+{"ts": "2026-11-16T16:49:25.303905+00:00", "text": "<b>Funding Carry</b>\nTest mesajı — bildirim kanalı çalışıyor.", "key": "test", "status": "dry_run"}
+{"ts": "2026-11-16T16:49:47.159085+00:00", "text": "<b>Pozisyon açıldı</b> BTCUSDT\nGiriş: 64660.8$ · Notional: 400$\nStop: 61945$ (-4.20%) · Hedef: 66270.9$ (+2.49%)\n<i>Kâğıt pozisyon — gerçek emir gönderilmedi.</i>", "key": "open:BTCUSDT:6093a663", "status": "no_credentials"}
+{"ts": "2026-11-16T16:49:47.939083+00:00", "text": "<b>Pozisyon elle kapatıldı</b> BTCUSDT\nPnL +0.00% (+0.01$)", "key": "close:6093a663", "status": "no_credentials"}
+{"ts": "2026-11-16T16:49:51.355624+00:00", "text": "<b>Funding Carry</b>\nTest mesajı — bildirim kanalı çalışıyor.", "key": "test", "status": "dry_run"}

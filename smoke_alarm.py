@@ -88,6 +88,14 @@ def t_digest():
     notify.OUTBOX = TMP / "outbox3.jsonl"
     for k in ("TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID"):
         os.environ.pop(k, None)
+    # veriye bagimli olmasin: sabit bir dip calismasi dosyasi kullan
+    study = TMP / "dip_study.json"
+    study.write_text(json.dumps({
+        "verdict": "goreli_avantaj",
+        "rows": [{"symbol": "TESTUSDT", "pos_pct": 3.1, "chg_24h": -6.2, "is_dip": True,
+                  "dip_events_41d": 12}],
+        "horizons": {"h24": {"dip": {"median": -0.32}}}}, ensure_ascii=False), encoding="utf-8")
+    alarm.STUDY = study
     d1 = alarm.dip_digest()
     assert d1 and d1.get("queued") is True, d1
     d2 = alarm.dip_digest()

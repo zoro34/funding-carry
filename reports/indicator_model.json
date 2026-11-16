@@ -1,0 +1,63 @@
+{
+ "generated_at": "2026-11-16T16:48:04.719689+00:00",
+ "rows": 892,
+ "scans": 27,
+ "symbols": 66,
+ "target": "sonraki taramada ann_30d, o taramanın medyanının üstünde mi",
+ "features": [
+  "funding_now_pct",
+  "ann_now_pct",
+  "ann_30d_pct",
+  "ann_p25_pct",
+  "pos_share_pct",
+  "basis_pct",
+  "vol_musd",
+  "samples",
+  "breakeven_days",
+  "score",
+  "interval_h"
+ ],
+ "weights": {
+  "funding_now_pct": -0.158,
+  "ann_now_pct": 1.138,
+  "ann_30d_pct": 4.127,
+  "ann_p25_pct": 0.976,
+  "pos_share_pct": -0.923,
+  "basis_pct": 0.096,
+  "vol_musd": 0.395,
+  "samples": -0.038,
+  "breakeven_days": -2.108,
+  "score": 1.022,
+  "interval_h": 0.038
+ },
+ "top": [
+  [
+   "ann_30d_pct",
+   4.127
+  ],
+  [
+   "breakeven_days",
+   -2.108
+  ],
+  [
+   "ann_now_pct",
+   1.138
+  ],
+  [
+   "score",
+   1.022
+  ],
+  [
+   "ann_p25_pct",
+   0.976
+  ]
+ ],
+ "auc_train": 0.947,
+ "auc_test": 0.903,
+ "auc_naive_persistence": 0.998,
+ "model_katki": -0.095,
+ "base_rate_test": 0.498,
+ "high_conf_rate": 0.84,
+ "low_conf_rate": 0.0,
+ "verdict": "model, basit 'ayni sembol ayni yerde kalir' kuralindan iyi degil — yuksek AUC sadece funding kaliciligi (autokorelasyon)"
+}

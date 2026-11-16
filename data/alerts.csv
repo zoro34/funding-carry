@@ -37,3 +37,8 @@ ts,symbol,signal,conditions,score,price_chg,net_24h_musd,oi_24h,gap,whale_net_mu
 2026-11-16T11:00:29.631874+00:00,NEARUSDT,AL,5,62.2,0.73,0.3,0.51,10.2,0.41,0.008276,9.1,para girisi; balina alici; OI artiyor; buyuk>kucuk long; fiyat yukari
 2026-11-16T11:00:29.631874+00:00,SOLUSDC,SAT,4,35.1,-0.44,0.91,1.55,-15.0,-0.01,0.007106,7.8,balina satici; OI artiyor (short); buyuk<kucuk long; fiyat asagi
 2026-11-16T11:30:28.277029+00:00,AVAXUSDT,SAT,3,49.8,-1.94,2.14,5.16,1.0,-0.88,-0.00298,-3.3,balina satici; OI artiyor (short); fiyat asagi
+2026-11-16T12:00:52.650039+00:00,WLDUSDT,SAT,3,49.8,-0.98,-0.61,0.85,1.0,0.99,-0.018411,-20.2,para cikisi; OI artiyor (short); fiyat asagi
+2026-11-16T12:30:50.297728+00:00,XAUTUSDT,AL,4,76.0,0.83,0.6,1.86,23.3,-0.17,0.005,5.5,para girisi; OI artiyor; buyuk>kucuk long; fiyat yukari
+2026-11-16T12:30:50.297728+00:00,AKEUSDT,AL,4,73.8,13.16,6.55,-12.82,1.6,1.22,0.0006309999999999999,0.7,para girisi; balina alici; buyuk>kucuk long; fiyat yukari
+2026-11-16T12:30:50.297728+00:00,TAOUSDT,AL,3,57.2,-3.7,0.14,-3.92,16.5,0.06,0.005,5.5,para girisi; balina alici; buyuk>kucuk long
+2026-11-16T12:30:50.297728+00:00,SUIUSDT,SAT,3,41.8,-3.27,2.03,-0.09,-2.0,-0.19,-0.0045639999999999995,-5.0,balina satici; buyuk<kucuk long; fiyat asagi

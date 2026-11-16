@@ -25,10 +25,16 @@ from flask import Flask, jsonify, request, send_from_directory
 
 import analytics
 import carry
+import carry_health
 import flow
 import funding_monitor as fm
+import health
+import journal
 import notify
 import paper
+import risk
+import vol
+import xfund
 import screener
 
 ROOT = Path(__file__).parent
@@ -390,6 +396,54 @@ def api_paper_close():
 @app.get("/api/telegram")
 def api_telegram():
     return jsonify(notify.status())
+
+
+
+# --------------------------------------------------------- risk & sağlık
+_rcache: dict = {}
+
+
+def _cached(key: str, ttl: float, fn):
+    now = time.time()
+    hit = _rcache.get(key)
+    if hit and now - hit[0] < ttl:
+        out = dict(hit[1])
+        out["cached"] = True
+        return out
+    out = fn()
+    out["cached"] = False
+    _rcache[key] = (now, out)
+    return out
+
+
+@app.get("/api/risk")
+def api_risk():
+    return jsonify(_cached("risk", 15, risk.panel))
+
+
+@app.get("/api/health")
+def api_health():
+    return jsonify(_cached("health", 30, health.status))
+
+
+@app.get("/api/vol")
+def api_vol():
+    return jsonify(_cached("vol", 300, vol.all_regimes))
+
+
+@app.get("/api/journal")
+def api_journal():
+    return jsonify(_cached("journal", 30, journal.stats))
+
+
+@app.get("/api/carry-health")
+def api_carry_health():
+    return jsonify(_cached("carry_health", 60, lambda: carry_health.all_health(20)))
+
+
+@app.get("/api/xfund")
+def api_xfund():
+    return jsonify(_cached("xfund", 600, xfund.compare))
 
 
 @app.post("/api/telegram/toggle")

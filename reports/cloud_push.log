@@ -52,3 +52,7 @@ error: cannot pull with rebase: You have unstaged changes.
 error: Please commit or stash them.
 2026-11-16 16:48 UTC uyari: rebase yapilamadi, yine de denenecek
 2026-11-16 16:48 UTC push TAMAM · uretim: 2026-11-16T16:48:39.264115+00:00
+error: cannot pull with rebase: You have unstaged changes.
+error: Please commit or stash them.
+2026-11-16 17:48 UTC uyari: rebase yapilamadi, yine de denenecek
+2026-11-16 17:48 UTC push TAMAM · uretim: 2026-11-16T17:48:39.534891+00:00

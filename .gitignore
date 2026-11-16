@@ -12,6 +12,14 @@ android-app/local.properties
 
 # Büyük ham mum dosyaları repoya girmez (backtest için yerelde kalır)
 data/*_1h.csv
+
+# Turetilmis onbellek ve calisma loglari: commit edilirse her cron turunda
+# "cannot pull with rebase: unstaged changes" hatasina yol aciyordu.
+data/universe_cache.json
+reports/*.log
+reports/learn_run.log
+reports/rule_backtest_run.log
+data/carry_positions.json
 # Küçük geçmiş dosyaları repoda TUTULUR: Actions her koşuda sıfırdan başlıyor,
 # bu dosyalar commit edilmezse zaman serisi ve alarm geçmişi birikmez.
 # (data/funding_snapshots.csv, data/smart_snapshots.csv, data/alerts.csv)

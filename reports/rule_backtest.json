@@ -1,45 +1,45 @@
 {
- "generated_at": "2026-11-15T18:11:40.592522+00:00",
+ "generated_at": "2026-11-16T06:50:25.188450+00:00",
  "symbols": 10,
  "signals": {
-  "AL": 1335,
-  "SAT": 2713,
+  "AL": 1350,
+  "SAT": 2638,
   "BEKLE": 0
  },
  "forward": {
   "AL": {
    "h4": {
-    "n": 1335,
-    "mean": -0.076,
-    "median": -0.135,
-    "up_rate": 0.4285,
-    "percentile": 49.8,
+    "n": 1350,
+    "mean": -0.092,
+    "median": -0.13,
+    "up_rate": 0.4281,
+    "percentile": 48.5,
     "beats_random": false
    },
    "h24": {
-    "n": 1335,
-    "mean": -0.224,
-    "median": -1.136,
-    "up_rate": 0.3678,
-    "percentile": 58.9,
+    "n": 1350,
+    "mean": -0.391,
+    "median": -1.223,
+    "up_rate": 0.3415,
+    "percentile": 56.3,
     "beats_random": false
    }
   },
   "SAT": {
    "h4": {
-    "n": 2713,
-    "mean": -0.143,
-    "median": -0.038,
-    "up_rate": 0.4663,
-    "percentile": 46.6,
+    "n": 2638,
+    "mean": -0.128,
+    "median": -0.031,
+    "up_rate": 0.4723,
+    "percentile": 46.8,
     "beats_random": false
    },
    "h24": {
-    "n": 2713,
-    "mean": -0.592,
-    "median": -0.764,
-    "up_rate": 0.3638,
-    "percentile": 53.8,
+    "n": 2638,
+    "mean": -1.136,
+    "median": -0.74,
+    "up_rate": 0.3613,
+    "percentile": 46.9,
     "beats_random": false
    }
   }
@@ -47,15 +47,15 @@
  "random": {
   "h4": {
    "n": 4520,
-   "mean": -0.075,
-   "p5": -3.398,
-   "p95": 2.41
+   "mean": -0.048,
+   "p5": -3.433,
+   "p95": 2.726
   },
   "h24": {
    "n": 4520,
-   "mean": -0.276,
-   "p5": -7.688,
-   "p95": 5.979
+   "mean": -0.424,
+   "p5": -7.812,
+   "p95": 6.078
   }
  }
 }

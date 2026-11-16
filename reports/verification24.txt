@@ -1,0 +1,33 @@
+A) export_static: tarama boyutu ortamdan
+  PASS  SCAN_MIN_VOL okunuyor
+  PASS  SMART_TOP okunuyor
+  PASS  huni boyutları
+  PASS  iş parçacığı sayısı
+  PASS  varsayılanlar sabit değil, değişken
+  PASS  env değerleri modüle geçiyor
+  PASS  env yoksa yerel varsayılan
+B) workflow: tanı + küçük tarama + hata toleransı
+  PASS  YAML geçerli ve 9 adım
+  PASS  tanı adımı var
+  PASS  tanı hatası işi düşürmüyor
+  PASS  tanı repoya yazılıyor
+  PASS  commit her durumda çalışıyor
+  PASS  push hatası yutulmuyor, raporlanıyor
+  PASS  7 env değişkeni workflow'da
+  PASS  hata izi yakalanıyor
+C) tanı betiği sözdizimi
+  PASS  tanı adımı bash -n
+D) cloud_push: çakışma koruması
+  PASS  sözdizimi
+  PASS  rebase var
+  PASS  tarama adımı
+  PASS  push adımı
+E) regresyon (bozulmadı)
+  PASS  API uçları
+  PASS  yerel kararlar
+  PASS  repo senkron   [f46cdd3]
+  PASS  5 cron
+
+=====================================================
+SONUC: 24 gecti, 0 kaldi
+=====================================================

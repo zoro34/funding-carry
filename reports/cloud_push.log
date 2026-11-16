@@ -1,1 +1,17 @@
 2026-11-15 20:47 UTC push TAMAM · uretim: 2026-11-15T20:47:37.759028+00:00
+error: cannot pull with rebase: You have unstaged changes.
+error: Please commit or stash them.
+2026-11-16 06:14 UTC uyari: rebase yapilamadi, yine de denenecek
+2026-11-16 06:14 UTC push TAMAM · uretim: 2026-11-16T06:14:32.126899+00:00
+error: cannot pull with rebase: You have unstaged changes.
+error: Please commit or stash them.
+2026-11-16 06:48 UTC uyari: rebase yapilamadi, yine de denenecek
+To github.com:zoro34/funding-carry.git
+ ! [rejected]        main -> main (fetch first)
+error: failed to push some refs to 'github.com:zoro34/funding-carry.git'
+hint: Updates were rejected because the remote contains work that you do not
+hint: have locally. This is usually caused by another repository pushing to
+hint: the same ref. If you want to integrate the remote changes, use
+hint: 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+2026-11-16 06:48 UTC HATA: git push basarisiz

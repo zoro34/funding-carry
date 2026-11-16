@@ -11,7 +11,7 @@
 // Her varlık değişiminde bu sürüm ARTIRILMALI; artmazsa tarayıcı eski kabuğu
 // önbellekten servis eder ve yeni arayüz hiç görünmez. Deploy sırasında
 // workflow bunu zaman damgasıyla otomatik yeniden yazar.
-const CACHE = 'funding-carry-v3';
+const CACHE = 'funding-carry-v4';
 const SHELL = [
   './', './dashboard.html', './index.html', './manifest.json', './local.js', './learn.json',
   './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png',

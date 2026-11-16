@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import analytics
+import carry
 import flow
 import funding_monitor as fm
 import screener
@@ -78,6 +79,25 @@ def build() -> dict:
                   "elapsed_s": 0, "stats": {}, "model": None, "alerts": [],
                   "error": str(e)}
 
+    # 5) carry pozisyonlari — statik/APK panelde KIRA sekmesi okunur (salt okuma).
+    #    Pozisyon ekleme/silme sunucu ister; bulut surumu yalnizca gosterir.
+    #
+    #    GIZLILIK: data.json PUBLIC bir repoya gidiyor (telefon oradan okuyor).
+    #    Varsayilan olarak USD tutarlari gizlenir; yuzdeler kalir. Tutarlarin da
+    #    gorunmesini istersen CARRY_PUBLIC_AMOUNTS=1 (herkes gorebilir!).
+    try:
+        carry_rep = carry.report()
+        if os.environ.get("CARRY_PUBLIC_AMOUNTS") != "1":
+            carry_rep["amounts_hidden"] = True
+            for p in carry_rep.get("positions", []):
+                for k in ("notional_usd", "funding_usd", "spot_pnl", "perp_pnl", "net_usd"):
+                    p[k] = None
+            t = carry_rep.get("totals", {})
+            for k in ("notional_usd", "funding_usd", "spot_pnl", "perp_pnl", "net_usd"):
+                t[k] = None
+    except Exception as e:
+        carry_rep = {"available": False, "positions": [], "totals": {}, "error": str(e)}
+
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "mode": "static",
@@ -91,6 +111,7 @@ def build() -> dict:
         },
         "smart": smart,
         "screen": screen,
+        "carry": carry_rep,
     }
 
 

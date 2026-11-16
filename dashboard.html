@@ -127,13 +127,59 @@
   </header>
 
   <div class="tabs">
-    <button class="tab active" id="tab-genel" onclick="setTab('genel')">GENEL</button>
+    <button class="tab active" id="tab-carry" onclick="setTab('carry')">KİRA GELİRİ (CARRY)</button>
+    <button class="tab" id="tab-genel" onclick="setTab('genel')">GENEL</button>
     <button class="tab" id="tab-smart" onclick="setTab('smart')">AKILLI PARA / BALİNA</button>
     <button class="tab" id="tab-screen" onclick="setTab('screen')">TARAYICI — AL / SAT</button>
   </div>
 
+  <!-- ============================ KIRA GELIRI ============================ -->
+  <section id="view-carry">
+    <div class="warnbox" id="carryintro">
+      <b>Bu sekme gerçek pozisyonları ölçer, tahmin göstermez.</b>
+      Açtığın spot long + vadeli short pozisyonları buraya kaydediyorsun; panel Binance'in
+      <b>gerçek funding geçmişinden</b> o güne kadar ne kadar kira geliri biriktirdiğini topluyor.
+      Yön tahmini yok — kazanç, funding oranı pozitifken short bacağın aldığı ödemedir.
+      <span id="carrymeasured"></span>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="lbl">Açık Pozisyon</div><div class="val" id="c1">—</div><div class="sub" id="c1s">delta-nötr</div></div>
+      <div class="kpi"><div class="lbl">Toplam Notional</div><div class="val" id="c2">—</div><div class="sub">iki bacak toplamı değil, tek bacak</div></div>
+      <div class="kpi"><div class="lbl">Birikmiş Kira</div><div class="val" id="c3">—</div><div class="sub" id="c3s">gerçek funding olayları</div></div>
+      <div class="kpi"><div class="lbl">Ağırlıklı Yıllık</div><div class="val" id="c4">—</div><div class="sub">kira geliri bazında</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Pozisyonlar <span class="muted" id="carryinfo" style="text-transform:none;letter-spacing:0"></span></h2>
+      <div id="carrytable"><div class="empty"><span class="spin"></span> pozisyonlar hesaplanıyor…</div></div>
+      <div id="carryaddbox" class="hidden" style="margin-top:12px;border-top:1px solid #232b36;padding-top:10px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+          <label style="font-size:11px">Sembol<br><input id="csym" placeholder="BTCUSDT" style="width:110px;text-transform:uppercase"></label>
+          <label style="font-size:11px">Notional (USD)<br><input id="cnot" type="number" min="10" step="10" placeholder="1000" style="width:110px"></label>
+          <label style="font-size:11px">Açılış tarihi<br><input id="cdate" type="date" style="width:140px"></label>
+          <label style="font-size:11px">Not (opsiyonel)<br><input id="cnote" placeholder="spread dar, funding yüksek" style="width:210px"></label>
+          <button onclick="addPosition()">Pozisyon ekle</button>
+        </div>
+        <div class="note" id="carrymsg"></div>
+      </div>
+      <div class="note">
+        Kira = notional × funding oranı, her funding anında (8 saatte bir) toplanır.
+        Delta-nötr kontrolü: spot bacak yoksa pozisyon <b>delta-nötr değildir</b> ve uyarı çıkar.
+        Notional sabit tutulur (bileşik faiz yok) — muhafazakâr hesap.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Bugünkü Adaylar <span class="muted" style="text-transform:none;letter-spacing:0">giriş kuralını geçenler</span></h2>
+      <div id="carrycand"><div class="empty">canlı tarama bekleniyor…</div></div>
+      <div class="note">Kural: temkinli yıllık (25. persentil) &gt; 0, anlık funding ≥ 0, basis &lt; %0.3.
+        Sıralama temkinli yıllığa göre. Bunlar <b>ölçülmüş geçmiş</b> değil, o anki fırsat listesidir.</div>
+    </div>
+  </section>
+
   <!-- ============================ GENEL ============================ -->
-  <section id="view-genel">
+  <section id="view-genel" class="hidden">
     <div class="kpis">
       <div class="kpi"><div class="lbl">İzlenen Sembol</div><div class="val" id="k1">—</div><div class="sub">birikmiş veri</div></div>
       <div class="kpi"><div class="lbl">Tarama Sayısı</div><div class="val" id="k2">—</div><div class="sub">6 saatte bir otomatik</div></div>
@@ -274,7 +320,7 @@
 <script src="local.js"></script>
 <script>
 const REFRESH_MS = 5 * 60 * 1000;
-let timer = null, tab = 'genel', smartLoaded = false, smartPayload = null, filter = 'all', staticSmart = null;
+let timer = null, tab = 'carry', smartLoaded = false, smartPayload = null, filter = 'all', staticSmart = null;
 let screenLoaded = false, screenPayload = null, screenFilter = 'all', staticScreen = null;
 let LOCAL_MODE = new URLSearchParams(location.search).has('local') || window.FORCE_LOCAL === true;
 let localModelReady = false;
@@ -297,12 +343,15 @@ const probCls = p => (p === null || p === undefined) ? 'muted' : (p >= 0.45 ? 'p
 
 function setTab(t) {
   tab = t;
+  document.getElementById('view-carry').classList.toggle('hidden', t !== 'carry');
   document.getElementById('view-genel').classList.toggle('hidden', t !== 'genel');
   document.getElementById('view-smart').classList.toggle('hidden', t !== 'smart');
   document.getElementById('view-screen').classList.toggle('hidden', t !== 'screen');
+  document.getElementById('tab-carry').classList.toggle('active', t === 'carry');
   document.getElementById('tab-genel').classList.toggle('active', t === 'genel');
   document.getElementById('tab-smart').classList.toggle('active', t === 'smart');
   document.getElementById('tab-screen').classList.toggle('active', t === 'screen');
+  if (t === 'carry') loadCarry(false);
   if (t === 'smart') {
     // Veri zaten elde varsa (statik mod / onceki tarama) dogrudan ciz;
     // yoksa tara. Boylece sekme degisimi her zaman dolu bir tablo gosterir.
@@ -409,6 +458,10 @@ function renderCloudPayload(d) {
   if (d.analysis) renderAnalysis(d.analysis);
   if (d.series) renderLine(d.series);
   if (d.live) renderLive(d.live);
+  if (d.carry) {
+    d.carry.static = true; carryPayload = d.carry;
+    if (tab === 'carry') renderCarry(d.carry);
+  }
   if (d.smart && d.smart.rows && d.smart.rows.length) {
     staticSmart = d.smart; smartLoaded = true; smartPayload = d.smart;
     if (tab === 'smart') renderSmart(d.smart);
@@ -502,6 +555,11 @@ async function refresh(force) {
     // 3) Canli bolum
     if (staticMode) {
       renderLive(payload.live);
+      // statik modda carry raporu data.json icinden gelir (salt okuma)
+      if (payload.carry) {
+        payload.carry.static = true; carryPayload = payload.carry;
+        if (tab === 'carry') renderCarry(payload.carry);
+      }
       // statik modda akilli para verisi data.json icinden gelir
       if (payload.smart && payload.smart.rows && payload.smart.rows.length) {
         staticSmart = payload.smart; smartLoaded = true; smartPayload = payload.smart;
@@ -519,6 +577,7 @@ async function refresh(force) {
       try {
         const live = await jget(force ? '/api/refresh' : '/api/live');
         renderLive(live);
+        await loadCarry(force);
         if (force) {
           const a2 = await jget('/api/all', { cache: 'no-store' });
           renderAnalysis(a2.analysis); renderLine(a2.series);
@@ -579,7 +638,167 @@ function renderAnalysis(a) {
   drawScoreChart(a.symbols);
 }
 
+/* --------------------------- KİRA GELİRİ (carry) --------------------------- */
+let carryPayload = null, livePayload = null;
+
+function renderCarryMeasured(m) {
+  const host = document.getElementById('carrymeasured');
+  if (!m || !m.rows || !m.rows.length) { host.textContent = ''; return; }
+  const ref = m.rows.map(r => `${r.symbol.replace('USDT', '')} +${r.ann_pct.toFixed(2)}%/yıl`).join(' · ');
+  host.innerHTML = `<br><span class="muted">Ölçülmüş referans (${m.window}, komisyon dahil): ${ref}. ` +
+                   `Bu bir vaat değil — geçmişte ne yaptığının ölçümü.</span>`;
+}
+
+function renderCarry(c) {
+  carryPayload = c;
+  const host = document.getElementById('carrytable');
+  const msg = document.getElementById('carrymsg');
+  if (!c || !c.available) {
+    host.innerHTML = `<div class="empty">${(c && c.error) || 'Carry verisi alınamadı.'}</div>`;
+    return;
+  }
+  renderCarryMeasured(c.measured);
+
+  // yazma (ekle/sil) sadece sunucu varken
+  const canWrite = !LOCAL_MODE && !c.static;
+  document.getElementById('carryaddbox').classList.toggle('hidden', !canWrite);
+  if (canWrite) {
+    const dt = document.getElementById('cdate');
+    if (dt && !dt.value) dt.value = new Date().toISOString().slice(0, 10);
+  }
+
+  const t = c.totals || {};
+  document.getElementById('c1').textContent = (t.count || 0) + ' / ' + (t.delta_neutral_count || 0);
+  document.getElementById('c1s').textContent = 'toplam / delta-nötr';
+  document.getElementById('c2').textContent = (t.notional_usd ? fmt(t.notional_usd, 0) + '$' : '—');
+  const c3 = document.getElementById('c3');
+  c3.textContent = t.funding_usd === undefined ? '—' : signed(t.funding_usd, 2) + '$';
+  c3.className = 'val ' + cls(t.funding_usd);
+  document.getElementById('c3s').textContent = t.funding_pct === undefined ? '' : signed(t.funding_pct, 3) + '% notional';
+  const c4 = document.getElementById('c4');
+  c4.textContent = (t.weighted_ann_pct === null || t.weighted_ann_pct === undefined) ? '—' : signed(t.weighted_ann_pct) + '%';
+  c4.className = 'val ' + cls(t.weighted_ann_pct);
+  document.getElementById('carryinfo').textContent = c.generated_at
+    ? ` · ${new Date(c.generated_at).toLocaleTimeString('tr-TR')}${c.cached ? ' (önbellek)' : ''}` : '';
+  if (c.amounts_hidden) {
+    document.getElementById('carryinfo').textContent += ' · tutarlar bulut sürümünde gizli (yüzdeler açık)';
+  }
+
+  if (!c.positions || !c.positions.length) {
+    host.innerHTML = '<div class="empty">Henüz pozisyon yok. ' +
+      (canWrite ? 'Aşağıdaki formdan ilk pozisyonunu ekle.' : 'Pozisyon eklemek için sunucunun çalıştığı makineden aç.') + '</div>';
+    return;
+  }
+
+  host.innerHTML = `<table><thead><tr>
+      <th>Sembol</th><th>Gün</th><th>Periyot</th><th>Kira $</th><th>Kira %</th><th>Yıllık %</th>
+      <th>Spot P&L</th><th>Short P&L</th><th>Net $</th><th>Net %</th><th>Basis %</th><th>Sıradaki</th><th>Durum</th><th></th>
+    </tr></thead><tbody>
+    ${c.positions.map(p => `<tr>
+      <td><b>${p.symbol}</b>${p.note ? `<div class="muted" style="font-size:10px">${p.note}</div>` : ''}</td>
+      <td class="muted">${fmt(p.days, 1)}</td>
+      <td class="muted">${p.funding_periods}${p.funding_neg_periods ? ` <span class="neg">(${p.funding_neg_periods}−)</span>` : ''}</td>
+      <td class="${cls(p.funding_usd)}">${signed(p.funding_usd, 2)}</td>
+      <td class="${cls(p.funding_pct)}">${signed(p.funding_pct, 3)}</td>
+      <td class="${cls(p.funding_ann_pct)}">${p.funding_ann_pct === null ? '—' : signed(p.funding_ann_pct) + '%'}</td>
+      <td class="${cls(p.spot_pnl)}">${signed(p.spot_pnl, 2)}</td>
+      <td class="${cls(p.perp_pnl)}">${signed(p.perp_pnl, 2)}</td>
+      <td class="${cls(p.net_usd)}"><b>${signed(p.net_usd, 2)}</b></td>
+      <td class="${cls(p.net_pct)}">${signed(p.net_pct, 3)}</td>
+      <td class="muted">${p.basis_now_pct === null ? '—' : signed(p.basis_now_pct, 3)}</td>
+      <td class="muted">${p.hours_to_next === null ? '—' : fmt(p.hours_to_next, 1) + ' sa'}</td>
+      <td>${p.warnings.length
+            ? `<span class="tag no" title="${p.warnings.join(' | ')}">${p.delta_neutral ? 'UYARI' : 'DELTA-NÖTR DEĞİL'}</span>`
+            : '<span class="tag ok">NORMAL</span>'}</td>
+      <td>${canWrite ? `<button onclick="removePosition('${p.id}','${p.symbol}')" title="sil">×</button>` : ''}</td>
+    </tr>`).join('')}</tbody></table>
+    <div class="note">${(c.positions.flatMap(p => p.warnings.map(w => `${p.symbol}: ${w}`)).join(' · ')) || ''}</div>`;
+}
+
+function renderCarryCand(rows) {
+  const host = document.getElementById('carrycand');
+  if (!rows || !rows.length) {
+    host.innerHTML = '<div class="empty">Uygun aday yok (hacim filtresi: 50M$).</div>';
+    return;
+  }
+  const ok = rows.filter(r => r.ok).sort((a, b) => b.ann_p25_pct - a.ann_p25_pct).slice(0, 8);
+  if (!ok.length) { host.innerHTML = '<div class="empty">Şu an giriş kuralını geçen sembol yok.</div>'; return; }
+  host.innerHTML = `<table><thead><tr>
+      <th>Sembol</th><th>Şu an %</th><th>Ort. yıl %</th><th>Temkinli %</th><th>Pozitif %</th>
+      <th>Basis %</th><th>Hacim M$</th><th>Maliyet gün</th>
+    </tr></thead><tbody>
+    ${ok.map(r => `<tr>
+      <td><b>${r.symbol}</b></td>
+      <td class="${cls(r.funding_now_pct)}">${signed(r.funding_now_pct, 4)}</td>
+      <td class="${cls(r.ann_30d_pct)}">${signed(r.ann_30d_pct)}</td>
+      <td class="${cls(r.ann_p25_pct)}"><b>${signed(r.ann_p25_pct)}</b></td>
+      <td class="muted">${fmt(r.pos_share_pct, 0)}</td>
+      <td class="${r.basis_pct > 0.3 ? 'neg' : 'muted'}">${signed(r.basis_pct, 3)}</td>
+      <td class="muted">${fmt(r.vol_musd, 0)}</td>
+      <td class="muted">${r.breakeven_days === null ? '∞' : fmt(r.breakeven_days, 1)}</td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+async function loadCarry(force) {
+  const host = document.getElementById('carrytable');
+  if (LOCAL_MODE) {
+    // APK / bulut: data.json icindeki carry raporu (salt okuma)
+    if (carryPayload && carryPayload.available) { renderCarry(carryPayload); return; }
+    host.innerHTML = '<div class="empty">Carry sekmesi sunucu gerektirir. Telefonda salt okuma için ' +
+      'bulut verisi kullanılır; pozisyon eklemek için bilgisayardaki paneli aç.</div>';
+    return;
+  }
+  if (!host.querySelector('table')) host.innerHTML = '<div class="empty"><span class="spin"></span> funding geçmişi hesaplanıyor…</div>';
+  try {
+    renderCarry(await jget(force ? '/api/carry/refresh' : '/api/carry'));
+  } catch (e) {
+    host.innerHTML = `<div class="empty neg">Carry alınamadı: ${e.message}</div>`;
+  }
+}
+
+async function addPosition() {
+  const msg = document.getElementById('carrymsg');
+  const body = {
+    symbol: (document.getElementById('csym').value || '').trim().toUpperCase(),
+    notional_usd: Number(document.getElementById('cnot').value),
+    opened_at: document.getElementById('cdate').value || null,
+    note: document.getElementById('cnote').value || '',
+  };
+  if (!body.symbol || !body.notional_usd) { msg.innerHTML = '<span class="neg">Sembol ve notional gerekli.</span>'; return; }
+  msg.innerHTML = '<span class="spin"></span> hesaplanıyor…';
+  try {
+    const r = await fetch('/api/carry/add', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    });
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
+    msg.innerHTML = `<span class="pos">${body.symbol} eklendi.</span>`;
+    ['csym', 'cnot', 'cnote'].forEach(id => { document.getElementById(id).value = ''; });
+    renderCarry(d.carry);
+  } catch (e) {
+    msg.innerHTML = `<span class="neg">${e.message}</span>`;
+  }
+}
+
+async function removePosition(id, sym) {
+  if (!confirm(sym + ' pozisyonunu silmek istiyor musun? (geçmiş kaydı silinir)')) return;
+  const msg = document.getElementById('carrymsg');
+  try {
+    const r = await fetch('/api/carry/remove', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }),
+    });
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
+    msg.innerHTML = `<span class="pos">${sym} silindi.</span>`;
+    renderCarry(d.carry);
+  } catch (e) {
+    msg.innerHTML = `<span class="neg">${e.message}</span>`;
+  }
+}
+
 function renderLive(live) {
+  livePayload = live;
+  renderCarryCand(live ? live.rows : null);
   document.getElementById('liveinfo').textContent =
     live ? ` · ${live.count} sembol · ${new Date(live.fetched_at).toLocaleTimeString('tr-TR')}` : '';
   const host = document.getElementById('livetable');
@@ -1185,7 +1404,7 @@ if ('serviceWorker' in navigator) {
 
 // kısayol derin bağlantısı: ?tab=screen | smart | genel
 const _tabParam = new URLSearchParams(location.search).get('tab');
-if (['genel', 'smart', 'screen'].includes(_tabParam)) setTab(_tabParam);
+if (['carry', 'genel', 'smart', 'screen'].includes(_tabParam)) setTab(_tabParam);
 const _cu = document.getElementById('cloudurl');
 if (_cu) _cu.value = cloudUrl();
 netState();

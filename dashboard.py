@@ -15,13 +15,15 @@ Uclar:
 from __future__ import annotations
 
 import argparse
+import os
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory
 
 import analytics
+import carry
 import flow
 import funding_monitor as fm
 import screener
@@ -231,6 +233,71 @@ def api_rulecheck():
 @app.get("/api/alerts")
 def api_alerts():
     return jsonify({"alerts": screener.recent_alerts(60)})
+
+
+# ------------------------------------------------------- carry pozisyonlari
+_carry_cache: dict = {"ts": 0.0, "data": None}
+CARRY_TTL = 60
+
+
+def carry_data(force: bool = False) -> dict:
+    now = time.time()
+    if not force and _carry_cache["data"] is not None and now - _carry_cache["ts"] < CARRY_TTL:
+        out = dict(_carry_cache["data"])
+        out["cached"] = True
+        return out
+    out = carry.report()
+    out["cached"] = False
+    _carry_cache.update({"ts": now, "data": out})
+    return out
+
+
+def _write_allowed() -> bool:
+    """Pozisyon yazma sadece yerel makineden. Sunucu 0.0.0.0'da dinlese bile
+    agdan gelen biri pozisyon ekleyip silemesin."""
+    if os.environ.get("CARRY_ALLOW_REMOTE") == "1":
+        return True
+    return request.remote_addr in {"127.0.0.1", "::1", "localhost"}
+
+
+@app.get("/api/carry")
+def api_carry():
+    return jsonify(carry_data())
+
+
+@app.get("/api/carry/refresh")
+def api_carry_refresh():
+    return jsonify(carry_data(force=True))
+
+
+@app.post("/api/carry/add")
+def api_carry_add():
+    if not _write_allowed():
+        return jsonify({"error": "pozisyon yazma sadece yerel makineden"}), 403
+    d = request.get_json(silent=True) or {}
+    try:
+        pos = carry.add_position(
+            symbol=d.get("symbol", ""),
+            notional_usd=d.get("notional_usd", 0),
+            opened_at=d.get("opened_at") or None,
+            note=d.get("note", ""),
+        )
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    _carry_cache["ts"] = 0.0
+    return jsonify({"ok": True, "position": pos, "carry": carry_data(force=True)})
+
+
+@app.post("/api/carry/remove")
+def api_carry_remove():
+    if not _write_allowed():
+        return jsonify({"error": "pozisyon yazma sadece yerel makineden"}), 403
+    d = request.get_json(silent=True) or {}
+    pid = (d.get("id") or "").strip()
+    if not pid or not carry.remove_position(pid):
+        return jsonify({"error": "pozisyon bulunamadi"}), 404
+    _carry_cache["ts"] = 0.0
+    return jsonify({"ok": True, "carry": carry_data(force=True)})
 
 
 @app.get("/api/all")

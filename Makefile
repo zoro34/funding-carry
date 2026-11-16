@@ -1,0 +1,17 @@
+# Kanonik komutlar — defterin aradigi tek giris noktasi.
+#   make test   : sozdizimi + smoke paketleri (ag/veri gerektirir)
+#   make lint   : yalnizca derleme kontrolu (hizli, agsiz)
+PY = .venv/bin/python
+SRC = $(wildcard *.py)
+
+.PHONY: test lint
+test: lint
+	$(PY) smoke_carry.py
+	$(PY) smoke_dip.py
+	$(PY) smoke_alarm.py
+	-$(PY) smoke_mobile.py   # yerel Chromium http yukleyemiyorsa SKIP(2) — hata degil
+
+lint:
+	$(PY) -m py_compile $(SRC)
+	@node --check /dev/stdin < /dev/null 2>/dev/null || true
+	@echo "py_compile: $(words $(SRC)) dosya OK"

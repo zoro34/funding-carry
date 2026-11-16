@@ -125,7 +125,9 @@ Durdurmak için: `hermes cron list` → job id → kaldır.
 bash launch_panel.sh                     # oturumdan bağımsız başlat
 ```
 
-**Test / doğrulama:** `.venv/bin/python smoke_carry.py` — carry depolama, funding
+**Test / doğrulama (kanonik):** `make test` — sözdizimi + smoke paketleri
+(`smoke_carry` 6, `smoke_dip` 6, `smoke_alarm` 4 kontrol; tarayıcı bozuksa
+`smoke_mobile` SKIP verir). Tek tek: `.venv/bin/python smoke_carry.py` — carry depolama, funding
 matematiği (bağımsız toplamla karşılaştırma), API uçları + yazma koruması, statik
 gizlilik dönüşümü, panel JS sözdizimi. Geçen çıktı `reports/verification*.txt`'e yazılır.
 İzole geçici store kullanır, gerçek pozisyonlarına dokunmaz.

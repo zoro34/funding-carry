@@ -1,0 +1,118 @@
+#!/usr/bin/env python3
+"""Alarm hatti smoke testi — stop/hedef tetigi, dip ozeti, cron sarmalayici.
+
+Kanonik: make test (bu dosyayi da kosar)
+Ag minimal: fiyat stub'lanir, store/kuyruk gecici dizine alinir.
+"""
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+import sys
+import tempfile
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).parent
+sys.path.insert(0, str(ROOT))
+os.chdir(ROOT)
+R: list[tuple[str, str, str]] = []
+TMP = Path(tempfile.mkdtemp(prefix="smoke-alarm-"))
+
+
+def check(name, fn):
+    try:
+        R.append(("PASS", name, str(fn() or "")))
+    except AssertionError as e:
+        R.append(("FAIL", name, str(e)))
+    except Exception as e:  # noqa: BLE001
+        R.append(("FAIL", name, f"{type(e).__name__}: {e}"))
+
+
+def t_stop():
+    import notify, paper
+    paper.STORE = TMP / "paper.json"
+    notify.OUTBOX = TMP / "outbox.jsonl"
+    notify.STATE = TMP / "state.json"
+    for k in ("TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID"):
+        os.environ.pop(k, None)
+    # giris 100, stop %5 -> 95; fiyat 94 => stop tetiklenir
+    paper.save([{"id": "p1", "symbol": "BTCUSDT", "side": "LONG", "notional_usd": 1000.0,
+                 "entry_price": 100.0, "stop_pct": 5.0, "target_pct": 3.0,
+                 "stop_price": 95.0, "target_price": 103.0,
+                 "opened_at": datetime.now(timezone.utc).isoformat(),
+                 "status": "open", "note": "t"}])
+    orig = paper.price
+    paper.price = lambda sym: 94.0
+    try:
+        rep = paper.report(alert=True)
+    finally:
+        paper.price = orig
+    row = json.loads(Path(paper.STORE).read_text())[0]
+    assert row["status"] == "stopped", row["status"]
+    assert (rep["open"], rep["closed"]) == (0, 1), (rep["open"], rep["closed"])
+    assert rep["positions"][0]["status"] == "stopped"
+    box = [json.loads(l) for l in Path(notify.OUTBOX).read_text().splitlines()]
+    assert any("STOP" in m["text"] for m in box), "stop bildirimi kuyrukta yok"
+    return f"status=stopped · open/closed=0/1 · bildirim {len(box)}"
+
+
+def t_target():
+    """Hedefe degme yolu da kapali kalmasin."""
+    import notify, paper
+    notify.STATE = TMP / "state2.json"
+    paper.STORE = TMP / "paper2.json"
+    paper.save([{"id": "p2", "symbol": "ETHUSDT", "side": "LONG", "notional_usd": 500.0,
+                 "entry_price": 100.0, "stop_pct": 5.0, "target_pct": 3.0,
+                 "stop_price": 95.0, "target_price": 103.0,
+                 "opened_at": datetime.now(timezone.utc).isoformat(),
+                 "status": "open", "note": "t"}])
+    orig = paper.price
+    paper.price = lambda sym: 104.0
+    try:
+        rep = paper.report(alert=True)
+    finally:
+        paper.price = orig
+    row = json.loads(Path(paper.STORE).read_text())[0]
+    assert row["status"] == "target", row["status"]
+    assert rep["closed"] == 1 and rep["realized_usd"] > 0, (rep["closed"], rep["realized_usd"])
+    return f"status=target · gerceklesen {rep['realized_usd']:+.2f}$"
+
+
+def t_digest():
+    import alarm, notify
+    notify.STATE = TMP / "state3.json"
+    notify.OUTBOX = TMP / "outbox3.jsonl"
+    for k in ("TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID"):
+        os.environ.pop(k, None)
+    d1 = alarm.dip_digest()
+    assert d1 and d1.get("queued") is True, d1
+    d2 = alarm.dip_digest()
+    assert d2 and d2["reason"] == "cooldown", d2
+    return "ilk cagri kuyruk, ikincisi cooldown"
+
+
+def t_cron():
+    log = ROOT / "reports" / "alarm.log"
+    before = log.stat().st_size if log.exists() else 0
+    p = subprocess.run(["bash", str(Path.home() / ".hermes" / "scripts" / "paper_alarm.sh")],
+                       capture_output=True, text=True, timeout=300)
+    assert p.returncode == 0, (p.returncode, p.stderr[-300:])
+    after = log.stat().st_size if log.exists() else 0
+    assert after > before, "log buyumedi"
+    return f"exit 0 · log +{after - before} bayt"
+
+
+for name, fn in [("stop tetigi -> kapat + bildir", t_stop),
+                 ("hedef tetigi -> kapat + gerceklesen", t_target),
+                 ("dip ozeti cooldown", t_digest),
+                 ("cron sarmalayici paper_alarm.sh", t_cron)]:
+    check(name, fn)
+
+print(f"alarm smoke — {datetime.now(timezone.utc).isoformat()}\n")
+for st, name, detail in R:
+    print(f"[{'OK  ' if st == 'PASS' else 'FAIL'}] {name}" + (f" — {detail}" if detail else ""))
+fails = [r for r in R if r[0] == "FAIL"]
+print(f"\n{len(R) - len(fails)}/{len(R)} gecti")
+sys.exit(1 if fails else 0)

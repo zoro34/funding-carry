@@ -21,3 +21,8 @@ learn:
 	$(PY) learn_indicators.py
 
 .PHONY: learn
+
+predict:
+	$(PY) predict_study.py
+
+.PHONY: predict

@@ -35,7 +35,7 @@ MEASURE_JS = """
   const cols = sel => { const tr = document.querySelector(sel + ' thead tr');
                         return tr ? [...tr.children].filter(c => getComputedStyle(c).display !== 'none').length : null; };
   const out = {};
-  for (const t of ['carry','genel','smart','screen']) {
+  for (const t of ['carry','dip','genel','smart','screen']) {
     setTab(t);
     for (let i = 0; i < 40; i++) {           // veri gelene kadar bekle
       if (document.querySelector('#carrytable table') || t !== 'carry') break;
@@ -45,9 +45,11 @@ MEASURE_JS = """
     out[t] = {
       pageOverflow: document.documentElement.scrollWidth - window.innerWidth,
       tables: { carry: tw('#carrytable'), cand: tw('#carrycand'), live: tw('#livetable'),
-                smart: tw('#smarttable'), screen: tw('#screentable'), alerts: tw('#alertlist') },
+                smart: tw('#smarttable'), screen: tw('#screentable'), alerts: tw('#alertlist'),
+                dip: tw('#diptable'), paper: tw('#papertable') },
       cols: { carry: cols('#carrytable'), cand: cols('#carrycand'), live: cols('#livetable'),
-              smart: cols('#smarttable'), screen: cols('#screentable'), alerts: cols('#alertlist') }
+              smart: cols('#smarttable'), screen: cols('#screentable'), alerts: cols('#alertlist'),
+              dip: cols('#diptable'), paper: cols('#papertable') }
     };
   }
   return JSON.stringify(out);
@@ -140,7 +142,8 @@ def main() -> int:
         return f"{measured} tablo olcumu, hepsi <={TOL}px"
 
     def t_cols():
-        want = {"carry": 8, "cand": 5, "live": 6, "smart": 7, "screen": 7, "alerts": 5}
+        want = {"carry": 8, "cand": 5, "live": 6, "smart": 7, "screen": 7, "alerts": 5,
+                "dip": 4, "paper": 7}
         bad = {f"{tab}/{k}": n for tab, v in data.items() for k, n in v["cols"].items()
                if n is not None and n > want[k]}
         assert not bad, f"mobil kolon gizleme eksik: {bad}"

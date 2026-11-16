@@ -27,3 +27,4 @@ data/carry_positions.json
 
 # OS
 .DS_Store
+data/paper_positions.json

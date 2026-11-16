@@ -15,6 +15,7 @@ Uclar:
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import time
 from datetime import datetime, timezone
@@ -26,6 +27,8 @@ import analytics
 import carry
 import flow
 import funding_monitor as fm
+import notify
+import paper
 import screener
 
 ROOT = Path(__file__).parent
@@ -298,6 +301,102 @@ def api_carry_remove():
         return jsonify({"error": "pozisyon bulunamadi"}), 404
     _carry_cache["ts"] = 0.0
     return jsonify({"ok": True, "carry": carry_data(force=True)})
+
+
+# ------------------------------------------------- dip + kagit pozisyonlar
+_dip_cache: dict = {"ts": 0.0, "data": None}
+DIP_TTL = 600          # 10 dk — calisma agir (20 sembol x 1 istek)
+
+
+def dip_data(force: bool = False) -> dict:
+    now_ts = time.time()
+    if not force and _dip_cache["data"] is not None and now_ts - _dip_cache["ts"] < DIP_TTL:
+        out = dict(_dip_cache["data"])
+        out["cached"] = True
+        return out
+    p = ROOT / "reports" / "dip_study.json"
+    out = {"available": False, "rows": [], "verdict_text": "ölçüm yok — python dip.py"}
+    if p.exists():
+        try:
+            d = json.loads(p.read_text(encoding="utf-8"))
+            out = {**d, "available": True}
+        except Exception as e:  # noqa: BLE001
+            out = {"available": False, "rows": [], "error": str(e)}
+    out["cached"] = False
+    _dip_cache.update({"ts": now_ts, "data": out})
+    return out
+
+
+_paper_cache: dict = {"ts": 0.0, "data": None}
+PAPER_TTL = 30
+
+
+def paper_data(force: bool = False, alert: bool = False) -> dict:
+    now_ts = time.time()
+    if not force and not alert and _paper_cache["data"] is not None \
+            and now_ts - _paper_cache["ts"] < PAPER_TTL:
+        out = dict(_paper_cache["data"])
+        out["cached"] = True
+        return out
+    out = paper.report(alert=alert)
+    out["cached"] = False
+    _paper_cache.update({"ts": now_ts, "data": out})
+    return out
+
+
+@app.get("/api/dip")
+def api_dip():
+    return jsonify(dip_data())
+
+
+@app.get("/api/dip/refresh")
+def api_dip_refresh():
+    return jsonify(dip_data(force=True))
+
+
+@app.get("/api/paper")
+def api_paper():
+    return jsonify(paper_data(alert=True))
+
+
+@app.post("/api/paper/add")
+def api_paper_add():
+    if not _write_allowed():
+        return jsonify({"error": "pozisyon yazma sadece yerel makineden"}), 403
+    d = request.get_json(silent=True) or {}
+    try:
+        pos = paper.add(d.get("symbol", ""), d.get("notional_usd", 0),
+                        d.get("stop_pct") or None, d.get("target_pct") or None,
+                        d.get("note", ""))
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    return jsonify({"ok": True, "position": pos, "paper": paper_data(force=True)})
+
+
+@app.post("/api/paper/close")
+def api_paper_close():
+    if not _write_allowed():
+        return jsonify({"error": "pozisyon yazma sadece yerel makineden"}), 403
+    pid = ((request.get_json(silent=True) or {}).get("id") or "").strip()
+    try:
+        pos = paper.close(pid)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    if not pos:
+        return jsonify({"error": "açık pozisyon bulunamadı"}), 404
+    return jsonify({"ok": True, "position": pos, "paper": paper_data(force=True)})
+
+
+@app.get("/api/telegram")
+def api_telegram():
+    return jsonify(notify.status())
+
+
+@app.post("/api/telegram/test")
+def api_telegram_test():
+    if not _write_allowed():
+        return jsonify({"error": "sadece yerel makineden"}), 403
+    return jsonify({**notify.send_test(), "status": notify.status()})
 
 
 @app.get("/api/all")

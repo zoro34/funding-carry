@@ -16,6 +16,7 @@ import analytics
 import carry
 import flow
 import funding_monitor as fm
+import paper
 import screener
 
 ROOT = Path(__file__).parent
@@ -98,6 +99,26 @@ def build() -> dict:
     except Exception as e:
         carry_rep = {"available": False, "positions": [], "totals": {}, "error": str(e)}
 
+    # 6) dip calismasi + kagit pozisyonlar (statik panelde salt okuma)
+    #    Papier tutarlar da public dosyaya giriyor -> USD alanlari gizlenir.
+    try:
+        dip_rep = json.loads((ROOT / "reports" / "dip_study.json").read_text(encoding="utf-8"))
+        dip_rep["available"] = True
+    except Exception as e:
+        dip_rep = {"available": False, "rows": [], "error": str(e)}
+    try:
+        paper_rep = paper.report(alert=False)
+        paper_rep["static"] = True
+        if os.environ.get("CARRY_PUBLIC_AMOUNTS") != "1":
+            paper_rep["amounts_hidden"] = True
+            for p in paper_rep.get("positions", []):
+                for k in ("notional_usd", "pnl_usd", "closed_pnl_usd"):
+                    p[k] = None
+            for k in ("unrealized_usd", "realized_usd"):
+                paper_rep[k] = None
+    except Exception as e:
+        paper_rep = {"positions": [], "open": 0, "closed": 0, "error": str(e)}
+
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "mode": "static",
@@ -112,6 +133,8 @@ def build() -> dict:
         "smart": smart,
         "screen": screen,
         "carry": carry_rep,
+        "dip": dip_rep,
+        "paper": paper_rep,
     }
 
 

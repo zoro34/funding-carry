@@ -344,3 +344,25 @@ Kurulum ve sınırlar: **MOBILE.md**
 
 Bu kod yatırım tavsiyesi değildir. Backtest kârı canlı kâr garantisi vermez;
 geçmiş performans gelecek performansı göstermez.
+
+## Telegram bildirimi (dip + pozisyon alarmları)
+
+Kurulum (tek komut, token ekrana yazılmaz):
+
+1. Telegram → **@BotFather** → `/newbot` → isim ver → kullanıcı adı `...bot` ile bitsin
+2. BotFather'ın verdiği token'ı kopyala
+3. Botuna Telegram'dan bir mesaj at (`/start`)
+4. Sunucuda: `bash telegram_kur.sh` → token'ı yapıştır (görünmez), chat id otomatik bulunur, test mesajı gider
+
+Ne gönderir (cron: **15 dakikada bir** `paper_alarm.sh`):
+- Kâğıt pozisyon **stop** veya **hedefe** değince anında bildirim
+- **Dipte olan semboller** özeti (aynı liste 4 saatte bir tekrar)
+- Token yoksa mesajlar `reports/telegram_outbox.jsonl`'a yazılır, panelde "kuyrukta" görünür
+
+## Dip & kâğıt pozisyon (panel sekmesi)
+
+- **Dipte Olanlar**: 7 günlük aralığın alt %10'u (konum %0 = dip)
+- **Ölçülen Kısa Vade**: dip sonrası gerçekleşen +4s/+24s medyan, çeyrekler, yukarı oran
+- **Pozisyon Aç**: sembol + notional; stop/hedef boşsa **ölçülen çeyreklerden** gelir
+  (p25 → stop, p75 → hedef). Pozisyon kâğıttır, **gerçek emir gönderilmez**.
+- Ölçüm: `python dip.py` (~20 sembol, ~41 gün, 1h) → `reports/dip_study.{json,md}`

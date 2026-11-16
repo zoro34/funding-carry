@@ -39,6 +39,12 @@ def _read_env() -> dict[str, str]:
     return out
 
 
+def creds_raw() -> tuple[str | None, str | None]:
+    """Ana salteri YOK SAYAR — sadece 'token/chat tanimli mi' bilgisi icin."""
+    env = {**_read_env(), **os.environ}
+    return env.get("TELEGRAM_BOT_TOKEN") or None, env.get("TELEGRAM_CHAT_ID") or None
+
+
 def creds() -> tuple[str | None, str | None]:
     env = {**_read_env(), **os.environ}
     # Ana şalter: TELEGRAM_ENABLED=0 ise hiçbir şey gönderilmez (kuyruğa yazılır).
@@ -47,13 +53,42 @@ def creds() -> tuple[str | None, str | None]:
     return env.get("TELEGRAM_BOT_TOKEN") or None, env.get("TELEGRAM_CHAT_ID") or None
 
 
+def enabled() -> bool:
+    """Ana salter: TELEGRAM_ENABLED=0 ise gonderim kapali."""
+    env = {**_read_env(), **os.environ}
+    return str(env.get("TELEGRAM_ENABLED", "1")).strip() not in ("0", "false", "no", "off")
+
+
+def set_enabled(on: bool) -> bool:
+    """Ana salteri .env'de ac/kapat (TELEGRAM_ENABLED=1/0)."""
+    from pathlib import Path as P
+    for path in (P.home() / ".hermes" / ".env", ROOT / ".env"):
+        if not path.exists():
+            continue
+        lines = path.read_text(encoding="utf-8").splitlines()
+        out, found = [], False
+        for ln in lines:
+            if ln.strip().startswith("TELEGRAM_ENABLED="):
+                out.append(f"TELEGRAM_ENABLED={1 if on else 0}")
+                found = True
+            else:
+                out.append(ln)
+        if not found:
+            out.append(f"TELEGRAM_ENABLED={1 if on else 0}")
+        path.write_text("\n".join(out) + "\n", encoding="utf-8")
+        return True
+    return False
+
+
 def status() -> dict:
     tok, chat = creds()
     pending = 0
     if OUTBOX.exists():
         pending = sum(1 for _ in OUTBOX.open(encoding="utf-8"))
-    return {"configured": bool(tok and chat), "has_token": bool(tok),
-            "has_chat": bool(chat), "pending_unsent": pending}
+    raw_tok, raw_chat = creds_raw()
+    return {"configured": bool(tok and chat), "enabled": enabled(),
+            "has_token": bool(raw_tok), "has_chat": bool(raw_chat),
+            "pending_unsent": pending}
 
 
 def _state() -> dict:

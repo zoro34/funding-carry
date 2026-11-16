@@ -317,7 +317,8 @@
       <div class="note" id="papermsg"></div>
       <hr class="sep">
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <button onclick="telegramTest()">Telegram test mesajı</button>
+        <button onclick="telegramTest()" id="tgtest">Telegram test mesajı</button>
+        <button onclick="tgToggle()" id="tgtoggle">Telegram'ı aç / kapat</button>
         <span class="muted" id="tgstate" style="font-size:11px"></span>
       </div>
       <div class="note">Stop/hedef boş bırakılırsa <b>ölçülen +24s çeyreklerinden</b> gelir
@@ -808,6 +809,23 @@ function renderAnalysis(a) {
 /* ---------------------- DİP & POZİSYON (paper) ---------------------- */
 let dipPayload = null, paperPayload = null;
 
+async function tgToggle() {
+  const cur = paperPayload && paperPayload.telegram ? paperPayload.telegram : {};
+  const turnOn = !(cur.configured && cur.enabled !== false);
+  const msg = document.getElementById('papermsg');
+  try {
+    const r = await fetch('/api/telegram/toggle', { method: 'POST',
+      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ on: turnOn }) });
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
+    if (paperPayload) { paperPayload.telegram = d.telegram; renderPaper(paperPayload); }
+    msg.innerHTML = `<span class="pos">Telegram ${turnOn ? 'açıldı' : 'kapatıldı'}.</span>`;
+  } catch (e) {
+    msg.innerHTML = `<span class="neg">${e.message}` +
+      (String(e.message).includes('403') ? ' — bu düğme yalnızca bilgisayardaki panelde çalışır.' : '') + '</span>';
+  }
+}
+
 function verdictClass(v) {
   if (v === 'goreli_avantaj') return 'warn';
   return v === 'olumlu' ? 'good' : (v === 'avantaj_yok' || v === 'kuyruk_piyangosu') ? 'bad' : 'warn';
@@ -984,13 +1002,21 @@ function renderPaper(p) {
   d3.textContent = signed(p.realized_usd, 2) + '$'; d3.className = 'val ' + cls(p.realized_usd);
   const tg = p.telegram || {};
   const d4 = document.getElementById('d4');
-  d4.textContent = tg.configured ? 'BAĞLI' : 'YOK';
-  d4.className = 'val ' + (tg.configured ? 'pos' : 'neg');
-  document.getElementById('d4s').textContent = tg.configured ? 'stop/hedef bildirimi açık'
-    : (tg.pending_unsent ? `${tg.pending_unsent} mesaj kuyrukta` : 'token yok — mesajlar kuyrukta');
-  document.getElementById('tgstate').textContent = tg.configured
-    ? 'Telegram bağlı.' 
-    : 'Telegram bağlı değil: bot token + chat id gerekiyor (README → Telegram).';
+  const tgOn = tg.configured && tg.enabled !== false;
+  d4.textContent = tgOn ? 'BAĞLI' : (tg.has_token ? 'KAPALI' : 'YOK');
+  d4.className = 'val ' + (tgOn ? 'pos' : 'neg');
+  document.getElementById('d4s').textContent = tgOn ? 'stop/hedef bildirimi açık'
+    : (tg.has_token ? 'senin isteğinle kapalı · açmak için aşağıdaki düğme'
+                    : 'token yok — mesajlar kuyrukta');
+  ['tgtest', 'tgtoggle'].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) b.style.display = sm ? 'none' : '';
+  });
+  document.getElementById('tgstate').textContent = tgOn
+    ? `Telegram açık · ${tg.pending_unsent || 0} bekleyen mesaj kuyrukta.`
+    : (tg.has_token
+        ? `Telegram KAPALI (senin isteğinle). ${tg.pending_unsent || 0} mesaj kuyrukta bekliyor.`
+        : 'Telegram bağlı değil: bot token + chat id gerekiyor (README → Telegram).');
 
   const host = document.getElementById('papertable');
   const rows = [...(p.positions || []).filter(x => x.status === 'open'), ...locals];
@@ -1010,7 +1036,8 @@ function renderPaper(p) {
       <td class="muted h-sm">${x.to_stop_pct === null ? '—' : signed(x.to_stop_pct, 1) + '%'}</td>
       <td class="muted h-sm">${x.to_target_pct === null ? '—' : signed(x.to_target_pct, 1) + '%'}</td>
       <td class="muted h-sm">${x.hours_open === null ? '—' : fmt(x.hours_open, 1) + ' sa'}</td>
-      <td><button onclick="closePaper('${x.id}','${x.symbol}',${x.local ? 'true' : 'false'})" title="kapat">×</button></td>
+      <td>${(sm && !x.local) ? '<span class="muted" style="font-size:10px">sunucuda</span>'
+        : `<button onclick="closePaper('${x.id}','${x.symbol}',${x.local ? 'true' : 'false'})" title="kapat">×</button>`}</td>
     </tr>`).join('')}</tbody></table>`;
 
   // --- stop / hedef uyarilari (canli fiyatla) ---

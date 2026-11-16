@@ -60,3 +60,5 @@ ts,symbol,signal,conditions,score,price_chg,net_24h_musd,oi_24h,gap,whale_net_mu
 2026-11-16T15:30:50.851544+00:00,TRUMPUSDT,SAT,3,40.2,-3.05,1.68,-1.75,-3.2,0.0,-0.005013999999999999,-5.5,balina satici; buyuk<kucuk long; fiyat asagi
 2026-11-16T16:00:33.683386+00:00,ETHUSDC,AL,3,38.2,0.47,-5.84,3.49,-23.6,21.14,0.003915,4.3,balina alici; OI artiyor; fiyat yukari
 2026-11-16T16:00:33.683386+00:00,VVVUSDT,SAT,3,40.9,-0.41,2.34,-4.69,-6.5,0.0,0.005,5.5,balina satici; buyuk<kucuk long; fiyat asagi
+2026-11-16T17:00:47.348608+00:00,DOGEUSDT,AL,4,54.6,1.93,0.47,-0.46,0.1,1.58,-0.009981,-10.9,para girisi; balina alici; buyuk>kucuk long; fiyat yukari
+2026-11-16T17:00:47.348608+00:00,SUIUSDT,AL,3,49.5,0.84,2.7,0.69,-3.1,-0.19,-0.0034870000000000005,-3.8,para girisi; OI artiyor; fiyat yukari

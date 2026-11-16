@@ -165,8 +165,10 @@ def main() -> int:
         return f"{measured} tablo olcumu, hepsi <={TOL}px"
 
     def t_cols():
+        # dip: 6 kolonun 5'i gorunur (Islem=AL/KAPAT mobilde gerekli, 41g olay .h-sm ile gizli).
+        # Asil kisit genislik: t_tables 390px'e sigmayi ayrica dogruluyor.
         want = {"carry": 8, "cand": 5, "live": 6, "smart": 7, "screen": 7, "alerts": 5,
-                "dip": 4, "paper": 7}
+                "dip": 5, "paper": 7}
         bad = {f"{tab}/{k}": n for tab, v in data.items() for k, n in v["cols"].items()
                if n is not None and n > want[k]}
         assert not bad, f"mobil kolon gizleme eksik: {bad}"

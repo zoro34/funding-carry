@@ -392,6 +392,17 @@ def api_telegram():
     return jsonify(notify.status())
 
 
+@app.post("/api/telegram/toggle")
+def api_telegram_toggle():
+    if not _write_allowed():
+        return jsonify({"error": "sadece yerel makineden"}), 403
+    d = request.get_json(silent=True) or {}
+    on = bool(d.get("on", True))
+    if not notify.set_enabled(on):
+        return jsonify({"error": ".env bulunamadı"}), 500
+    return jsonify({"ok": True, "enabled": on, "telegram": notify.status()})
+
+
 @app.post("/api/telegram/test")
 def api_telegram_test():
     if not _write_allowed():

@@ -244,7 +244,7 @@ def t_local_paper():
         assert need in html, f"eksik: {why}"
     assert 'id="cloudurl"' not in html, "bulut adresi alanı hâlâ görünüyor (sadeleştirme geri alınmış)"
     # telefon modunda sunucu pozisyonu kapatilamaz -> 'sunucuda' etiketi, olu dugme yok
-    assert "'sunucuda'" in html, "sunucu pozisyonlari icin 'sunucuda' etiketi yok"
+    assert ">sunucuda<" in html, "sunucu pozisyonlari icin 'sunucuda' etiketi yok"
     assert 'tgToggle' in html and 'id="tgtest"' in html, "Telegram ac/kapat dugmesi yok"
     # Telegram salteri: token varken 'KAPALI' denmeli, 'YOK' degil
     nsrc = (ROOT / "notify.py").read_text(encoding="utf-8")

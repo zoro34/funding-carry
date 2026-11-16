@@ -15,3 +15,7 @@ hint: the same ref. If you want to integrate the remote changes, use
 hint: 'git pull' before pushing again.
 hint: See the 'Note about fast-forwards' in 'git push --help' for details.
 2026-11-16 06:48 UTC HATA: git push basarisiz
+error: cannot pull with rebase: You have unstaged changes.
+error: Please commit or stash them.
+2026-11-16 07:48 UTC uyari: rebase yapilamadi, yine de denenecek
+2026-11-16 07:48 UTC push TAMAM · uretim: 2026-11-16T07:48:35.405653+00:00

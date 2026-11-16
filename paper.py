@@ -133,49 +133,52 @@ def evaluate(pos: dict, px: float) -> dict:
 
 def report(alert: bool = False) -> dict:
     rows = load()
-    out = {"positions": [], "open": 0, "closed": 0, "realized_usd": 0.0,
-           "unrealized_usd": 0.0, "telegram": notify.status(),
-           "defaults": defaults(), "generated_at": now().isoformat()}
     changed = False
+    evaluated: list[dict] = []
+
+    # 1) değerlendir; tetiklenenleri KAPAT (store'da güncelle)
     for r in rows:
         if r["status"] != "open":
-            out["positions"].append({**r, "price_now": None, "pnl_pct": None,
-                                     "pnl_usd": r.get("closed_pnl_usd", 0),
-                                     "r_multiple": None, "to_stop_pct": None,
-                                     "to_target_pct": None, "hit_stop": False,
-                                     "hit_target": False, "hours_open": None})
-            out["closed"] += 1
-            out["realized_usd"] += float(r.get("closed_pnl_usd") or 0)
+            evaluated.append({**r, "price_now": None, "pnl_pct": None, "pnl_usd": None,
+                              "r_multiple": None, "to_stop_pct": None,
+                              "to_target_pct": None, "hit_stop": False,
+                              "hit_target": False, "hours_open": None})
             continue
         px = price(r["symbol"])
         if not px:
-            out["positions"].append({**r, "price_now": None, "pnl_pct": None,
-                                     "pnl_usd": None, "r_multiple": None,
-                                     "to_stop_pct": None, "to_target_pct": None,
-                                     "hit_stop": False, "hit_target": False,
-                                     "hours_open": None})
+            evaluated.append({**r, "price_now": None, "pnl_pct": None, "pnl_usd": None,
+                              "r_multiple": None, "to_stop_pct": None,
+                              "to_target_pct": None, "hit_stop": False,
+                              "hit_target": False, "hours_open": None})
             continue
         e = evaluate(r, px)
-        out["positions"].append(e)
-        out["open"] += 1
-        out["unrealized_usd"] += e["pnl_usd"] or 0
-
         if alert and (e["hit_stop"] or e["hit_target"]):
             kind = "STOP" if e["hit_stop"] else "HEDEF"
-            r["status"] = "stopped" if e["hit_stop"] else "target"
-            r["closed_at"] = now().isoformat()
-            r["closed_price"] = px
-            r["closed_pnl_usd"] = e["pnl_usd"]
+            r.update({"status": "stopped" if e["hit_stop"] else "target",
+                      "closed_at": now().isoformat(), "closed_price": px,
+                      "closed_pnl_usd": e["pnl_usd"]})
             changed = True
             notify.send(
                 f"<b>{kind}</b> {r['symbol']}\n"
                 f"Fiyat {px:.6g}$ · PnL {e['pnl_pct']:+.2f}% ({e['pnl_usd']:+.2f}$)\n"
                 f"<i>Kâğıt pozisyon kapatıldı.</i>",
                 key=f"{kind.lower()}:{r['symbol']}:{r['id']}", cooldown_min=0)
+            e = {**e, "status": r["status"], "closed_pnl_usd": r["closed_pnl_usd"]}
+        evaluated.append(e)
+
     if changed:
         save(rows)
-    out["unrealized_usd"] = round(out["unrealized_usd"], 2)
-    out["realized_usd"] = round(out["realized_usd"], 2)
+
+    # 2) toplamlar NİHAİ durumdan (kapananlar open sayılmaz)
+    out = {"positions": evaluated,
+           "open": sum(1 for p in evaluated if p["status"] == "open"),
+           "closed": sum(1 for p in evaluated if p["status"] != "open"),
+           "unrealized_usd": round(sum(p["pnl_usd"] or 0 for p in evaluated
+                                       if p["status"] == "open"), 2),
+           "realized_usd": round(sum(float(p.get("closed_pnl_usd") or 0) for p in evaluated
+                                     if p["status"] != "open"), 2),
+           "telegram": notify.status(), "defaults": defaults(),
+           "generated_at": now().isoformat()}
     return out
 
 

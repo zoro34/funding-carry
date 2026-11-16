@@ -1,0 +1,22 @@
+=== ad-hoc dogrulama 2026-11-16 11:08:52 ===
+
+[OK  ] smoke_dip.py (dip/paper/notify/API) — 6/6 gecti
+[OK  ] alarm: stop tetigi -> kapat + bildir — status=stopped · open/closed=0/1 · bildirim 1
+[OK  ] alarm: dip ozeti cooldown — ilk cagri kuyruk, ikincisi cooldown
+[OK  ] cron: paper_alarm.sh — exit 0 · log +192 bayt
+
+4/4 gecti
+
+=== yerlesim smoke (yerel chromium) ===
+SKIP: yerel Chromium bu ortamda http sayfasi yukleyemiyor (baslik=''). Panel/ag degil, tarayici sorunu — olcum ajan tarayicisiyla alinmali.
+exit=2
+
+=== yerlesim olcumu (ajan tarayicisi, 390px emulasyon) ===
+Yerel headless Chromium bu ortamda http yukleyemedigi icin (example.com dahil,
+baslik bos donuyor) olcum ajanin kendi tarayicisiyla alindi. Ayni DOM olcumu:
+  olculen tablo        : 25
+  en genis tablo       : 395px  (smart tablosu; tolerans 400)
+  sayfa tasmasi        : -15px  (yani tasma yok, dort sekmede de)
+  dip sekmesi          : diptable 331px · papertable 349px
+KARAR: yerlesim PASS. Yerel smoke_mobile bu ortamda SKIP (exit 2) veriyor;
+tarayici duzelince ayni olcum otomatik kosar.

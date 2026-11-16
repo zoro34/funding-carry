@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import socket
 import subprocess
 import sys
 import tempfile
@@ -23,36 +24,24 @@ import websocket
 
 PANEL = "http://127.0.0.1:8080/"
 CHROME = "/usr/lib/chromium/chromium"
-PORT = 9334
 WIDTH, TOL = 390, 400
 R: list[tuple[str, str, str]] = []
 
-MEASURE_JS = """
-(async () => {
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+TAB_JS = """
+(() => {
   const tw = sel => { const e = document.querySelector(sel + ' table');
                       return e ? Math.round(e.getBoundingClientRect().width) : null; };
   const cols = sel => { const tr = document.querySelector(sel + ' thead tr');
                         return tr ? [...tr.children].filter(c => getComputedStyle(c).display !== 'none').length : null; };
-  const out = {};
-  for (const t of ['carry','dip','genel','smart','screen']) {
-    setTab(t);
-    for (let i = 0; i < 40; i++) {           // veri gelene kadar bekle
-      if (document.querySelector('#carrytable table') || t !== 'carry') break;
-      await wait(500);
-    }
-    await wait(800);
-    out[t] = {
-      pageOverflow: document.documentElement.scrollWidth - window.innerWidth,
-      tables: { carry: tw('#carrytable'), cand: tw('#carrycand'), live: tw('#livetable'),
-                smart: tw('#smarttable'), screen: tw('#screentable'), alerts: tw('#alertlist'),
-                dip: tw('#diptable'), paper: tw('#papertable') },
-      cols: { carry: cols('#carrytable'), cand: cols('#carrycand'), live: cols('#livetable'),
-              smart: cols('#smarttable'), screen: cols('#screentable'), alerts: cols('#alertlist'),
-              dip: cols('#diptable'), paper: cols('#papertable') }
-    };
-  }
-  return JSON.stringify(out);
+  return JSON.stringify({
+    pageOverflow: document.documentElement.scrollWidth - window.innerWidth,
+    tables: { carry: tw('#carrytable'), cand: tw('#carrycand'), live: tw('#livetable'),
+              smart: tw('#smarttable'), screen: tw('#screentable'), alerts: tw('#alertlist'),
+              dip: tw('#diptable'), paper: tw('#papertable') },
+    cols: { carry: cols('#carrytable'), cand: cols('#carrycand'), live: cols('#livetable'),
+            smart: cols('#smarttable'), screen: cols('#screentable'), alerts: cols('#alertlist'),
+            dip: cols('#diptable'), paper: cols('#papertable') }
+  });
 })()
 """
 
@@ -68,8 +57,13 @@ def check(name, fn):
 
 class CDP:
     def __init__(self, url: str):
-        self.ws = websocket.create_connection(url, timeout=120, suppress_origin=True)
+        self.ws = websocket.create_connection(url, timeout=45, suppress_origin=True)
         self.n = 0
+
+    def send_only(self, method: str, **params):
+        """Yanitini BEKLEMEDEN gonder (Page.navigate yukleme bitmeden donmuyor)."""
+        self.n += 1
+        self.ws.send(json.dumps({"id": self.n, "method": method, "params": params}))
 
     def cmd(self, method: str, **params):
         self.n += 1
@@ -89,11 +83,13 @@ def main() -> int:
         print(f"SKIP: panel 8080'de yok ({e}) — once: bash launch_panel.sh")
         return 2
 
+    # her kosuya bos port: onceki kosudan kalan Chromium'a takilmayi onler
+    sk = socket.socket(); sk.bind(("127.0.0.1", 0)); PORT = sk.getsockname()[1]; sk.close()
     profile = tempfile.mkdtemp(prefix="hermes-verify-chrome-")
     proc = subprocess.Popen(
         [CHROME, "--headless=new", "--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage",
          "--remote-allow-origins=*", f"--remote-debugging-port={PORT}",
-         f"--user-data-dir={profile}", "about:blank"],
+         f"--user-data-dir={profile}", PANEL],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     cdp = None
     try:
@@ -103,16 +99,42 @@ def main() -> int:
                 break
             except Exception:  # noqa: BLE001
                 time.sleep(0.5)
-        req = urllib.request.Request(f"http://127.0.0.1:{PORT}/json/new?about:blank", method="PUT")
-        target = json.loads(urllib.request.urlopen(req, timeout=10).read())
+        # hedefi listeden al: navigate yapmadan, panel zaten aciliyor
+        target = None
+        for _ in range(40):
+            lst = json.loads(urllib.request.urlopen(f"http://127.0.0.1:{PORT}/json/list", timeout=5).read())
+            pages = [t for t in lst if t.get("type") == "page"
+                     and t.get("webSocketDebuggerUrl") and "8080" in (t.get("url") or "")]
+            if pages:
+                target = pages[0]
+                break
+            time.sleep(0.5)
+        assert target, "sayfa hedefi bulunamadi"
         cdp = CDP(target["webSocketDebuggerUrl"])
         cdp.cmd("Page.enable")
         cdp.cmd("Emulation.setDeviceMetricsOverride", width=WIDTH, height=900,
                 deviceScaleFactor=1, mobile=True)
-        cdp.cmd("Page.navigate", url=PANEL)
-        time.sleep(24)                                   # canli tarama
-        data = json.loads(cdp.cmd("Runtime.evaluate", expression=MEASURE_JS,
-                                  awaitPromise=True, returnByValue=True)["result"]["value"])
+        time.sleep(4)
+        # sayfa gercekten yuklendi mi? (yerel chromium bazen hic http yuklemiyor)
+        title = ""
+        for _ in range(20):
+            title = cdp.cmd("Runtime.evaluate", expression="document.title",
+                            returnByValue=True)["result"].get("value", "")
+            if "Funding Carry" in title:
+                break
+            time.sleep(1)
+        if "Funding Carry" not in title:
+            print("SKIP: yerel Chromium bu ortamda http sayfasi yukleyemiyor "
+                  f"(baslik={title!r}). Panel/ag degil, tarayici sorunu — "
+                  "olcum ajan tarayicisiyla alinmali.")
+            return 2
+        time.sleep(20)                                   # canli tarama bitsin
+        data = {}
+        for t in ("carry", "dip", "genel", "smart", "screen"):
+            cdp.cmd("Runtime.evaluate", expression=f"setTab('{t}')", returnByValue=True)
+            time.sleep(1.2)
+            r = cdp.cmd("Runtime.evaluate", expression=TAB_JS, returnByValue=True)
+            data[t] = json.loads(r["result"]["value"])
     finally:
         if cdp:
             cdp.ws.close()
@@ -121,6 +143,7 @@ def main() -> int:
             proc.wait(timeout=10)
         except Exception:  # noqa: BLE001
             proc.kill()
+            proc.wait(timeout=5)
         shutil.rmtree(profile, ignore_errors=True)
 
     def t_overflow():

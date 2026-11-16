@@ -854,10 +854,33 @@ async function loadDip(force) {
   catch (e) { document.getElementById('diptable').innerHTML = `<div class="empty neg">dip verisi alınamadı: ${e.message}</div>`; }
 }
 
+/* --- telefon yerel kagıt pozisyonlar (bulut modunda ac/kapa) --- */
+const LP_KEY = 'fc_local_paper';
+const localPapers = () => {
+  try { return JSON.parse(localStorage.getItem(LP_KEY) || '{"open":[],"closed":[]}'); }
+  catch (e) { return { open: [], closed: [] }; }
+};
+const saveLocalPapers = o => { try { localStorage.setItem(LP_KEY, JSON.stringify(o)); } catch (e) {} };
+const staticPaperMode = () => LOCAL_MODE || !!(paperPayload && paperPayload.static);
+
+function localRow(x, prices) {
+  const now = prices[x.symbol];
+  const p = now ? (now / x.entry_price - 1) * 100 : null;
+  return { ...x, local: true, price_now: now || null, pnl_pct: p,
+    pnl_usd: p === null ? null : p / 100 * x.notional_usd,
+    r_multiple: p === null ? null : p / x.stop_pct,
+    to_stop_pct: p === null ? null : -x.stop_pct - p,
+    to_target_pct: p === null ? null : x.target_pct - p,
+    hours_open: (Date.now() - new Date(x.opened_at).getTime()) / 3.6e6 };
+}
+
 function renderPaper(p) {
   paperPayload = p;
-  const canWrite = !LOCAL_MODE && !p.static;
-  document.getElementById('paperaddbox').classList.toggle('hidden', !canWrite);
+  const sm = LOCAL_MODE || !!p.static;
+  document.getElementById('paperaddbox').classList.toggle('hidden', false);
+  const lp = localPapers();
+  const prices = p.prices || {};
+  const locals = sm ? lp.open.map(x => localRow(x, prices)) : [];
   if (p.defaults) {
     const st = document.getElementById('pstop'), tg = document.getElementById('ptgt');
     if (st && !st.placeholder.startsWith('0')) { st.placeholder = p.defaults.stop_pct; tg.placeholder = p.defaults.target_pct; }
@@ -865,8 +888,12 @@ function renderPaper(p) {
       `Otomatik stop ${p.defaults.stop_pct}% · hedef ${p.defaults.target_pct}% — ${p.defaults.source}`;
   }
   const d1 = document.getElementById('d1'), d2 = document.getElementById('d2'), d3 = document.getElementById('d3');
-  d1.textContent = (p.open || 0) + (p.closed ? ` / ${p.closed}` : '');
-  d2.textContent = signed(p.unrealized_usd, 2) + '$'; d2.className = 'val ' + cls(p.unrealized_usd);
+  const openCount = sm ? ((p.positions || []).filter(x => x.status === 'open').length + locals.length)
+                       : (p.open || 0);
+  const closedCount = (p.closed || 0) + (sm ? lp.closed.length : 0);
+  const unreal = (p.unrealized_usd || 0) + locals.reduce((a, x) => a + (x.pnl_usd || 0), 0);
+  d1.textContent = openCount + (closedCount ? ` / ${closedCount}` : '');
+  d2.textContent = signed(unreal, 2) + '$'; d2.className = 'val ' + cls(unreal);
   d3.textContent = signed(p.realized_usd, 2) + '$'; d3.className = 'val ' + cls(p.realized_usd);
   const tg = p.telegram || {};
   const d4 = document.getElementById('d4');
@@ -879,14 +906,15 @@ function renderPaper(p) {
     : 'Telegram bağlı değil: bot token + chat id gerekiyor (README → Telegram).';
 
   const host = document.getElementById('papertable');
-  const rows = (p.positions || []).filter(x => x.status === 'open');
+  const rows = [...(p.positions || []).filter(x => x.status === 'open'), ...locals];
   if (!rows.length) { host.innerHTML = '<div class="empty">Açık pozisyon yok.</div>'; return; }
   host.innerHTML = `<table><thead><tr>
       <th>Sembol</th><th>Giriş</th><th>Şimdi</th><th>PnL $</th><th>PnL %</th><th>R</th>
       <th class="h-sm">Stop</th><th class="h-sm">Hedef</th><th class="h-sm">Süre</th><th></th>
     </tr></thead><tbody>
     ${rows.map(x => `<tr>
-      <td><b>${x.symbol}</b>${x.note ? `<div class="muted" style="font-size:10px">${x.note}</div>` : ''}</td>
+      <td><b>${x.symbol}</b>${x.local ? '<div class="muted" style="font-size:10px">telefonda açıldı</div>'
+        : (x.note ? `<div class="muted" style="font-size:10px">${x.note}</div>` : '')}</td>
       <td class="muted">${px(x.entry_price)}</td>
       <td>${px(x.price_now)}</td>
       <td class="${cls(x.pnl_usd)}">${signed(x.pnl_usd, 2)}</td>
@@ -895,7 +923,7 @@ function renderPaper(p) {
       <td class="muted h-sm">${x.to_stop_pct === null ? '—' : signed(x.to_stop_pct, 1) + '%'}</td>
       <td class="muted h-sm">${x.to_target_pct === null ? '—' : signed(x.to_target_pct, 1) + '%'}</td>
       <td class="muted h-sm">${x.hours_open === null ? '—' : fmt(x.hours_open, 1) + ' sa'}</td>
-      <td>${canWrite ? `<button onclick="closePaper('${x.id}','${x.symbol}')" title="kapat">×</button>` : ''}</td>
+      <td><button onclick="closePaper('${x.id}','${x.symbol}',${x.local ? 'true' : 'false'})" title="kapat">×</button></td>
     </tr>`).join('')}</tbody></table>`;
 }
 
@@ -915,6 +943,26 @@ async function addPaper() {
     note: document.getElementById('pnote').value || '',
   };
   if (!body.symbol || !body.notional_usd) { msg.innerHTML = '<span class="neg">Sembol ve notional gerekli.</span>'; return; }
+  if (staticPaperMode()) {
+    const prices = (paperPayload && paperPayload.prices) || {};
+    const p0 = prices[body.symbol];
+    if (!p0) {
+      msg.innerHTML = `<span class="neg">${body.symbol} için fiyat yok. Binance USDT-M vadeli sembolü olmalı (ör. BTCUSDT) — listede değilse açılamaz.</span>`;
+      return;
+    }
+    const def = (paperPayload && paperPayload.defaults) || { stop_pct: 4.75, target_pct: 2.38 };
+    const stop = body.stop_pct || def.stop_pct, tgt = body.target_pct || def.target_pct;
+    const lp = localPapers();
+    lp.open.push({ id: 'L' + Date.now().toString(36), symbol: body.symbol, side: 'LONG',
+      notional_usd: body.notional_usd, entry_price: p0, stop_pct: stop, target_pct: tgt,
+      stop_price: p0 * (1 - stop / 100), target_price: p0 * (1 + tgt / 100),
+      opened_at: new Date().toISOString(), note: body.note || '', status: 'open' });
+    saveLocalPapers(lp);
+    ['psym', 'pnot', 'pstop', 'ptgt', 'pnote'].forEach(id => { document.getElementById(id).value = ''; });
+    msg.innerHTML = `<span class="pos">${body.symbol} açıldı — giriş ${px(p0)} · telefonda saklanıyor</span>`;
+    renderPaper(paperPayload);
+    return;
+  }
   msg.innerHTML = '<span class="spin"></span> pozisyon açılıyor…';
   try {
     const r = await fetch('/api/paper/add', { method: 'POST',
@@ -927,9 +975,24 @@ async function addPaper() {
   } catch (e) { msg.innerHTML = `<span class="neg">${e.message}</span>`; }
 }
 
-async function closePaper(id, sym) {
+async function closePaper(id, sym, isLocal) {
   if (!confirm(sym + ' pozisyonunu kapatmak istiyor musun?')) return;
   const msg = document.getElementById('papermsg');
+  if (isLocal || String(id).startsWith('L')) {
+    const lp = localPapers();
+    const i = lp.open.findIndex(x => x.id === id);
+    if (i < 0) { msg.innerHTML = '<span class="neg">pozisyon bulunamadı</span>'; return; }
+    const x = lp.open.splice(i, 1)[0];
+    const now = ((paperPayload && paperPayload.prices) || {})[x.symbol];
+    const pnl = now ? (now / x.entry_price - 1) * 100 : null;
+    lp.closed.push({ ...x, status: 'closed', closed_at: new Date().toISOString(),
+      closed_price: now || null, closed_pnl_pct: pnl,
+      closed_pnl_usd: pnl === null ? null : pnl / 100 * x.notional_usd });
+    saveLocalPapers(lp);
+    msg.innerHTML = `<span class="pos">${sym} kapatıldı — ${pnl === null ? 'fiyat yok' : signed(pnl) + '%'}</span>`;
+    renderPaper(paperPayload);
+    return;
+  }
   try {
     const r = await fetch('/api/paper/close', { method: 'POST',
       headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });

@@ -198,13 +198,38 @@ def t_cloud_path():
     return "renderCloudPayload: dip + paper çiziliyor"
 
 
+def t_local_paper():
+    """Telefonda pozisyon ac/kapa: yerel depo + fiyat haritasi + kapatma dali."""
+    html = (ROOT / "dashboard.html").read_text(encoding="utf-8")
+    for need, why in [("fc_local_paper", "yerel depo anahtarı"),
+                      ("staticPaperMode", "mod ayrımı"),
+                      ("saveLocalPapers", "kaydetme"),
+                      ("closed_pnl_pct", "kapanış PnL'i")]:
+        assert need in html, f"eksik: {why}"
+    a = html.index("async function addPaper")
+    b = html.index("async function closePaper", a)
+    add = html[a:b]
+    assert "staticPaperMode()" in add and "prices[body.symbol]" in add,         "addPaper yerel dalı yok (telefonda pozisyon açılamaz)"
+    c = html.index("async function closePaper")
+    close = html[c:c + 2000]
+    assert "isLocal" in close and "lp.open.splice" in close, "closePaper yerel kapatma yok"
+
+    src = (ROOT / "export_static.py").read_text(encoding="utf-8")
+    assert 'paper_rep["prices"]' in src, "bulut dosyasında fiyat haritası yok"
+    rep = json.loads((ROOT / "data.json").read_text(encoding="utf-8"))
+    prices = (rep.get("paper") or {}).get("prices") or {}
+    assert len(prices) >= 10, f"fiyat haritası boş ({len(prices)})"
+    return f"yerel depo + fiyat haritası ({len(prices)} sembol) + kapatma dalı"
+
+
 for name, fn in [("dip: kosul hesabi", t_flags),
                  ("dip: medyan tabanli karar", t_verdict),
                  ("paper: ekle/degerlendir/kapat", t_paper),
                  ("notify: kuyruk + cooldown", t_notify),
                  ("api: dip/paper/telegram uclari", t_api),
                  ("export_static: paper gizliligi", t_privacy),
-                 ("bulut yolu: dip/paper render", t_cloud_path)]:
+                 ("bulut yolu: dip/paper render", t_cloud_path),
+                 ("telefonda pozisyon aç/kapa", t_local_paper)]:
     check(name, fn)
 
 print(f"dip/paper smoke — {datetime.now(timezone.utc).isoformat()}\n")

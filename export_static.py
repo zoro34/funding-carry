@@ -119,6 +119,21 @@ def build() -> dict:
     except Exception as e:
         paper_rep = {"positions": [], "open": 0, "closed": 0, "error": str(e)}
 
+    # 6b) fiyat haritasi — telefonda pozisyon ac/kapa icin (tek istek, herkese acik fiyat)
+    try:
+        import urllib.request
+        syms = {r.get("symbol") for r in (dip_rep.get("rows") or []) if r.get("symbol")}
+        syms |= {r.get("symbol") for r in rows if r.get("symbol")}
+        syms |= {x.get("symbol") for x in (paper_rep.get("positions") or []) if x.get("symbol")}
+        with urllib.request.urlopen("https://fapi.binance.com/fapi/v1/ticker/price",
+                                    timeout=15) as r:
+            live_prices = {t["symbol"]: float(t["price"]) for t in json.loads(r.read())}
+        paper_rep["prices"] = {s: live_prices[s] for s in syms if s in live_prices}
+        paper_rep["prices_at"] = datetime.now(timezone.utc).isoformat()
+    except Exception as e:
+        paper_rep["prices"] = {}
+        paper_rep["prices_error"] = str(e)
+
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "mode": "static",

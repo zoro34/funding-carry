@@ -1,16 +1,18 @@
 # APK — telefona kurulum
 
-Dosya: **`/root/binance-bot/FundingCarry-1.3.apk`** (3.6 MB)
+Dosya: **`/root/binance-bot/FundingCarry-1.4.apk`** (3.6 MB)
 
-- Paket: `com.suat.fundingcarry` · sürüm **1.3** (versionCode 4) · minSdk 22 (Android 5.1+) · targetSdk 34
+- Paket: `com.suat.fundingcarry` · sürüm **1.4** (versionCode 5) · minSdk 22 (Android 5.1+) · targetSdk 34
 - İmza: **debug** (v1 + v2). Play Store'a yüklenemez; elle kurulur.
 - İzin: yalnızca `INTERNET`.
 - İçinde: arayüz + `local.js` (tarayıcı taraması) + `learn.json` (model ağırlıkları)
   + `data.json` (yedek anlık görüntü).
   Uygulama **sunucusuz** çalışır: Binance public API'ye doğrudan bağlanır.
 
-> Sürüm kontrolü: Telefonda Ayarlar → Uygulamalar → Funding Carry → "Sürüm 1.3"
-> görüyorsan doğru APK'dasın. 1.2: bulut verisi + statik AL/SAT sekmesi.
+> Sürüm kontrolü: Telefonda Ayarlar → Uygulamalar → Funding Carry → "Sürüm 1.4"
+> görüyorsan doğru APK'dasın. 1.4: KİRA GELİRİ (carry) sekmesi — pozisyon takibi
+> salt okuma (tutarlar bulut sürümünde gizli, yüzdeler görünür).
+> 1.3: bulut adresi gömülü + statik AL/SAT. 1.2: bulut verisi + ilk statik sekme.
 
 ## Nasıl kurulur
 
@@ -23,7 +25,7 @@ Dosya: **`/root/binance-bot/FundingCarry-1.3.apk`** (3.6 MB)
 `adb` ile kurmak istersen:
 
 ```bash
-adb install -r /root/binance-bot/FundingCarry-1.3.apk
+adb install -r /root/binance-bot/FundingCarry-1.4.apk
 ```
 
 ## Uygulama ne yapıyor

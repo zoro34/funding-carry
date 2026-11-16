@@ -124,7 +124,16 @@ Durdurmak için: `hermes cron list` → job id → kaldır.
 .venv/bin/python dashboard.py --host 0.0.0.0 --port 8080   # ağdan erişim
 ```
 
-İki sekme:
+Dört sekme (panel **KİRA GELİRİ** ile açılır):
+
+**KİRA GELİRİ (CARRY)** — gerçek pozisyon takibi (`carry.py`)
+- Açtığın spot long + vadeli short pozisyonları kaydedersin (sembol, notional, açılış tarihi)
+- Panel Binance'in **gerçek funding geçmişinden** o güne kadar biriken kira gelirini toplar
+- Delta-nötr kontrolü: spot bacak yoksa "DELTA-NÖTR DEĞİL" uyarısı; basis primi uyarısı
+- Bacak P&L ayrı ayrı gösterilir (spot -X, short +X → net ≈ kira)
+- Bugünkü adaylar: giriş kuralını geçen semboller, temkinli yıllığa göre
+- API: `GET /api/carry` · `POST /api/carry/add` · `POST /api/carry/remove`
+  (yazma yalnızca localhost; `CARRY_ALLOW_REMOTE=1` ile açılır)
 
 **GENEL** — funding carry tarafı
 - KPI kartları, otomatik çıkarımlar, canlı fırsat tablosu

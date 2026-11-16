@@ -182,12 +182,29 @@ def t_privacy():
     return "kagit pozisyon USD alanlari gizli, yuzdeler acik"
 
 
+def t_cloud_path():
+    """Bulut/APK yolu (renderCloudPayload) dip ve paper'i ciziyor mu?
+
+    Bu kontrol, 'telefonda dip sekmesi bos' hatasinin tekrarini engeller:
+    veri data.json'da olsa bile ilgili sekme render edilmezse bos gorunur.
+    """
+    html = (ROOT / "dashboard.html").read_text(encoding="utf-8")
+    a = html.index("function renderCloudPayload")
+    b = html.index("function refresh(", a)
+    body = html[a:b]
+    for need, why in [("d.dip", "dip"), ("renderDip", "dip çizimi"),
+                      ("d.paper", "paper"), ("renderPaper", "paper çizimi")]:
+        assert need in body, f"bulut yolunda {why} eksik ({need})"
+    return "renderCloudPayload: dip + paper çiziliyor"
+
+
 for name, fn in [("dip: kosul hesabi", t_flags),
                  ("dip: medyan tabanli karar", t_verdict),
                  ("paper: ekle/degerlendir/kapat", t_paper),
                  ("notify: kuyruk + cooldown", t_notify),
                  ("api: dip/paper/telegram uclari", t_api),
-                 ("export_static: paper gizliligi", t_privacy)]:
+                 ("export_static: paper gizliligi", t_privacy),
+                 ("bulut yolu: dip/paper render", t_cloud_path)]:
     check(name, fn)
 
 print(f"dip/paper smoke — {datetime.now(timezone.utc).isoformat()}\n")

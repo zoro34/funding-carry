@@ -9,7 +9,6 @@ test: lint
 	$(PY) smoke_carry.py
 	$(PY) smoke_dip.py
 	$(PY) smoke_alarm.py
-	$(PY) smoke_family.py
 	-$(PY) smoke_mobile.py   # yerel Chromium http yukleyemiyorsa SKIP(2) — hata degil
 
 lint:

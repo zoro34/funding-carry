@@ -1,0 +1,26 @@
+.venv/bin/python -m py_compile alarm.py analytics.py backtest.py carry.py dashboard.py dip.py download_data.py evaluate_alerts.py export_static.py flow.py funding_carry.py funding_monitor.py learn.py notify.py paper.py patterns.py rule_backtest.py run_baseline.py run_patterns.py run_validate.py screener.py smoke_alarm.py smoke_carry.py smoke_dip.py smoke_mobile.py smoke_paylas.py
+py_compile: 26 dosya · bash -n: 3 betik OK
+.venv/bin/python smoke_carry.py
+smoke — 2026-11-16T16:19:34.312174+00:00
+
+[OK  ] carry: bos store — bos store -> count=0
+[OK  ] carry: ekleme + validasyon — ekleme + 4 gecersiz girdi reddedildi
+[OK  ] carry: funding matematigi + delta-notr — kira +1.09$ = bagimsiz +1.09$ | periyot 21 | bacak neti 0.45$
+[OK  ] api: /api/carry uclari + yazma korumasi — GET + 400/404/403 + ekle/sil dongusu
+[OK  ] export_static: gizlilik donusumu — tutarlar gizli + yuzdeler acik; CARRY_PUBLIC_AMOUNTS=1 ile aciliyor
+[OK  ] ui: dashboard.html JS sozdizimi — 1 script blogu sozdizimi gecerli
+
+6/6 gecti
+.venv/bin/python smoke_dip.py
+dip/paper smoke — 2026-11-16T16:19:37.751032+00:00
+
+[OK  ] dip: kosul hesabi — min konum %6.1, kosul sutunu uretildi
+[OK  ] dip: medyan tabanli karar — verdict=kuyruk_piyangosu · medyan -0.98% · ortalama +2.37% · metin dolu
+[OK  ] paper: ekle/degerlendir/kapat — giris 64482.80 · stop 4.75% · hedef 2.38% · kapatildi
+[OK  ] notify: kuyruk + cooldown — token yok -> kuyruk; ayni anahtar cooldown ile bastirildi
+[OK  ] api: dip/paper/telegram uclari — dip/paper uclari + 400/403/404 + ac/kapat
+[OK  ] export_static: paper gizliligi — kagit pozisyon USD alanlari gizli, yuzdeler acik
+
+6/6 gecti
+.venv/bin/python smoke_alarm.py
+make: *** [Makefile:11: test] Terminated

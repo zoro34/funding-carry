@@ -86,8 +86,8 @@
     #carrytable th,#smarttable th,#screentable th,#livetable th{white-space:nowrap}
     /* yeni sekmelerde kolon gizleme sinifi */
     .h-sm{display:none}
-    #diptable table,#papertable table,#familytable table{font-size:10px}
-    #diptable th,#diptable td,#papertable th,#papertable td,#familytable th,#familytable td{padding:4px 3px}
+    #diptable table,#papertable table{font-size:10px}
+    #diptable th,#diptable td,#papertable th,#papertable td{padding:4px 3px}
     /* sembol altindaki uzun not ve skor cubugu mobilde yeri yiyor */
     #carrytable td > div{display:none}
     .sbar{width:34px}
@@ -211,7 +211,6 @@
   <div class="tabs">
     <button class="tab active" id="tab-carry" onclick="setTab('carry')">KİRA GELİRİ (CARRY)</button>
     <button class="tab" id="tab-dip" onclick="setTab('dip')">DİP &amp; POZİSYON</button>
-    <button class="tab" id="tab-aile" onclick="setTab('aile')">AİLE</button>
     <button class="tab" id="tab-genel" onclick="setTab('genel')">GENEL</button>
     <button class="tab" id="tab-smart" onclick="setTab('smart')">AKILLI PARA / BALİNA</button>
     <button class="tab" id="tab-screen" onclick="setTab('screen')">TARAYICI — AL / SAT</button>
@@ -309,43 +308,6 @@
       <div class="note">Stop/hedef boş bırakılırsa <b>ölçülen +24s çeyreklerinden</b> gelir
         (p25 → stop, p75 → hedef). Pozisyon açılınca, stop veya hedefe değince Telegram'a
         bildirim gider. Token yoksa mesajlar kuyruğa yazılır, panelde görünür.</div>
-    </div>
-  </section>
-
-  <!-- ============================== AİLE ============================== -->
-  <section id="view-aile" class="hidden">
-    <div class="verdict warn" id="ailenotice">
-      <b>Açık rızalı aile paneli</b>
-      Çocuğun cihazına kurulan <b>görünür</b> aile ajanı, ekran süresi ve uygulama kullanımını
-      paylaşır. <b>WhatsApp/mesaj içeriği okunmaz</b> — uçtan uca şifreli, hiçbir meşru uygulama
-      okuyamaz. Kamera, mikrofon, galeri erişimi yok.
-    </div>
-
-    <div class="kpis">
-      <div class="kpi"><div class="lbl">Çocuk</div><div class="val" id="f1">—</div><div class="sub" id="f1s">kayıtlı</div></div>
-      <div class="kpi"><div class="lbl">Eşleşen Cihaz</div><div class="val" id="f2">—</div><div class="sub">ajan kurulu</div></div>
-      <div class="kpi"><div class="lbl">Limiti Aşan</div><div class="val" id="f3">—</div><div class="sub">bugün</div></div>
-      <div class="kpi"><div class="lbl">Telegram</div><div class="val" id="f4">—</div><div class="sub">ihlal bildirimi</div></div>
-    </div>
-
-    <div class="card">
-      <h2>Çocuk Ekle <span class="muted" style="text-transform:none;letter-spacing:0">davet linki ile eşleşir</span></h2>
-      <div id="familyaddbox" class="hidden">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
-          <label style="font-size:11px">İsim<br><input id="fname" placeholder="Elif" style="width:150px"></label>
-          <label style="font-size:11px">Günlük limit (dk)<br><input id="flimit" type="number" min="0" step="15" placeholder="180" style="width:120px"></label>
-          <button class="btn-primary" onclick="addChild()">Çocuk ekle</button>
-        </div>
-        <div class="note" id="familymsg"></div>
-        <div class="note" id="invitelink" style="display:none"></div>
-      </div>
-      <div class="note">Ekledikten sonra çıkan <b>davet linki</b> çocuğun telefonunda açılır;
-        ajan uygulaması o linkle eşleşir. Link = eşleme anahtarı, kimseyle paylaşma.</div>
-    </div>
-
-    <div class="card">
-      <h2>Çocuklar <span class="muted" id="familyinfo" style="text-transform:none;letter-spacing:0"></span></h2>
-      <div id="familytable"><div class="empty"><span class="spin"></span> yükleniyor…</div></div>
     </div>
   </section>
 
@@ -523,19 +485,16 @@ function setTab(t) {
   tab = t;
   document.getElementById('view-carry').classList.toggle('hidden', t !== 'carry');
   document.getElementById('view-dip').classList.toggle('hidden', t !== 'dip');
-  document.getElementById('view-aile').classList.toggle('hidden', t !== 'aile');
   document.getElementById('view-genel').classList.toggle('hidden', t !== 'genel');
   document.getElementById('view-smart').classList.toggle('hidden', t !== 'smart');
   document.getElementById('view-screen').classList.toggle('hidden', t !== 'screen');
   document.getElementById('tab-carry').classList.toggle('active', t === 'carry');
   document.getElementById('tab-dip').classList.toggle('active', t === 'dip');
-  document.getElementById('tab-aile').classList.toggle('active', t === 'aile');
   document.getElementById('tab-genel').classList.toggle('active', t === 'genel');
   document.getElementById('tab-smart').classList.toggle('active', t === 'smart');
   document.getElementById('tab-screen').classList.toggle('active', t === 'screen');
   if (t === 'carry') loadCarry(false);
   if (t === 'dip') { loadDip(false); loadPaper(false); }
-  if (t === 'aile') loadFamily(false);
   if (t === 'smart') {
     // Veri zaten elde varsa (statik mod / onceki tarama) dogrudan ciz;
     // yoksa tara. Boylece sekme degisimi her zaman dolu bir tablo gosterir.
@@ -645,6 +604,11 @@ function renderCloudPayload(d) {
   if (d.carry) {
     d.carry.static = true; carryPayload = d.carry;
     if (tab === 'carry') renderCarry(d.carry);
+  }
+  if (d.dip) { dipPayload = d.dip; if (tab === 'dip') renderDip(d.dip); }
+  if (d.paper) {
+    d.paper.static = true; paperPayload = d.paper;
+    if (tab === 'dip') renderPaper(d.paper);
   }
   if (d.smart && d.smart.rows && d.smart.rows.length) {
     staticSmart = d.smart; smartLoaded = true; smartPayload = d.smart;
@@ -827,140 +791,6 @@ function renderAnalysis(a) {
   document.getElementById('sub').textContent =
     `ilk tarama ${f} · son tarama ${l} · tur maliyeti %${fmt(a.round_trip_cost_pct)}`;
   drawScoreChart(a.symbols);
-}
-
-/* ----------------------------- AİLE PANELİ ----------------------------- */
-let familyPayload = null;
-
-const appName = pkg => String(pkg || '').replace(/^com\./, '').replace(/\./g, ' ')
-  .replace(/\b\w/g, c => c.toUpperCase()).slice(0, 22);
-
-function agoMin(m) {
-  if (m === null || m === undefined) return '—';
-  if (m < 1) return 'şimdi';
-  if (m < 60) return fmt(m, 0) + ' dk önce';
-  if (m < 1440) return fmt(m / 60, 1) + ' sa önce';
-  return fmt(m / 1440, 1) + ' gün önce';
-}
-
-function renderFamily(f) {
-  familyPayload = f;
-  const canWrite = !LOCAL_MODE && !f.static;
-  document.getElementById('familyaddbox').classList.toggle('hidden', !canWrite);
-  const t = f.totals || {};
-  document.getElementById('f1').textContent = t.children || 0;
-  document.getElementById('f2').textContent = (t.paired || 0) + ' / ' + (t.children || 0);
-  const f3 = document.getElementById('f3');
-  f3.textContent = t.over_limit || 0;
-  f3.className = 'val ' + (t.over_limit ? 'neg' : 'pos');
-  const tg = f.telegram || {};
-  const f4 = document.getElementById('f4');
-  f4.textContent = tg.configured ? 'BAĞLI' : 'YOK';
-  f4.className = 'val ' + (tg.configured ? 'pos' : 'neg');
-  document.getElementById('familyinfo').textContent = f.generated_at
-    ? ` · ${new Date(f.generated_at).toLocaleTimeString('tr-TR')} · ${t.reports || 0} rapor` : '';
-
-  const host = document.getElementById('familytable');
-  const rows = f.children || [];
-  if (!rows.length) {
-    host.innerHTML = '<div class="empty">Henüz çocuk eklenmedi. Yukarıdaki formdan ekle — ' +
-      'davet linkini çocuğun telefonunda açınca cihaz eşleşir.</div>';
-    return;
-  }
-  host.innerHTML = `<table><thead><tr>
-      <th>İsim</th><th>Cihaz</th><th>Son görülme</th><th>Bugün</th><th>Limit</th>
-      <th>En çok kullanılan</th><th class="h-sm">Konum</th><th class="h-sm">Pil</th><th></th>
-    </tr></thead><tbody>
-    ${rows.map(c => `<tr>
-      <td><b>${c.name}</b>${c.paired ? '' : '<div class="muted" style="font-size:10px">eşleşmedi</div>'}</td>
-      <td class="muted">${c.device || '—'}</td>
-      <td class="${c.minutes_since_seen === null ? 'muted' : (c.minutes_since_seen > 180 ? 'neg' : '')}">${agoMin(c.minutes_since_seen)}</td>
-      <td class="${c.over_limit ? 'neg' : ''}"><b>${c.screen_today_h || '—'}</b></td>
-      <td class="muted">${c.limit_min ? c.limit_min + ' dk' : '—'}</td>
-      <td class="wrapcell muted">${(c.top_apps || []).slice(0, 3).map(a => `${appName(a.pkg)} ${a.minutes}dk`).join(' · ') || '—'}</td>
-      <td class="muted h-sm">${c.location ? fmt(c.location.lat, 4) + ', ' + fmt(c.location.lon, 4) : '—'}</td>
-      <td class="muted h-sm">${c.battery === null || c.battery === undefined ? '—' : fmt(c.battery, 0) + '%'}</td>
-      <td>${canWrite ? `<button onclick="editRules('${c.id}','${c.name}',${c.limit_min || 0})" title="kural">⚙</button>
-        <button onclick="removeChild('${c.id}','${c.name}')" title="sil">×</button>` : ''}</td>
-    </tr>`).join('')}</tbody></table>
-    <div class="note">${f.notice || ''}</div>
-    ${(() => {
-      const all = rows.flatMap(c => (c.recent_notifications || []).map(n => ({ ...n, who: c.name })));
-      if (!all.length) return '<div class="note">Bildirim önizlemesi yok. (Cihazda "Bildirim erişimi" izni verilince dolar.)</div>';
-      all.sort((a, b) => String(b.ts).localeCompare(String(a.ts)));
-      return `<hr class="sep"><h2 style="margin:0 0 8px">Son Bildirimler <span class="muted" style="text-transform:none;letter-spacing:0">sadece bildirimde görünen metin</span></h2>
-        <table><thead><tr><th>Çocuk</th><th>Uygulama</th><th>Kimden / Başlık</th><th>Metin</th><th class="h-sm">Zaman</th></tr></thead><tbody>
-        ${all.slice(0, 12).map(n => `<tr>
-          <td><b>${n.who}</b></td>
-          <td class="muted">${appName(n.pkg)}</td>
-          <td>${(n.title || '—').slice(0, 40)}</td>
-          <td class="wrapcell muted">${(n.text || '').slice(0, 120)}</td>
-          <td class="muted h-sm">${String(n.ts || '').slice(11, 16)}</td>
-        </tr>`).join('')}</tbody></table>`;
-    })()}`;
-}
-
-async function loadFamily(force) {
-  const host = document.getElementById('familytable');
-  if (LOCAL_MODE) {
-    host.innerHTML = '<div class="empty">Aile paneli sunucu gerektirir (telefonda salt okuma yok).</div>';
-    return;
-  }
-  try { renderFamily(await jget('/api/family')); }
-  catch (e) {
-    host.innerHTML = `<div class="empty neg">Aile verisi alınamadı: ${e.message}` +
-      (String(e.message).includes('403') ? ' — bu panel sadece yerel makineden açılır.' : '') + '</div>';
-  }
-}
-
-async function addChild() {
-  const msg = document.getElementById('familymsg');
-  const body = { name: (document.getElementById('fname').value || '').trim(),
-                 daily_limit_min: Number(document.getElementById('flimit').value) || null };
-  if (!body.name) { msg.innerHTML = '<span class="neg">İsim gerekli.</span>'; return; }
-  msg.innerHTML = '<span class="spin"></span> ekleniyor…';
-  try {
-    const r = await fetch('/api/family/add', { method: 'POST',
-      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    const d = await r.json();
-    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
-    document.getElementById('fname').value = '';
-    document.getElementById('flimit').value = '';
-    msg.innerHTML = `<span class="pos">${d.child.name} eklendi.</span>`;
-    const box = document.getElementById('invitelink');
-    box.style.display = 'block';
-    box.innerHTML = `Davet linki: <code>${d.invite_url}</code><br>` +
-      `Eşleme anahtarı: <code>${d.child.invite}</code>`;
-    renderFamily(d.family);
-  } catch (e) { msg.innerHTML = `<span class="neg">${e.message}</span>`; }
-}
-
-async function editRules(id, name, limit) {
-  const v = prompt(`${name} için günlük ekran süresi limiti (dakika, 0 = sınırsız):`, limit || 180);
-  if (v === null) return;
-  const msg = document.getElementById('familymsg');
-  try {
-    const r = await fetch('/api/family/rules', { method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, daily_limit_min: Number(v) || 0 }) });
-    const d = await r.json();
-    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
-    msg.innerHTML = `<span class="pos">${name} limiti güncellendi.</span>`;
-    renderFamily(d.family);
-  } catch (e) { msg.innerHTML = `<span class="neg">${e.message}</span>`; }
-}
-
-async function removeChild(id, name) {
-  if (!confirm(name + ' kaydını silmek istiyor musun? (cihaz eşleşmesi de silinir)')) return;
-  const msg = document.getElementById('familymsg');
-  try {
-    const r = await fetch('/api/family/remove', { method: 'POST',
-      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
-    const d = await r.json();
-    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
-    msg.innerHTML = `<span class="pos">${name} silindi.</span>`;
-    renderFamily(d.family);
-  } catch (e) { msg.innerHTML = `<span class="neg">${e.message}</span>`; }
 }
 
 /* ---------------------- DİP & POZİSYON (paper) ---------------------- */
@@ -1890,7 +1720,7 @@ if ('serviceWorker' in navigator) {
 
 // kısayol derin bağlantısı: ?tab=screen | smart | genel
 const _tabParam = new URLSearchParams(location.search).get('tab');
-if (['carry', 'dip', 'aile', 'genel', 'smart', 'screen'].includes(_tabParam)) setTab(_tabParam);
+if (['carry', 'dip', 'genel', 'smart', 'screen'].includes(_tabParam)) setTab(_tabParam);
 const _cu = document.getElementById('cloudurl');
 if (_cu) _cu.value = cloudUrl();
 netState();

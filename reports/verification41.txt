@@ -1,0 +1,49 @@
+.venv/bin/python -m py_compile alarm.py analytics.py backtest.py carry.py dashboard.py dip.py download_data.py evaluate_alerts.py export_static.py flow.py funding_carry.py funding_monitor.py learn_indicators.py learn.py notify.py paper.py patterns.py rule_backtest.py run_baseline.py run_patterns.py run_validate.py screener.py smoke_alarm.py smoke_carry.py smoke_dip.py smoke_mobile.py smoke_paylas.py
+py_compile: 27 dosya · bash -n: 3 betik OK
+.venv/bin/python smoke_carry.py
+smoke — 2026-11-16T16:52:39.833419+00:00
+
+[OK  ] carry: bos store — bos store -> count=0
+[OK  ] carry: ekleme + validasyon — ekleme + 4 gecersiz girdi reddedildi
+[OK  ] carry: funding matematigi + delta-notr — kira +1.09$ = bagimsiz +1.09$ | periyot 21 | bacak neti 0.08$
+[OK  ] api: /api/carry uclari + yazma korumasi — GET + 400/404/403 + ekle/sil dongusu
+[OK  ] export_static: gizlilik donusumu — tutarlar gizli + yuzdeler acik; CARRY_PUBLIC_AMOUNTS=1 ile aciliyor
+[OK  ] ui: dashboard.html JS sozdizimi — 1 script blogu sozdizimi gecerli
+
+6/6 gecti
+.venv/bin/python smoke_dip.py
+dip/paper smoke — 2026-11-16T16:52:43.424012+00:00
+
+[OK  ] dip: kosul hesabi — min konum %6.1, kosul sutunu uretildi
+[OK  ] dip: medyan tabanli karar — verdict=goreli_avantaj · medyan -0.32% · ortalama +3.18% · metin dolu
+[OK  ] paper: ekle/degerlendir/kapat — giris 64617.80 · stop 4.2% · hedef 2.49% · kapatildi
+[OK  ] notify: kuyruk + cooldown — token yok -> kuyruk; ayni anahtar cooldown ile bastirildi
+[OK  ] api: dip/paper/telegram uclari — dip/paper uclari + 400/403/404 + ac/kapat
+[OK  ] export_static: paper gizliligi — kagit pozisyon USD alanlari gizli, yuzdeler acik
+[OK  ] bulut yolu: dip/paper render — renderCloudPayload: dip + paper çiziliyor
+[OK  ] telefonda pozisyon aç/kapa — yerel depo + fiyat haritası (45 sembol) + kapatma + canlı fiyat/uyarı/kapananlar + tek dokunuş AL/KAPAT
+
+8/8 gecti
+.venv/bin/python smoke_alarm.py
+alarm smoke — 2026-11-16T16:52:45.562194+00:00
+
+[OK  ] stop tetigi -> kapat + bildir — status=stopped · open/closed=0/1 · bildirim 1
+[OK  ] hedef tetigi -> kapat + gerceklesen — status=target · gerceklesen +20.00$
+[OK  ] dip ozeti cooldown — ilk cagri kuyruk, ikincisi cooldown
+[OK  ] cron sarmalayici paper_alarm.sh — exit 0 · log +159 bayt
+[OK  ] telegram_kur.sh (kurulum akisi) — token varken prompt yok · gecersiz token temiz uyari · .env korundu
+
+5/5 gecti
+.venv/bin/python smoke_paylas.py
+
+[OK  ] paketleme: build = paylaşım dosyası — FundingCarry-2.2.apk = build çıktısı (sha256 eşit, sürüm 2.2)
+[OK  ] paylaşım: canlı servis + bayt eşitliği — 3784219 bayt, sha256 eşit, 0.0.0.0:8090, ad: FundingCarry-2.2.apk
+[OK  ] paylaşım: dizin listesi — dizin listesinde APK görünüyor (adı yazmadan indirme)
+[OK  ] betik: idempotent yeniden başlatma — iki koşu → tek dinleyici, servis sağlam
+[OK  ] paylaşım: kapsam (sadece APK) — yalnızca FundingCarry-2.2.apk paylaşımda (data/ ve pozisyonlar dışarıda)
+
+5/5 gecti
+KAPSAM DIŞI: fiziksel telefondan indirme/kurulum (bu makineden test edilemez), WiFi izolasyonu (AP isolation) — telefon ulaşamazsa ayrı konu.
+.venv/bin/python smoke_mobile.py   # yerel Chromium http yukleyemiyorsa SKIP(2) — hata degil
+SKIP: yerel Chromium bu ortamda http sayfasi yukleyemiyor (baslik=''). Panel/ag degil, tarayici sorunu — olcum ajan tarayicisiyla alinmali.
+make: [Makefile:13: test] Error 2 (ignored)

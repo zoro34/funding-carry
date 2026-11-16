@@ -7,3 +7,12 @@
 {"ts": "2026-11-16T15:49:53.912587+00:00", "text": "<b>Elif</b> günlük ekran süresini aştı: 214 dk (limit 120 dk)", "key": "family:cf860f9e:screen_limit", "status": "dry_run"}
 {"ts": "2026-11-16T15:49:53.949286+00:00", "text": "<b>Elif</b> kısıtlı uygulama kullandı: com.mojang.minecraftpe 20dk", "key": "family:cf860f9e:blocked_app", "status": "dry_run"}
 {"ts": "2026-11-16T15:49:53.958880+00:00", "text": "<b>Elif</b> · com.whatsapp limiti aşıldı: 45 dk (limit 30 dk)", "key": "family:cf860f9e:app_limit:com.whatsapp", "status": "dry_run"}
+{"ts": "2026-11-16T15:56:51.046418+00:00", "text": "<b>Elif</b> günlük ekran süresini aştı: 214 dk (limit 120 dk)", "key": "family:4fee88b2:screen_limit", "status": "dry_run"}
+{"ts": "2026-11-16T15:56:51.100827+00:00", "text": "<b>Elif</b> kısıtlı uygulama kullandı: com.mojang.minecraftpe 20dk", "key": "family:4fee88b2:blocked_app", "status": "dry_run"}
+{"ts": "2026-11-16T15:56:51.110394+00:00", "text": "<b>Elif</b> · com.whatsapp limiti aşıldı: 45 dk (limit 30 dk)", "key": "family:4fee88b2:app_limit:com.whatsapp", "status": "dry_run"}
+{"ts": "2026-11-16T15:58:07.799482+00:00", "text": "<b>Pozisyon açıldı</b> BTCUSDT\nGiriş: 64504.7$ · Notional: 400$\nStop: 61440.7$ (-4.75%) · Hedef: 66039.9$ (+2.38%)\n<i>Kâğıt pozisyon — gerçek emir gönderilmedi.</i>", "key": "open:BTCUSDT:453ef797", "status": "no_credentials"}
+{"ts": "2026-11-16T15:58:08.720720+00:00", "text": "<b>Pozisyon elle kapatıldı</b> BTCUSDT\nPnL +0.02% (+0.08$)", "key": "close:453ef797", "status": "no_credentials"}
+{"ts": "2026-11-16T15:58:12.175419+00:00", "text": "<b>Funding Carry</b>\nTest mesajı — bildirim kanalı çalışıyor.", "key": "test", "status": "dry_run"}
+{"ts": "2026-11-16T15:58:12.403203+00:00", "text": "<b>Elif</b> günlük ekran süresini aştı: 214 dk (limit 120 dk)", "key": "family:44c21576:screen_limit", "status": "dry_run"}
+{"ts": "2026-11-16T15:58:12.428377+00:00", "text": "<b>Elif</b> kısıtlı uygulama kullandı: com.mojang.minecraftpe 20dk", "key": "family:44c21576:blocked_app", "status": "dry_run"}
+{"ts": "2026-11-16T15:58:12.437841+00:00", "text": "<b>Elif</b> · com.whatsapp limiti aşıldı: 45 dk (limit 30 dk)", "key": "family:44c21576:app_limit:com.whatsapp", "status": "dry_run"}

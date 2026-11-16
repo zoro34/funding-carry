@@ -883,7 +883,21 @@ function renderFamily(f) {
       <td>${canWrite ? `<button onclick="editRules('${c.id}','${c.name}',${c.limit_min || 0})" title="kural">⚙</button>
         <button onclick="removeChild('${c.id}','${c.name}')" title="sil">×</button>` : ''}</td>
     </tr>`).join('')}</tbody></table>
-    <div class="note">${f.notice || ''}</div>`;
+    <div class="note">${f.notice || ''}</div>
+    ${(() => {
+      const all = rows.flatMap(c => (c.recent_notifications || []).map(n => ({ ...n, who: c.name })));
+      if (!all.length) return '<div class="note">Bildirim önizlemesi yok. (Cihazda "Bildirim erişimi" izni verilince dolar.)</div>';
+      all.sort((a, b) => String(b.ts).localeCompare(String(a.ts)));
+      return `<hr class="sep"><h2 style="margin:0 0 8px">Son Bildirimler <span class="muted" style="text-transform:none;letter-spacing:0">sadece bildirimde görünen metin</span></h2>
+        <table><thead><tr><th>Çocuk</th><th>Uygulama</th><th>Kimden / Başlık</th><th>Metin</th><th class="h-sm">Zaman</th></tr></thead><tbody>
+        ${all.slice(0, 12).map(n => `<tr>
+          <td><b>${n.who}</b></td>
+          <td class="muted">${appName(n.pkg)}</td>
+          <td>${(n.title || '—').slice(0, 40)}</td>
+          <td class="wrapcell muted">${(n.text || '').slice(0, 120)}</td>
+          <td class="muted h-sm">${String(n.ts || '').slice(11, 16)}</td>
+        </tr>`).join('')}</tbody></table>`;
+    })()}`;
 }
 
 async function loadFamily(force) {

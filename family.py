@@ -13,6 +13,8 @@ Ajan sözleşmesi (POST /api/family/report):
    "unlocks": 41,                             # açılma sayısı
    "battery": 62,                             # %
    "location": {"lat": 41.0, "lon": 29.0, "accuracy_m": 12},
+   "notifications": [{"pkg": "com.whatsapp", "title": "Anne",
+                      "text": "okuldan aldın mı?", "ts": "..."}],  # izinli onizleme
    "reported_at": "2026-11-16T18:00:00Z"}     # opsiyonel
 """
 from __future__ import annotations
@@ -143,7 +145,18 @@ def ingest(payload: dict) -> dict:
         except Exception:
             loc = None
 
+    notifs = []
+    for n in (payload.get("notifications") or [])[:40]:
+        try:
+            notifs.append({"pkg": str(n.get("pkg"))[:80],
+                           "title": str(n.get("title") or "")[:120],
+                           "text": str(n.get("text") or "")[:300],
+                           "ts": str(n.get("ts") or now().isoformat())[:32]})
+        except Exception:
+            continue
+
     rec = {"ts": now().isoformat(), "child_id": child["id"], "name": child["name"],
+           "notifications": notifs,
            "device": str(payload.get("device") or child.get("device") or "cihaz")[:60],
            "screen_minutes": screen, "apps": apps,
            "unlocks": int(payload.get("unlocks") or 0),
@@ -232,6 +245,9 @@ def summary() -> dict:
             "unlocks": last["unlocks"] if last else None,
             "battery": last["battery"] if last else None,
             "location": last["location"] if last else None,
+            "recent_notifications": [
+                n for r in mine[-5:] for n in (r.get("notifications") or [])
+            ][-15:],
             "reports_today": len(todays),
             "rules": c["rules"],
         })

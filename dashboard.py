@@ -474,6 +474,16 @@ def api_family_report():
     return jsonify(res)
 
 
+@app.get("/aile-ajani.apk")
+def family_apk():
+    """Ajan APK'sını paylaş (davet sayfasından indirme)."""
+    share = Path("/root/apk-share")
+    name = "AileAjani-0.1.apk"
+    if not (share / name).exists():
+        return jsonify({"error": "APK bulunamadı"}), 404
+    return send_from_directory(share, name, mimetype="application/vnd.android.package-archive")
+
+
 @app.get("/aile-davet")
 def family_invite():
     """Davet linki: çocuğun cihazına kurulacak aile ajanını eşler."""
@@ -499,7 +509,15 @@ border-radius:12px;padding:20px}}</style>
 kamera/mikrofon.</p>
 <p>Kurulum, cihazda görünen bir uygulama olarak yapılır ve istediğin an kaldırılabilir.</p>
 <p>Eşleme anahtarı: <code>{child['invite']}</code></p>
-<p>Ajan uygulaması henüz kurulmadıysa bu sayfa yalnızca eşleme bilgisini gösterir.</p>
+<p style="margin-top:18px">
+<a href="/aile-ajani.apk" style="display:block;text-align:center;background:#3f8dff;
+color:#fff;text-decoration:none;padding:14px;border-radius:9px;font-weight:700">
+1) Aile Ajanı APK indir (44 KB)</a></p>
+<p><a href="aileajani://pair?t={child['invite']}&s={request.host_url.rstrip('/')}"
+style="display:block;text-align:center;background:#1f6f3f;color:#fff;text-decoration:none;
+padding:12px;border-radius:9px;font-weight:600">2) Kurduktan sonra: ajanı eşle</a></p>
+<p style="font-size:12px;color:#8b9bb0">Kurulum sırasında "bilinmeyen kaynağa izin ver"
+uyarısını onaylaman gerekir. Uygulama cihazda görünür ve istediğin an durdurulabilir.</p>
 </div></html>""", 200
 
 

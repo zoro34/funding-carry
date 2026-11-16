@@ -80,6 +80,19 @@ def t_blocked():
     return f"kısıtlı uygulama + uygulama limiti yakalandı: {kinds}"
 
 
+def t_notifications():
+    c = family.load()["children"][0]
+    res = family.ingest({"token": c["invite"], "screen_minutes": 20,
+                         "notifications": [
+                             {"pkg": "com.whatsapp", "title": "Anne", "text": "okuldan aldın mı?"},
+                             {"pkg": "com.instagram.android", "title": "elif_k", "text": "gönderiyi beğendi"}]})
+    assert res["ok"] is True
+    s = family.summary()
+    ns = s["children"][0]["recent_notifications"]
+    assert any(n["pkg"] == "com.whatsapp" and "okuldan" in n["text"] for n in ns), ns
+    return f"{len(ns)} bildirim önizlemesi özete girdi"
+
+
 def t_summary():
     s = family.summary()
     c = s["children"][0]
@@ -127,6 +140,7 @@ def t_privacy():
 for name, fn in [("aile: çocuk kaydı + doğrulama", t_add),
                  ("aile: ajan raporu + token kontrolü", t_ingest),
                  ("aile: kısıtlı uygulama + uygulama limiti", t_blocked),
+                 ("aile: bildirim önizlemesi", t_notifications),
                  ("aile: günlük özet", t_summary),
                  ("aile: API uçları + davet sayfası", t_api),
                  ("aile: gizlilik (public data.json)", t_privacy)]:

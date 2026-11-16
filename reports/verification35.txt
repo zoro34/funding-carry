@@ -1,0 +1,56 @@
+.venv/bin/python -m py_compile alarm.py analytics.py backtest.py carry.py dashboard.py dip.py download_data.py evaluate_alerts.py export_static.py family.py flow.py funding_carry.py funding_monitor.py learn.py notify.py paper.py patterns.py rule_backtest.py run_baseline.py run_patterns.py run_validate.py screener.py smoke_alarm.py smoke_carry.py smoke_dip.py smoke_family.py smoke_mobile.py smoke_paylas.py
+py_compile: 28 dosya · bash -n: 3 betik OK
+.venv/bin/python smoke_carry.py
+smoke — 2026-11-16T15:58:06.224932+00:00
+
+[OK  ] carry: bos store — bos store -> count=0
+[OK  ] carry: ekleme + validasyon — ekleme + 4 gecersiz girdi reddedildi
+[OK  ] carry: funding matematigi + delta-notr — kira +1.13$ = bagimsiz +1.13$ | periyot 21 | bacak neti 0.14$
+[OK  ] api: /api/carry uclari + yazma korumasi — GET + 400/404/403 + ekle/sil dongusu
+[OK  ] export_static: gizlilik donusumu — tutarlar gizli + yuzdeler acik; CARRY_PUBLIC_AMOUNTS=1 ile aciliyor
+[OK  ] ui: dashboard.html JS sozdizimi — 1 script blogu sozdizimi gecerli
+
+6/6 gecti
+.venv/bin/python smoke_dip.py
+dip/paper smoke — 2026-11-16T15:58:09.660439+00:00
+
+[OK  ] dip: kosul hesabi — min konum %6.1, kosul sutunu uretildi
+[OK  ] dip: medyan tabanli karar — verdict=kuyruk_piyangosu · medyan -0.98% · ortalama +2.37% · metin dolu
+[OK  ] paper: ekle/degerlendir/kapat — giris 64504.70 · stop 4.75% · hedef 2.38% · kapatildi
+[OK  ] notify: kuyruk + cooldown — token yok -> kuyruk; ayni anahtar cooldown ile bastirildi
+[OK  ] api: dip/paper/telegram uclari — dip/paper uclari + 400/403/404 + ac/kapat
+[OK  ] export_static: paper gizliligi — kagit pozisyon USD alanlari gizli, yuzdeler acik
+
+6/6 gecti
+.venv/bin/python smoke_alarm.py
+alarm smoke — 2026-11-16T15:58:12.189656+00:00
+
+[OK  ] stop tetigi -> kapat + bildir — status=stopped · open/closed=0/1 · bildirim 1
+[OK  ] hedef tetigi -> kapat + gerceklesen — status=target · gerceklesen +20.00$
+[OK  ] dip ozeti cooldown — ilk cagri kuyruk, ikincisi cooldown
+[OK  ] cron sarmalayici paper_alarm.sh — exit 0 · log +192 bayt
+[OK  ] telegram_kur.sh (kurulum akisi) — token varken prompt yok · gecersiz token temiz uyari · .env korundu
+
+5/5 gecti
+.venv/bin/python smoke_family.py
+aile smoke — 2026-11-16T15:58:13.135674+00:00
+
+[OK  ] aile: çocuk kaydı + doğrulama — eklendi (davet vncGHs…) · boş/çift isim reddedildi
+[OK  ] aile: ajan raporu + token kontrolü — rapor alındı · ihlal: ['screen_limit']
+[OK  ] aile: kısıtlı uygulama + uygulama limiti — kısıtlı uygulama + uygulama limiti yakalandı: ['blocked_app', 'app_limit:com.whatsapp']
+[OK  ] aile: bildirim önizlemesi — 2 bildirim önizlemesi özete girdi
+[OK  ] aile: günlük özet — 3s 34dk · limit 120dk aşıldı · top com.whatsapp
+[OK  ] aile: API uçları + davet sayfası — okuma yerel · ajan raporu token ile · çift isim 400 · davet sayfası 200/404
+[OK  ] aile: gizlilik (public data.json) — export_static aile verisine dokunmuyor (konum/isim public olmuyor)
+
+7/7 gecti
+.venv/bin/python smoke_mobile.py   # yerel Chromium http yukleyemiyorsa SKIP(2) — hata degil
+mobil yerlesim — 2026-11-16 18:59:00 (390px emulasyon)
+
+[OK  ] mobil: yatay tasma yok — dort sekmede de tasma yok
+[OK  ] mobil: tablolar ekrana sigiyor — 23 tablo olcumu, hepsi <=400px
+[OK  ] mobil: kolon gizleme aktif — kolon sayilari mobil esikte
+[OK  ] mobil: olcum ozeti — {"carry": {"overflow": 0, "carry": 346, "alerts": null}, "dip": {"overflow": 0, "carry": 0, "alerts": null}, "genel": {"overflow": 0, "carry": 0, "alerts": null}, "smart": {"overflow": 0, "carry": 0, "alerts": null}, "screen": {"overflow": 0, "carry": 0, "alerts": null}}
+
+4/4 gecti
+KAPSAM: 390px emulasyon. 320px gibi cok dar cihazlarda kart ici kaydirma yedek yol.

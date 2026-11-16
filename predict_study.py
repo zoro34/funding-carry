@@ -22,9 +22,9 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).parent
-OUT = ROOT / "reports" / "predict_study.json"
-COST_PCT = 0.30          # tur maliyeti (%)
 HORIZON = int(os.environ.get("HZ", "24"))   # saat: 24 = 1 gün, 168 = 7 gün
+OUT = ROOT / "reports" / f"predict_study_{HORIZON}h.json"
+COST_PCT = 0.30          # tur maliyeti (%)
 
 
 def sigmoid(z):

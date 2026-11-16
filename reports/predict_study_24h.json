@@ -1,0 +1,210 @@
+{
+ "generated_at": "2026-11-16T17:38:20.705246+00:00",
+ "symbols": [
+  "ADAUSDT",
+  "AVAXUSDT",
+  "BNBUSDT",
+  "BTCUSDT",
+  "DOGEUSDT",
+  "DOTUSDT",
+  "ETHUSDT",
+  "LINKUSDT",
+  "SOLUSDT",
+  "XRPUSDT"
+ ],
+ "rows": 173130,
+ "period": [
+  "2024-11-22 17:00:00+00:00",
+  "2026-11-14 16:00:00+00:00"
+ ],
+ "features": [
+  "ret_1",
+  "ret_4",
+  "ret_24",
+  "ret_72",
+  "vol_24",
+  "vol_ratio",
+  "range_pos",
+  "vol_z",
+  "rsi_14",
+  "ema_dist",
+  "atr_pct",
+  "hour_sin",
+  "hour_cos",
+  "btc_ret_24",
+  "btc_vol_24"
+ ],
+ "horizon_h": 24,
+ "cost_pct": 0.3,
+ "yon": {
+  "folds": [
+   {
+    "fold": 1,
+    "n_test": 17313,
+    "auc": 0.531,
+    "model_hit": 0.478,
+    "model_net_pct": -0.791,
+    "model_trades": 9234,
+    "mom_hit": 0.468,
+    "mom_net_pct": -0.635,
+    "all_hit": 0.468,
+    "all_net_pct": -0.733
+   },
+   {
+    "fold": 2,
+    "n_test": 17313,
+    "auc": 0.565,
+    "model_hit": 0.513,
+    "model_net_pct": -0.112,
+    "model_trades": 9270,
+    "mom_hit": 0.45,
+    "mom_net_pct": -0.513,
+    "all_hit": 0.459,
+    "all_net_pct": -0.547
+   },
+   {
+    "fold": 3,
+    "n_test": 17313,
+    "auc": 0.554,
+    "model_hit": 0.481,
+    "model_net_pct": -0.298,
+    "model_trades": 9396,
+    "mom_hit": 0.393,
+    "mom_net_pct": -0.872,
+    "all_hit": 0.446,
+    "all_net_pct": -0.585
+   },
+   {
+    "fold": 4,
+    "n_test": 17313,
+    "auc": 0.527,
+    "model_hit": 0.488,
+    "model_net_pct": -0.801,
+    "model_trades": 5885,
+    "mom_hit": 0.473,
+    "mom_net_pct": -0.503,
+    "all_hit": 0.478,
+    "all_net_pct": -0.564
+   },
+   {
+    "fold": 5,
+    "n_test": 17313,
+    "auc": 0.496,
+    "model_hit": 0.535,
+    "model_net_pct": 0.02,
+    "model_trades": 4719,
+    "mom_hit": 0.504,
+    "mom_net_pct": 0.273,
+    "all_hit": 0.521,
+    "all_net_pct": 0.109
+   },
+   {
+    "fold": 6,
+    "n_test": 17313,
+    "auc": 0.509,
+    "model_hit": 0.451,
+    "model_net_pct": -0.66,
+    "model_trades": 6260,
+    "mom_hit": 0.394,
+    "mom_net_pct": -0.816,
+    "all_hit": 0.441,
+    "all_net_pct": -0.638
+   }
+  ],
+  "ozet": {
+   "auc_ort": 0.53,
+   "model_hit": 0.491,
+   "model_net_pct": -0.44,
+   "mom_hit": 0.447,
+   "mom_net_pct": -0.511,
+   "all_hit": 0.469,
+   "all_net_pct": -0.493
+  }
+ },
+ "buyuk_hareket": {
+  "folds": [
+   {
+    "fold": 1,
+    "n_test": 17313,
+    "auc": 0.608,
+    "model_hit": 0.468,
+    "model_net_pct": -0.733,
+    "model_trades": 17313,
+    "mom_hit": 0.468,
+    "mom_net_pct": -0.635,
+    "all_hit": 0.468,
+    "all_net_pct": -0.733
+   },
+   {
+    "fold": 2,
+    "n_test": 17313,
+    "auc": 0.586,
+    "model_hit": 0.459,
+    "model_net_pct": -0.547,
+    "model_trades": 17285,
+    "mom_hit": 0.45,
+    "mom_net_pct": -0.513,
+    "all_hit": 0.459,
+    "all_net_pct": -0.547
+   },
+   {
+    "fold": 3,
+    "n_test": 17313,
+    "auc": 0.583,
+    "model_hit": 0.446,
+    "model_net_pct": -0.585,
+    "model_trades": 17313,
+    "mom_hit": 0.393,
+    "mom_net_pct": -0.872,
+    "all_hit": 0.446,
+    "all_net_pct": -0.585
+   },
+   {
+    "fold": 4,
+    "n_test": 17313,
+    "auc": 0.616,
+    "model_hit": 0.477,
+    "model_net_pct": -0.565,
+    "model_trades": 17296,
+    "mom_hit": 0.473,
+    "mom_net_pct": -0.503,
+    "all_hit": 0.478,
+    "all_net_pct": -0.564
+   },
+   {
+    "fold": 5,
+    "n_test": 17313,
+    "auc": 0.631,
+    "model_hit": 0.52,
+    "model_net_pct": 0.099,
+    "model_trades": 17267,
+    "mom_hit": 0.504,
+    "mom_net_pct": 0.273,
+    "all_hit": 0.521,
+    "all_net_pct": 0.109
+   },
+   {
+    "fold": 6,
+    "n_test": 17313,
+    "auc": 0.637,
+    "model_hit": 0.442,
+    "model_net_pct": -0.637,
+    "model_trades": 17287,
+    "mom_hit": 0.394,
+    "mom_net_pct": -0.816,
+    "all_hit": 0.441,
+    "all_net_pct": -0.638
+   }
+  ],
+  "ozet": {
+   "auc_ort": 0.61,
+   "model_hit": 0.469,
+   "model_net_pct": -0.495,
+   "mom_hit": 0.447,
+   "mom_net_pct": -0.511,
+   "all_hit": 0.469,
+   "all_net_pct": -0.493
+  }
+ },
+ "verdict": "maliyet sonrasi net getiri NEGATIF — tahmin guclu olsa bile islem yapilamaz (model -0.440%, naif -0.493%)"
+}

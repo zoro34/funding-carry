@@ -383,9 +383,11 @@ def api_paper_add():
 def api_paper_close():
     if not _write_allowed():
         return jsonify({"error": "pozisyon yazma sadece yerel makineden"}), 403
-    pid = ((request.get_json(silent=True) or {}).get("id") or "").strip()
+    body = request.get_json(silent=True) or {}
+    pid = (body.get("id") or "").strip()
     try:
-        pos = paper.close(pid)
+        pos = paper.close(pid, reason=body.get("reason") or "manuel",
+                          note=body.get("note") or "")
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     if not pos:

@@ -182,7 +182,10 @@ def report(alert: bool = False) -> dict:
     return out
 
 
-def close(pid: str) -> dict | None:
+REASONS = ("manuel", "stop", "hedef", "fikir_değişti", "haber", "diğer")
+
+
+def close(pid: str, reason: str = "manuel", note: str = "") -> dict | None:
     rows = load()
     px = None
     for r in rows:
@@ -193,7 +196,10 @@ def close(pid: str) -> dict | None:
             pnl = (px / r["entry_price"] - 1) * 100
             r.update({"status": "closed_manual", "closed_at": now().isoformat(),
                       "closed_price": px,
-                      "closed_pnl_usd": round(r["notional_usd"] * pnl / 100, 2)})
+                      "closed_pnl_pct": round(pnl, 3),
+                      "closed_pnl_usd": round(r["notional_usd"] * pnl / 100, 2),
+                      "close_reason": (reason or "manuel")[:24],
+                      "close_note": (note or "")[:200]})
             save(rows)
             notify.send(f"<b>Pozisyon elle kapatıldı</b> {r['symbol']}\n"
                         f"PnL {pnl:+.2f}% ({r['closed_pnl_usd']:+.2f}$)",

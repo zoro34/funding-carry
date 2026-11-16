@@ -42,7 +42,7 @@ def stats() -> dict:
     pnls = [pct_of(r) for r in rows]
     wins = [x for x in pnls if x > 0]
     losses = [x for x in pnls if x <= 0]
-    reasons = Counter(r.get("status", "?") for r in rows)
+    reasons = Counter((r.get("close_reason") or r.get("status") or "?") for r in rows)
     by_symbol: dict[str, list[float]] = {}
     for r, x in zip(rows, pnls):
         by_symbol.setdefault(r.get("symbol", "?"), []).append(x)

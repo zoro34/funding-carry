@@ -78,6 +78,23 @@ def okx(symbols: list[str] | None = None) -> dict[str, float]:
     return out
 
 
+# Gerçek arbitraj maliyetleri (varsayılan, panelden değiştirilebilir)
+HOLD_DAYS = 30          # pozisyon tutma süresi
+FEE_BPS = 5.5           # bacak başına taker komisyonu (0.055%)
+TRANSFER_USDT = 2.0     # bir transfer ücreti (USDT)
+NOTIONAL_USD = 1000.0   # referans büyüklük
+
+
+def net_after_costs(spread_ann_pct: float, hold_days: int = HOLD_DAYS,
+                    fee_bps: float = FEE_BPS, transfer_usdt: float = TRANSFER_USDT,
+                    notional: float = NOTIONAL_USD) -> float:
+    """Fark getirisinden komisyon + transfer maliyetini düş (yıllıklandırılmış)."""
+    rounds = 365.0 / max(hold_days, 1)          # yılda kaç kez açılıp kapanır
+    fee_pct = (fee_bps / 100.0) * 4             # 2 bacak x giriş/çıkış
+    transfer_pct = (transfer_usdt * 2 / notional) * 100
+    return round(spread_ann_pct - (fee_pct + transfer_pct) * rounds, 2)
+
+
 def compare(symbols: list[str] | None = None) -> dict:
     """Üç borsanın funding'ini karşılaştır, farkı yıllıklandırarak sırala."""
     syms = symbols or SYMBOLS
@@ -95,9 +112,12 @@ def compare(symbols: list[str] | None = None) -> dict:
                      "rates_pct_8h": {k: round(v, 5) for k, v in have.items()},
                      "ann_pct": {k: round(_annual(v), 2) for k, v in have.items()},
                      "spread_ann_pct": round(_annual(spread_8h), 2),
+                     "net_ann_pct": net_after_costs(_annual(spread_8h)),
                      "long_on": lo_k, "short_on": hi_k})
-    rows.sort(key=lambda r: -r["spread_ann_pct"])
+    rows.sort(key=lambda r: -r["net_ann_pct"])
     return {"rows": rows, "sources": {"binance": len(b), "bybit": len(y), "okx": len(o)},
+            "costs": {"hold_days": HOLD_DAYS, "fee_bps_per_leg": FEE_BPS,
+                      "transfer_usdt": TRANSFER_USDT, "notional_usd": NOTIONAL_USD},
             "note": "Fark yıllıklandırılmıştır. Gerçek arbitraj için transfer/marj maliyeti, "
                     "likidite ve borsa riski ayrıca değerlendirilmelidir."}
 

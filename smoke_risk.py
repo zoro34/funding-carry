@@ -88,7 +88,16 @@ def t_xfund():
     assert len(live["sources"]) == 3
     if live["rows"]:
         assert live["rows"][0]["spread_ann_pct"] >= live["rows"][-1]["spread_ann_pct"], "sıralama yok"
-    return f"yıllıklandırma doğru · canlı {live['sources']} · {len(live['rows'])} sembol"
+    # maliyet sonrası net: fark - (komisyon + transfer) yıllıklandırılmış
+    net0 = xfund.net_after_costs(0.0)
+    assert net0 < 0, "maliyetler düşülmüyor"
+    net_hi = xfund.net_after_costs(50.0)
+    assert net_hi < 50.0, "net, brütten büyük olamaz"
+    if live["rows"]:
+        r0 = live["rows"][0]
+        assert "net_ann_pct" in r0 and r0["net_ann_pct"] < r0["spread_ann_pct"]
+    return (f"yıllıklandırma doğru · net maliyet düşülüyor ({net0:+.2f}% @0 fark) · "
+            f"canlı {live['sources']} · {len(live['rows'])} sembol")
 
 
 def t_risk():
@@ -150,13 +159,28 @@ def t_api():
     return "6 uç 200 · önbellek aktif"
 
 
+def t_ui_paths():
+    html = (ROOT / "dashboard.html").read_text(encoding="utf-8")
+    for need, why in [("fstream.binance.com/ws", "WebSocket canlı fiyat"),
+                      ("startLiveWS", "WS başlatma"),
+                      ("net_ann_pct", "net maliyet kolonu"),
+                      ("Kapanış nedeni?", "kapanış nedeni soruluyor"),
+                      ("close_reason", "neden kaydediliyor")]:
+        assert need in html, f"eksik: {why}"
+    # sunucu tarafı: paper.close reason kabul ediyor
+    psrc = (ROOT / "paper.py").read_text(encoding="utf-8")
+    assert "def close(pid" in psrc and "reason" in psrc, "paper.close neden almıyor"
+    return "WS + net kolon + kapanış nedeni bağlı"
+
+
 for name, fn in [("vol: rejim + öneri", t_vol),
                  ("carry_health: skor + trend", t_carry_health),
                  ("xfund: yıllıklandırma + sıralama", t_xfund),
                  ("risk: maruziyet + stres", t_risk),
                  ("health: tazelik + servisler", t_health),
                  ("journal: isabet + beklenti", t_journal),
-                 ("api: 6 uç + önbellek", t_api)]:
+                 ("api: 6 uç + önbellek", t_api),
+                 ("arayüz: WS + net + kapanış nedeni", t_ui_paths)]:
     check(name, fn)
 
 print()

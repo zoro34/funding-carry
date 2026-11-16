@@ -970,17 +970,21 @@ function applyRiskHealth(r, v, ch, xf, h, jr) {
   const xft = document.getElementById('xftable');
   if (xf.error) xft.innerHTML = `<div class="empty neg">${xf.error}</div>`;
   else {
-    xft.innerHTML = `<table><thead><tr><th>Sembol</th><th>Fark (yıllık)</th>
+    xft.innerHTML = `<table><thead><tr><th>Sembol</th><th>Fark</th><th>Net (maliyet sonrası)</th>
       <th class="h-sm">Long</th><th class="h-sm">Short</th><th class="h-sm">Oranlar</th></tr></thead><tbody>
       ${(xf.rows || []).slice(0, 10).map(x => `<tr>
         <td><b>${x.symbol}</b></td>
-        <td class="${cls(x.spread_ann_pct)}"><b>${signed(x.spread_ann_pct, 2)}%</b></td>
+        <td class="${cls(x.spread_ann_pct)}">${signed(x.spread_ann_pct, 2)}%</td>
+        <td class="${cls(x.net_ann_pct)}"><b>${signed(x.net_ann_pct, 2)}%</b></td>
         <td class="muted h-sm">${x.long_on}</td>
         <td class="muted h-sm">${x.short_on}</td>
         <td class="muted h-sm">${Object.entries(x.rates_pct_8h || {}).map(([k, v]) => `${k.slice(0, 3)} ${v}`).join(' · ')}</td>
       </tr>`).join('')}
       </tbody></table>`;
-    document.getElementById('xfnote').textContent = xf.note || '';
+    const c = xf.costs || {};
+    document.getElementById('xfnote').textContent = (xf.note || '') +
+      (c.hold_days ? ` Maliyet: ${c.hold_days} gün tutma, bacak başına ${c.fee_bps_per_leg}bp, ` +
+        `transfer ${c.transfer_usdt}$, referans ${c.notional_usd}$ → yılda ${Math.round(365 / c.hold_days)} tur.` : '');
   }
 
   /* --- sağlık --- */
@@ -1130,11 +1134,43 @@ async function refreshPrices() {
   if (paperPayload && (tab === 'dip')) renderPaper(paperPayload);
 }
 
+let LIVE_WS = null, LIVE_WS_OK = false, LIVE_DRAW = 0;
+
+/* Gerçek zamanlı: Binance miniTicker akışı (telefon/bulut modu).
+   Bağlantı kurulamazsa 20 sn'lik yoklamaya düşer. */
+function startLiveWS() {
+  if (!(LOCAL_MODE || staticPaperMode())) return;
+  if (typeof WebSocket === 'undefined' || LIVE_WS) return;
+  try {
+    LIVE_WS = new WebSocket('wss://fstream.binance.com/ws/!miniTicker@arr');
+  } catch (e) { LIVE_WS = null; return; }
+
+  LIVE_WS.onopen = () => { LIVE_WS_OK = true; };
+  LIVE_WS.onmessage = ev => {
+    try {
+      const arr = JSON.parse(ev.data);
+      if (!Array.isArray(arr)) return;
+      for (const t of arr) {
+        if (t && t.s && t.c) LIVE[t.s] = Number(t.c);
+      }
+      LIVE_AT = Date.now(); LIVE_ERR = null;
+      const now = Date.now();
+      if (now - LIVE_DRAW > 2000 && tab === 'dip' && paperPayload) {   // 2 sn'de bir çiz
+        LIVE_DRAW = now;
+        renderPaper(paperPayload);
+      }
+    } catch (e) { /* yut */ }
+  };
+  LIVE_WS.onerror = () => { LIVE_ERR = 'canlı akış hatası'; };
+  LIVE_WS.onclose = () => { LIVE_WS = null; LIVE_WS_OK = false; };
+}
+
 function startLivePrices() {
+  startLiveWS();
   if (LIVE_TIMER) return;
   LIVE_TIMER = setInterval(() => {
     if (document.hidden) return;
-    if (tab === 'dip') refreshPrices();
+    if (tab === 'dip' && !LIVE_WS_OK) refreshPrices();   // WS yoksa yoklama
   }, 20000);
 }
 
@@ -1293,7 +1329,8 @@ function renderPaper(p) {
   }
 
   // --- fiyat kaynagi bilgisi ---
-  const src = LIVE_AT ? `canlı fiyat · ${new Date(LIVE_AT).toLocaleTimeString('tr-TR')}`
+  const src = LIVE_AT
+    ? `${LIVE_WS_OK ? 'canlı akış (WebSocket)' : 'canlı fiyat'} · ${new Date(LIVE_AT).toLocaleTimeString('tr-TR')}`
     : (p.prices_at ? `bulut fiyatı · ${new Date(p.prices_at).toLocaleTimeString('tr-TR')}` : 'fiyat bekleniyor');
   host.innerHTML += `<div class="note">${src}` +
     (LIVE_ERR ? ` · canlı fiyat hatası: ${LIVE_ERR}` : '') +
@@ -1350,6 +1387,10 @@ async function addPaper() {
 
 async function closePaper(id, sym, isLocal) {
   if (!confirm(sym + ' pozisyonunu kapatmak istiyor musun?')) return;
+  const reason = prompt('Kapanış nedeni? (manuel / stop / hedef / fikir_değişti / haber / diğer)',
+                        'manuel');
+  if (reason === null) return;                 // vazgeçti
+  const note = prompt('Kısa not (opsiyonel)', '') || '';
   const msg = document.getElementById('papermsg');
   if (isLocal || String(id).startsWith('L')) {
     const lp = localPapers();
@@ -1360,7 +1401,8 @@ async function closePaper(id, sym, isLocal) {
     const pnl = now ? (now / x.entry_price - 1) * 100 : null;
     lp.closed.push({ ...x, status: 'closed', closed_at: new Date().toISOString(),
       closed_price: now || null, closed_pnl_pct: pnl,
-      closed_pnl_usd: pnl === null ? null : pnl / 100 * x.notional_usd });
+      closed_pnl_usd: pnl === null ? null : pnl / 100 * x.notional_usd,
+      close_reason: (reason || 'manuel').slice(0, 24), close_note: (note || '').slice(0, 200) });
     saveLocalPapers(lp);
     msg.innerHTML = `<span class="pos">${sym} kapatıldı — ${pnl === null ? 'fiyat yok' : signed(pnl) + '%'}</span>`;
     renderPaper(paperPayload);
@@ -1369,10 +1411,11 @@ async function closePaper(id, sym, isLocal) {
   }
   try {
     const r = await fetch('/api/paper/close', { method: 'POST',
-      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, reason: reason || 'manuel', note }) });
     const d = await r.json();
     if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
-    msg.innerHTML = `<span class="pos">${sym} kapatıldı.</span>`;
+    msg.innerHTML = `<span class="pos">${sym} kapatıldı (${reason || 'manuel'}).</span>`;
     renderPaper(d.paper);
   } catch (e) { msg.innerHTML = `<span class="neg">${e.message}</span>`; }
 }

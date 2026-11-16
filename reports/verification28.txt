@@ -1,0 +1,8 @@
+
+[OK  ] mobil: sayfa yatay tasmasi yok —  dort sekmede de sayfa tasmasi yok
+[FAIL] mobil: tablolar ekrana sigiyor — tablo ekrandan genis: {'screen/alerts': 997}
+[OK  ] mobil: ikincil kolonlar gizli — kolon sayilari mobil esikte (carry<=8, smart<=7, screen<=7)
+[OK  ] mobil: olcum ozeti — {"carry": {"overflow": 0, "carry": 346, "screen": null}, "genel": {"overflow": 0, "carry": 0, "screen": null}, "smart": {"overflow": 0, "carry": 0, "screen": null}, "screen": {"overflow": 0, "carry": 0, "screen": 346}}
+
+3/4 gecti
+KAPSAM: 390px emulasyonu (Pixel sinifi). Cok dar (320px) cihazlarda kart ici kaydirma yedek yol olarak kalir; fiziksel kurulum testi kullaniciya aittir.

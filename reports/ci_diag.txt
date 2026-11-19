@@ -1,5 +1,5 @@
-tarih: 2026-11-19 01:15 UTC
-runner: runnervmccnms / 172.208.102.24
+tarih: 2026-11-19 08:53 UTC
+runner: runnervmccnms / 40.124.155.39
 HTTP 451  https://fapi.binance.com/fapi/v1/premiumIndex
 {
   "code": 0,
